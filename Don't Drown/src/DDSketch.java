@@ -1,15 +1,21 @@
+import java.util.ArrayList;
+
 import processing.core.PApplet;
 
 public class DDSketch extends PApplet {
 
     PlayerCharacter pc;
     DebugOverlay overlay;
+    ArrayList<Platform> platforms = new ArrayList<>();
+    CollisionDetector collisionDetector;
 
     @Override
     public void settings() {
         size(1280, 720);
         pc = new PlayerCharacter(this);
         overlay = new DebugOverlay(this);
+        platforms.add(new Platform(this, 1280 * 3 / 4f, 720 * 5 / 6f));
+        collisionDetector = new CollisionDetector(this);
     }
 
     @Override
@@ -17,10 +23,17 @@ public class DDSketch extends PApplet {
         // update positions
         pc.integrate();
 
+        // detect collisions
+        collisionDetector.detectCollisions();
+
         // draw
         background(0xFFFF0000);
+        for (Platform platform : platforms) {
+            platform.render();
+        }
         pc.render();
         overlay.render();
+
     }
 
     @Override

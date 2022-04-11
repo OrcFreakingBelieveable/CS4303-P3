@@ -17,18 +17,21 @@ public class PlayerCharacter {
 
     public PVector pos; // position
     public PVector vel; // velocity
+
+    public FallState fallState = FallState.FALLING;
+    public boolean movingHorizontally = false;
+
     private PVector resultant = new PVector();
-    public float horizontalThrustMult = 1f;
-    public float horizontalDragMult = 0.8f;
+    private float iWeight = 1 / 15f; // inverse weight
+    private float horizontalThrustMult = 0.8f;
+    private float horizontalDragMult = 0.6f;
     private float jumpImpulseMult = 15f;
     private int jumpMemoryCounter = 0;
-    public float diameter;
-
-    public float iWeight = 1 / 15f; // inverse weight
-    public FallState fallState = FallState.FALLING;
     private SteerState steerState = SteerState.NEITHER;
-    public boolean movingHorizontally = false;
     private int hangCounter = 0;
+
+    public float diameter;
+    private int colour = 0xFFFFFFFF;
 
     public enum FallState {
         ON_SURFACE(0f),
@@ -79,12 +82,16 @@ public class PlayerCharacter {
                     // accelerate left if not at max speed
                     if (vel.x >= -maxSpeed) {
                         resultant.x = -horizontalThrustMult * PC_BASE_FORCE;
+                    } else {
+                        vel.x = -maxSpeed;
                     }
                     break;
                 case RIGHT:
                     // accelerate right if not at max speed
                     if (vel.x <= maxSpeed) {
                         resultant.x = horizontalThrustMult * PC_BASE_FORCE;
+                    } else {
+                        vel.x = maxSpeed;
                     }
                     break;
                 case NEITHER:
@@ -161,7 +168,7 @@ public class PlayerCharacter {
     }
 
     public void render() {
-        sketch.fill(0xFFFFFFFF);
+        sketch.fill(colour);
         sketch.circle(pos.x, pos.y, diameter);
     }
 }
