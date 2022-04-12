@@ -8,7 +8,7 @@ public class Test extends Sketcher {
     int frame = 0;
 
     public Test() {
-        super(3f, 0.2f, 0.1f);
+        super(3f, 0.2f, 0.05f);
     }
 
     @Override
@@ -21,12 +21,13 @@ public class Test extends Sketcher {
         background(0xFFFFFFFF);
         noStroke();
         fill(0xFF000000);
-        if (frame++ % 20 == 0) {
+        if (frame++ % 60 == 0) {
             s1 = handDrawLine(new PVector(100f, 100f), new PVector(200f, 100f));
             s2 = handDrawLine(new PVector(200f, 100f - strokeWeight), new PVector(200f, 200f));
             s3 = handDrawLine(new PVector(200f, 200f), new PVector(100f, 200f));
             s4 = handDrawLine(new PVector(100f, 200f), new PVector(100f, 100f - strokeWeight));
 
+           // s5 = handDraw(QUAD, 100f, 100f, 200f, 100f, 200f, 200f, 100f, 200f);
             s5 = handDraw(QUAD, 100f, 150f, 150f, 100f, 200f, 150f, 150f, 200f);
         }
        /* shape(s1);

@@ -41,33 +41,23 @@ public abstract class Sketcher extends PApplet {
 
         int sections = (int) random(0, shakiness * smoothLineLength);
         PVector section = topLeft.copy();
+        PVector direction = (topRight.copy().sub(topLeft)).normalize();
         for (int i = 0; i < sections; i++) {
-            float x = random(Math.min(section.x, topRight.x - strokeVariability),
-                    Math.max(section.x, topRight.x - strokeVariability));
-            x += random(-strokeVariability, strokeVariability);
-            float y = random(Math.min(section.y, topRight.y - strokeVariability),
-                    Math.max(section.y, topRight.y - strokeVariability));
-            y += random(-strokeVariability, strokeVariability);
-            section = new PVector(x, y);
-
-            roughLine.vertex(x, y);
+            section = section.add(direction.copy().mult(random(0, smoothLineLength / sections)));
+            roughLine.vertex(section.x + random(-strokeVariability, strokeVariability),
+                    section.y + random(-strokeVariability, strokeVariability));
         }
 
         roughLine.vertex(topRight.x, topRight.y);
         roughLine.vertex(bottomRight.x, bottomRight.y);
 
         sections = (int) random(0, shakiness * smoothLineLength);
-        section = new PVector(bottomRight.x, bottomRight.y);
+        section = bottomRight.copy();
+        direction = (bottomLeft.copy().sub(bottomRight)).normalize();
         for (int i = 0; i < sections; i++) {
-            float x = random(Math.min(section.x, bottomLeft.x - strokeVariability),
-                    Math.max(section.x, bottomLeft.x - strokeVariability));
-            x += random(-strokeVariability, strokeVariability);
-            float y = random(Math.min(section.y, bottomLeft.y - strokeVariability),
-                    Math.max(section.y, bottomLeft.y - strokeVariability));
-            y += random(-strokeVariability, strokeVariability);
-            section = new PVector(x, y);
-
-            roughLine.vertex(x, y);
+            section = section.add(direction.copy().mult(random(0, smoothLineLength / sections)));
+            roughLine.vertex(section.x + random(-strokeVariability, strokeVariability),
+                    section.y + random(-strokeVariability, strokeVariability));
         }
 
         roughLine.vertex(bottomLeft.x, bottomLeft.y);
@@ -85,11 +75,11 @@ public abstract class Sketcher extends PApplet {
                 } else {
                     PShape quad = createShape(GROUP);
                     quad.addChild(handDrawLine(new PVector(params[0], params[1]), new PVector(params[2], params[3])));
-                    quad.addChild(handDrawLine(new PVector(params[2], params[3] - strokeWeight),
+                    quad.addChild(handDrawLine(new PVector(params[2], params[3]),
                             new PVector(params[4], params[5])));
                     quad.addChild(handDrawLine(new PVector(params[4], params[5]), new PVector(params[6], params[7])));
                     quad.addChild(handDrawLine(new PVector(params[6], params[7]),
-                            new PVector(params[0], params[1] - strokeWeight)));
+                            new PVector(params[0], params[1])));
                     return quad;
                 }
             case PConstants.RECT:
