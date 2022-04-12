@@ -1,4 +1,6 @@
 import processing.core.PConstants;
+import processing.core.PImage;
+import processing.core.PShape;
 import processing.core.PVector;
 
 public class PlayerCharacter {
@@ -22,12 +24,13 @@ public class PlayerCharacter {
     public static final float PC_MAX_LIGHT = 0.9f;
 
     private final DontDrown sketch;
-    private final GameState state;
+    private final LevelState state;
     private final float incr; // movement increment
     private final float maxSpeed; // max horizontal speed
 
     public PVector pos; // position
     public PVector vel; // velocity
+    public float diameter;
 
     // vertical movement
     public Platform surface = null; // platform that the PC is on
@@ -51,7 +54,9 @@ public class PlayerCharacter {
     private int coyoteCounter = 0; // jumping just after leaving the edge of a platform
 
     // rendering
-    public float diameter;
+    private int frameCounter = 0;
+    private final int nFrames;
+    private final int framesPerChange = 60;
 
     public enum FallState {
         ON_SURFACE(0f),
@@ -76,7 +81,7 @@ public class PlayerCharacter {
         return steerState;
     }
 
-    public PlayerCharacter(DontDrown sketch, GameState state) {
+    public PlayerCharacter(DontDrown sketch, LevelState state) {
         this.sketch = sketch;
         this.state = state;
         this.pos = new PVector(sketch.width / 2f, sketch.height / 2f);
@@ -86,6 +91,7 @@ public class PlayerCharacter {
         this.maxSpeed = incr * PC_MAX_SPEED_MULT;
         this.horizontalThrustDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_ACC_TIME, 2)) / iWeight;
         this.horizontalFrictionDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_DEC_TIME, 2)) / iWeight;
+        this.nFrames = sketch.pcTokens.length;
     }
 
     private void updateVelocity() {
@@ -207,10 +213,22 @@ public class PlayerCharacter {
     }
 
     public void render() {
+        frameCounter = (frameCounter + 1) % (nFrames * framesPerChange);
+        PImage token = sketch.pcTokens[frameCounter / framesPerChange].copy();
+        token.loadPixels(); // will be grayscale
         sketch.colorMode(PConstants.HSB, 360f, 1f, 1f);
         float[] colour = state.pcHSBColour();
-        sketch.fill(colour[0], colour[1], colour[2]);
-        sketch.circle(pos.x, pos.y, diameter);
+        for (int i = 0; i < token.height * token.width; i++) {
+            int color = token.pixels[i];
+            if (((color >> 24) & 0xFF) > 0) {
+                // not a transparent pixel
+                token.pixels[i] = PImage.blendColor(color, sketch.color(colour[0], colour[1], colour[2]),
+                        PConstants.DARKEST);
+            }
+        }
+        token.updatePixels();
+        sketch.imageMode(PConstants.CENTER);
+        sketch.image(token, pos.x, pos.y);
         sketch.colorMode(PConstants.RGB, 255, 255, 255);
     }
 }

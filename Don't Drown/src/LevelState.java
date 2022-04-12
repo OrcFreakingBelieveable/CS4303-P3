@@ -1,9 +1,8 @@
-public class GameState {
+public class LevelState {
 
     private final DontDrown sketch;
 
-    private static final int ABS_MIN_STRESS = 0;
-    private static final int ABS_MAX_STRESS = 100;
+    public static final int ABS_MAX_STRESS = 100;
 
     public enum Debuff {
         STRESS_MOTIVATED,
@@ -13,7 +12,7 @@ public class GameState {
         NONE;
     }
 
-    public int level = 0;
+    public int tokensCollected = 0; 
     public int stress = 0;
     public int maxStress = 100;
     public int minStress = 0;
@@ -31,7 +30,7 @@ public class GameState {
     private float pcLightMultiplier = (PlayerCharacter.PC_MAX_LIGHT - PlayerCharacter.PC_MIN_LIGHT)
             / (ABS_MAX_STRESS - stressEffectThreshold);
 
-    public GameState(DontDrown sketch) {
+    public LevelState(DontDrown sketch) {
         this.sketch = sketch;
     }
 
