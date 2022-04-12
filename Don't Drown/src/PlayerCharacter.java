@@ -1,6 +1,5 @@
 import processing.core.PConstants;
 import processing.core.PImage;
-import processing.core.PShape;
 import processing.core.PVector;
 
 public class PlayerCharacter {
