@@ -3,9 +3,9 @@ import java.util.Comparator;
 
 public class CollisionDetector {
 
-    private final DDSketch sketch;
+    private final DontDrown sketch;
 
-    public CollisionDetector(DDSketch sketch) {
+    public CollisionDetector(DontDrown sketch) {
         this.sketch = sketch;
     }
 
@@ -22,21 +22,24 @@ public class CollisionDetector {
             });
 
             for (Platform platform : sortedPlatforms) {
-                if (platform.pos.x > sketch.pc.pos.x + sketch.pc.diameter / 2) {
+                if (platform.pos.x > sketch.pc.pos.x) {
                     // platform too far right
                     // cut off search
                     break;
-                } else if (platform.pos.x + platform.width > sketch.pc.pos.x - sketch.pc.diameter / 2
-                        && platform.pos.y <= sketch.pc.pos.y + sketch.pc.diameter / 2
+                } else if (platform.pos.x + platform.width > sketch.pc.pos.x
+                        && platform.pos.y <= sketch.pc.pos.y + sketch.pc.diameter / 1.5
                         && platform.pos.y > sketch.pc.pos.y) {
                     // collision
-                    sketch.pc.land(platform.pos.y);
+                    sketch.pc.land(platform);
                 } else {
                     // platform too far left, up, or down
                     // continue search
-                    continue;
                 }
             }
+        } else if (sketch.pc.fallState.equals(PlayerCharacter.FallState.ON_SURFACE)
+                && (sketch.pc.pos.x < sketch.pc.surface.pos.x
+                || sketch.pc.pos.x > sketch.pc.surface.pos.x + sketch.pc.surface.width)) {
+            sketch.pc.fall();
         }
     }
 

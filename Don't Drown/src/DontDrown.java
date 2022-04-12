@@ -2,18 +2,23 @@ import java.util.ArrayList;
 
 import processing.core.PApplet;
 
-public class DDSketch extends PApplet {
+public class DontDrown extends PApplet {
 
+    GameState gameState;
     PlayerCharacter pc;
-    DebugOverlay overlay;
+    DebugOverlay debugOverlay;
+    Platform ground;
     ArrayList<Platform> platforms = new ArrayList<>();
     CollisionDetector collisionDetector;
 
     @Override
     public void settings() {
         size(1280, 720);
-        pc = new PlayerCharacter(this);
-        overlay = new DebugOverlay(this);
+        gameState = new GameState(this);
+        pc = new PlayerCharacter(this, gameState);
+        debugOverlay = new DebugOverlay(this);
+        ground = new Platform(this, 0, height, width, 10);
+        platforms.add(ground);
         platforms.add(new Platform(this, 1280 * 3 / 4f, 720 * 5 / 6f));
         collisionDetector = new CollisionDetector(this);
     }
@@ -27,12 +32,13 @@ public class DDSketch extends PApplet {
         collisionDetector.detectCollisions();
 
         // draw
-        background(0xFFFF0000);
+        background(0xFFFFFFEE);
         for (Platform platform : platforms) {
             platform.render();
         }
         pc.render();
-        overlay.render();
+        if (gameState.debugging)
+            debugOverlay.render();
 
     }
 
@@ -50,6 +56,18 @@ public class DDSketch extends PApplet {
                     pc.jump();
                     break;
                 default:
+                    // do nothing
+            }
+        } else {
+            switch (key) {
+                case 'd':
+                case 'D':
+                    gameState.debugging = !gameState.debugging;
+                    break;                
+                default:
+                    if (Character.isDigit(key)) {
+                        gameState.stress = Integer.parseInt("" + key) * 10; 
+                    }
                     // do nothing
             }
         }
@@ -76,8 +94,8 @@ public class DDSketch extends PApplet {
     }
 
     public static void main(String[] args) {
-        String[] processingArgs = { "" };
-        DDSketch sketch = new DDSketch();
+        String[] processingArgs = { "Don't Drown" };
+        DontDrown sketch = new DontDrown();
         PApplet.runSketch(processingArgs, sketch);
     }
 

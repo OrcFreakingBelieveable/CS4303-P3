@@ -1,37 +1,57 @@
+import processing.core.PConstants;
 import processing.core.PVector;
 
 public class PlayerCharacter {
 
     private static final float PC_DIAMETER_DIV = 40f;
     private static final float PC_INCR_DIV = 100f;
-    private static final float PC_MAX_SPEED_MULT = 0.1f;
-    private static final float PC_BASE_FORCE = 1f; // base value of forces
-    private static final float PC_DRAG_FACTOR = 0.2f; // horizontal drag when mid-air
-    private static final float PC_BOUNCE_MULT = 0.5f; // coefficient of restitution for horizontal collision
-    private static final int PC_HANG_TIME_DEF = 2; // frames
-    private static final int PC_BOUNCE_REMEMBER = 5; // frames
+    private static final int PC_DEF_ACC_TIME = 5; // frames to max speed from stop
+    private static final int PC_DEF_DEC_TIME = 6; // frames to stop from max speed
+    private static final float PC_MAX_SPEED_MULT = 0.05f;
+    private static final float PC_DRAG_FACTOR = 0.1f; // horizontal drag when mid-air
+    private static final float PC_BOUNCE_MULT = 0.75f; // coefficient of restitution for horizontal collision
+    private static final int PC_HANG_TIME_DEF = 2; // frames; default hang time
+    private static final int PC_BOUNCE_REMEMBER = 5; // frames; frames before touching the ground for a jump to work
+    private static final int PC_COYOTE_TIME = 5; // frames to jump after end of platform
 
-    private final DDSketch sketch;
+    public static final float PC_MIN_HUE = 280f;
+    public static final float PC_MAX_HUE = 360f;
+    public static final float PC_MIN_SAT = 0.2f;
+    public static final float PC_MAX_SAT = 1f;
+    public static final float PC_MIN_LIGHT = 0.9f;
+    public static final float PC_MAX_LIGHT = 0.9f;
+
+    private final DontDrown sketch;
+    private final GameState state;
     private final float incr; // movement increment
     private final float maxSpeed; // max horizontal speed
 
     public PVector pos; // position
     public PVector vel; // velocity
 
+    // vertical movement
+    public Platform surface = null; // platform that the PC is on
     public FallState fallState = FallState.FALLING;
+
+    // horizontal movement
+    public final float horizontalThrustDef; // default thrust
+    public final float horizontalFrictionDef; // default friction force
+    private SteerState steerState = SteerState.NEITHER;
+    private boolean steerSinceLand = false;
     public boolean movingHorizontally = false;
 
+    // force resolution
     private PVector resultant = new PVector();
     private float iWeight = 1 / 15f; // inverse weight
-    private float horizontalThrustMult = 0.8f;
-    private float horizontalDragMult = 0.6f;
     private float jumpImpulseMult = 15f;
-    private int jumpMemoryCounter = 0;
-    private SteerState steerState = SteerState.NEITHER;
-    private int hangCounter = 0;
 
+    // frame counters
+    private int jumpMemoryCounter = 0; // trying to jump just before hitting the ground
+    private int hangCounter = 0; // peak of jump
+    private int coyoteCounter = 0; // jumping just after leaving the edge of a platform
+
+    // rendering
     public float diameter;
-    private int colour = 0xFFFFFFFF;
 
     public enum FallState {
         ON_SURFACE(0f),
@@ -56,13 +76,16 @@ public class PlayerCharacter {
         return steerState;
     }
 
-    public PlayerCharacter(DDSketch sketch) {
+    public PlayerCharacter(DontDrown sketch, GameState state) {
         this.sketch = sketch;
+        this.state = state;
         this.pos = new PVector(sketch.width / 2f, sketch.height / 2f);
         this.diameter = sketch.width / PC_DIAMETER_DIV;
         this.vel = new PVector();
         this.incr = sketch.width / PC_INCR_DIV;
-        maxSpeed = incr * PC_MAX_SPEED_MULT;
+        this.maxSpeed = incr * PC_MAX_SPEED_MULT;
+        this.horizontalThrustDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_ACC_TIME, 2)) / iWeight;
+        this.horizontalFrictionDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_DEC_TIME, 2)) / iWeight;
     }
 
     private void updateVelocity() {
@@ -70,7 +93,8 @@ public class PlayerCharacter {
         resultant.y += fallState.gravity;
 
         // check if at horizontal rest
-        if (steerState.equals(SteerState.NEITHER) && Math.abs(vel.x) < horizontalDragMult * PC_BASE_FORCE / 2) {
+        if (fallState.equals(FallState.ON_SURFACE) && steerState.equals(SteerState.NEITHER)
+                && Math.abs(vel.x) < horizontalFrictionDef / 2) {
             vel.x = 0;
             movingHorizontally = false;
         }
@@ -81,7 +105,7 @@ public class PlayerCharacter {
                 case LEFT:
                     // accelerate left if not at max speed
                     if (vel.x >= -maxSpeed) {
-                        resultant.x = -horizontalThrustMult * PC_BASE_FORCE;
+                        resultant.x = -state.pcThrust();
                     } else {
                         vel.x = -maxSpeed;
                     }
@@ -89,7 +113,7 @@ public class PlayerCharacter {
                 case RIGHT:
                     // accelerate right if not at max speed
                     if (vel.x <= maxSpeed) {
-                        resultant.x = horizontalThrustMult * PC_BASE_FORCE;
+                        resultant.x = state.pcThrust();
                     } else {
                         vel.x = maxSpeed;
                     }
@@ -97,9 +121,9 @@ public class PlayerCharacter {
                 case NEITHER:
                     // horizontally deccelerate if on a surface
                     if (fallState.equals(FallState.ON_SURFACE)) {
-                        resultant.x = -(vel.x / Math.abs(vel.x)) * horizontalDragMult * PC_BASE_FORCE;
+                        resultant.x = -(vel.x / Math.abs(vel.x)) * state.pcFriction();
                     } else {
-                        resultant.x = -(vel.x / Math.abs(vel.x)) * PC_DRAG_FACTOR * PC_BASE_FORCE;
+                        resultant.x = -(vel.x / Math.abs(vel.x)) * PC_DRAG_FACTOR;
                     }
                     break;
             }
@@ -109,6 +133,8 @@ public class PlayerCharacter {
         if (jumpMemoryCounter-- >= 0 && fallState.equals(FallState.ON_SURFACE)) {
             jump();
         }
+
+        coyoteCounter--;
 
         // calulate acceleration and velocity
         PVector acc = resultant.mult(iWeight);
@@ -138,37 +164,53 @@ public class PlayerCharacter {
             pos.x = sketch.width - diameter / 2;
             vel.x = -Math.abs(vel.x) * PC_BOUNCE_MULT;
         }
-
-        if (!fallState.equals(FallState.ON_SURFACE) && pos.y + diameter / 2 >= sketch.height) {
-            land(sketch.height);
-        }
     }
 
     public void jump() {
-        if (fallState.equals(PlayerCharacter.FallState.ON_SURFACE)) {
+        if (fallState.equals(PlayerCharacter.FallState.ON_SURFACE) || coyoteCounter >= 0) {
             fallState = FallState.RISING;
-            resultant.y = -jumpImpulseMult * PC_BASE_FORCE;
+            resultant.y = -jumpImpulseMult;
             jumpMemoryCounter = 0;
+            surface = null;
         } else {
             jumpMemoryCounter = PC_BOUNCE_REMEMBER;
         }
     }
 
-    public void land(float y) {
+    public void land(Platform upon) {
         fallState = FallState.ON_SURFACE;
+        surface = upon;
         vel.y = 0f;
-        pos.y = y - diameter / 2f;
+        pos.y = upon.pos.y - diameter / 2f;
+        if (steerState.equals(SteerState.NEITHER)) {
+            steerSinceLand = false;
+        }
+    }
+
+    public void fall() {
+        if (!steerSinceLand) {
+            // stop the player from sliding off the edge of a platform when they land
+            vel.x = -vel.x;
+        } else {
+            surface = null;
+            fallState = FallState.FALLING;
+            coyoteCounter = PC_COYOTE_TIME;
+        }
     }
 
     public void steer(SteerState direction) {
         this.steerState = direction;
         if (direction != SteerState.NEITHER) {
             movingHorizontally = true;
+            steerSinceLand = true;
         } // else leave as it was
     }
 
     public void render() {
-        sketch.fill(colour);
+        sketch.colorMode(PConstants.HSB, 360f, 1f, 1f);
+        float[] colour = state.pcHSBColour();
+        sketch.fill(colour[0], colour[1], colour[2]);
         sketch.circle(pos.x, pos.y, diameter);
+        sketch.colorMode(PConstants.RGB, 255, 255, 255);
     }
 }
