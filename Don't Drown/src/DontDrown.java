@@ -1,12 +1,9 @@
-import java.io.File;
 import java.util.ArrayList;
 
 import processing.core.PApplet;
-import processing.core.PImage;
 
 public class DontDrown extends PApplet {
 
-    PImage[] pcTokens = new PImage[7];
 
     LevelState levelState;
     PlayerCharacter pc;
@@ -15,15 +12,6 @@ public class DontDrown extends PApplet {
     Platform ground;
     ArrayList<Platform> platforms = new ArrayList<>();
     CollisionDetector collisionDetector;
-
-    private void loadPCTokens() {
-        for (int i = 0; i < pcTokens.length; i++) {
-            String tokenName = "tokens" + File.separator + "pc-" + nf(i, 2) + ".png";
-            PImage token = loadImage(tokenName);
-            token.resize(0, (int) (pc.diameter * 1.1));
-            pcTokens[i] = token;
-        }
-    }
 
     @Override
     public void settings() {
@@ -38,7 +26,6 @@ public class DontDrown extends PApplet {
         platforms.add(new Platform(this, 1280 * 3 / 4f, 720 * 5 / 6f));
         collisionDetector = new CollisionDetector(this);
 
-        loadPCTokens();
     }
 
     @Override

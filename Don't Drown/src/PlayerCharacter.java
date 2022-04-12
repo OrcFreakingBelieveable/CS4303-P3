@@ -1,5 +1,5 @@
 import processing.core.PConstants;
-import processing.core.PImage;
+import processing.core.PShape;
 import processing.core.PVector;
 
 public class PlayerCharacter {
@@ -54,8 +54,10 @@ public class PlayerCharacter {
 
     // rendering
     private int frameCounter = 0;
-    private final int nFrames;
     private final int framesPerChange = 60;
+    public final float lineWidth;
+    private float outlineWidth, outlineHeight;
+    private float fillWidth, fillHeight;
 
     public enum FallState {
         ON_SURFACE(0f),
@@ -90,7 +92,7 @@ public class PlayerCharacter {
         this.maxSpeed = incr * PC_MAX_SPEED_MULT;
         this.horizontalThrustDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_ACC_TIME, 2)) / iWeight;
         this.horizontalFrictionDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_DEC_TIME, 2)) / iWeight;
-        this.nFrames = sketch.pcTokens.length;
+        this.lineWidth = diameter / 5;
     }
 
     private void updateVelocity() {
@@ -212,22 +214,34 @@ public class PlayerCharacter {
     }
 
     public void render() {
-        frameCounter = (frameCounter + 1) % (nFrames * framesPerChange);
-        PImage token = sketch.pcTokens[frameCounter / framesPerChange].copy();
-        token.loadPixels(); // will be grayscale
+        sketch.noStroke();
         sketch.colorMode(PConstants.HSB, 360f, 1f, 1f);
         float[] colour = state.pcHSBColour();
-        for (int i = 0; i < token.height * token.width; i++) {
-            int color = token.pixels[i];
-            if (((color >> 24) & 0xFF) > 0) {
-                // not a transparent pixel
-                token.pixels[i] = PImage.blendColor(color, sketch.color(colour[0], colour[1], colour[2]),
-                        PConstants.DARKEST);
+
+        PShape token = sketch.createShape(PConstants.GROUP);
+        PShape outline = sketch.createShape(PConstants.ELLIPSE, pos.x, pos.y, diameter, diameter);
+        outline.setFill(sketch.color(colour[0], colour[1], colour[2] - PC_MIN_LIGHT / 2));
+        token.addChild(outline);
+        PShape fill = sketch.createShape(PConstants.ELLIPSE, pos.x, pos.y, diameter - lineWidth, diameter - lineWidth);
+        fill.setFill(sketch.color(colour[0], colour[1], colour[2]));
+        token.addChild(fill);
+
+        frameCounter = (frameCounter++) % framesPerChange;
+        if (frameCounter == 0) {
+            for (int i = 0; i < outline.getVertexCount(); i++) {
+                PVector random = new PVector(sketch.random(-lineWidth, lineWidth),
+                        sketch.random(-lineWidth, lineWidth));
+                outline.setVertex(i, outline.getVertex(i).add(random));
+            }
+            for (int i = 0; i < fill.getVertexCount(); i++) {
+                PVector random = new PVector(sketch.random(-lineWidth, lineWidth),
+                        sketch.random(-lineWidth, lineWidth));
+                fill.setVertex(i, fill.getVertex(i).add(random));
             }
         }
-        token.updatePixels();
-        sketch.imageMode(PConstants.CENTER);
-        sketch.image(token, pos.x, pos.y);
+
+        sketch.shape(token);
         sketch.colorMode(PConstants.RGB, 255, 255, 255);
+
     }
 }

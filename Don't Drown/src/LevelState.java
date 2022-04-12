@@ -19,7 +19,7 @@ public class LevelState {
     public int stressEffectThreshold = 20;
     public float saturation = 1f; // 0 <= s <= 1
     public Debuff debuff = Debuff.NONE;
-    public boolean debugging = false;
+    public boolean debugging = true;
 
     private float pcThrustDenominator = (float) ABS_MAX_STRESS - stressEffectThreshold;
     private float pcFrictionDenominator = pcThrustDenominator * 2f;
