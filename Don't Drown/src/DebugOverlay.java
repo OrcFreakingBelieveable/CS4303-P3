@@ -13,7 +13,7 @@ public class DebugOverlay {
     }
 
     public void render() {
-        sketch.color(0xFF000000); 
+        sketch.fill(0xFF000000);
         sketch.textAlign(PConstants.LEFT, PConstants.TOP);
         sketch.textSize(textSize);
         StringBuilder content = new StringBuilder();
@@ -25,6 +25,9 @@ public class DebugOverlay {
         content.append("steerState: " + sketch.pc.getSteerState() + "\n");
         content.append("movingHorizontally: " + sketch.pc.movingHorizontally + "\n");
         content.append("stress: " + sketch.levelState.stress + "\n");
+        content.append("framesPerResketch: " + sketch.levelState.framesPerResketch + "\n");
+        content.append("roughStrokeVariability: " + sketch.roughStrokeVariabilityRate + "\n");
+        content.append("roughStrokeShakiness: " + sketch.roughStrokeShakiness + "\n");
 
         sketch.text(content.toString(), textSize, textSize);
     }

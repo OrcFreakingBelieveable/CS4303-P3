@@ -2,8 +2,7 @@ import java.util.ArrayList;
 
 import processing.core.PApplet;
 
-public class DontDrown extends PApplet {
-
+public class DontDrown extends Sketcher {
 
     LevelState levelState;
     PlayerCharacter pc;
@@ -16,7 +15,6 @@ public class DontDrown extends PApplet {
     @Override
     public void settings() {
         size(1280, 720);
-
         levelState = new LevelState(this);
         pc = new PlayerCharacter(this, levelState);
         debugOverlay = new DebugOverlay(this);
@@ -30,7 +28,10 @@ public class DontDrown extends PApplet {
 
     @Override
     public void draw() {
+        noStroke();
+
         // update positions
+        levelState.update();
         pc.integrate();
 
         // detect collisions

@@ -32,7 +32,7 @@ public class ScoreOverlay {
         sketch.rect(stressBarOrigin.x + stressBarOutline, stressBarOrigin.y + stressBarOutline,
                 stressBarWidth - 2 * stressBarOutline, stressBarHeight - 2 * stressBarOutline);
         sketch.colorMode(PConstants.HSB, 360, 1, 1);
-        float[] colour = sketch.levelState.pcHSBColour();
+        float[] colour = sketch.levelState.stressHSBColour;
         sketch.fill(colour[0], colour[1], colour[2]);
         sketch.rect(stressBarOrigin.x + stressBarOutline,
                 stressBarOrigin.y + stressBarOutline,

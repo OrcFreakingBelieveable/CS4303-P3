@@ -27,6 +27,7 @@ public class PlayerCharacter {
     private final float incr; // movement increment
     private final float maxSpeed; // max horizontal speed
 
+    public PVector oldPos; // movement in the last frame
     public PVector pos; // position
     public PVector vel; // velocity
     public float diameter;
@@ -54,10 +55,8 @@ public class PlayerCharacter {
 
     // rendering
     private int frameCounter = 0;
-    private final int framesPerChange = 60;
     public final float lineWidth;
-    private float outlineWidth, outlineHeight;
-    private float fillWidth, fillHeight;
+    private PShape token;
 
     public enum FallState {
         ON_SURFACE(0f),
@@ -86,6 +85,7 @@ public class PlayerCharacter {
         this.sketch = sketch;
         this.state = state;
         this.pos = new PVector(sketch.width / 2f, sketch.height / 2f);
+        this.oldPos = pos.copy();
         this.diameter = sketch.width / PC_DIAMETER_DIV;
         this.vel = new PVector();
         this.incr = sketch.width / PC_INCR_DIV;
@@ -112,7 +112,7 @@ public class PlayerCharacter {
                 case LEFT:
                     // accelerate left if not at max speed
                     if (vel.x >= -maxSpeed) {
-                        resultant.x = -state.pcThrust();
+                        resultant.x = -state.pcThrust;
                     } else {
                         vel.x = -maxSpeed;
                     }
@@ -120,7 +120,7 @@ public class PlayerCharacter {
                 case RIGHT:
                     // accelerate right if not at max speed
                     if (vel.x <= maxSpeed) {
-                        resultant.x = state.pcThrust();
+                        resultant.x = state.pcThrust;
                     } else {
                         vel.x = maxSpeed;
                     }
@@ -128,7 +128,7 @@ public class PlayerCharacter {
                 case NEITHER:
                     // horizontally deccelerate if on a surface
                     if (fallState.equals(FallState.ON_SURFACE)) {
-                        resultant.x = -(vel.x / Math.abs(vel.x)) * state.pcFriction();
+                        resultant.x = -(vel.x / Math.abs(vel.x)) * state.pcFriction;
                     } else {
                         resultant.x = -(vel.x / Math.abs(vel.x)) * PC_DRAG_FACTOR;
                     }
@@ -214,32 +214,22 @@ public class PlayerCharacter {
     }
 
     public void render() {
-        sketch.noStroke();
         sketch.colorMode(PConstants.HSB, 360f, 1f, 1f);
-        float[] colour = state.pcHSBColour();
+        sketch.roughStrokeWeight = 3f;
 
-        PShape token = sketch.createShape(PConstants.GROUP);
-        PShape outline = sketch.createShape(PConstants.ELLIPSE, pos.x, pos.y, diameter, diameter);
-        outline.setFill(sketch.color(colour[0], colour[1], colour[2] - PC_MIN_LIGHT / 2));
-        token.addChild(outline);
-        PShape fill = sketch.createShape(PConstants.ELLIPSE, pos.x, pos.y, diameter - lineWidth, diameter - lineWidth);
-        fill.setFill(sketch.color(colour[0], colour[1], colour[2]));
-        token.addChild(fill);
+        if (frameCounter++ % state.framesPerResketch == 0 || Math.abs(state.stress - state.oldStress) > 5) {
+            int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2]);
+            int strokeColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1],
+                    state.stressHSBColour[2] - PC_MIN_LIGHT / 2);
 
-        frameCounter = (frameCounter++) % framesPerChange;
-        if (frameCounter == 0) {
-            for (int i = 0; i < outline.getVertexCount(); i++) {
-                PVector random = new PVector(sketch.random(-lineWidth, lineWidth),
-                        sketch.random(-lineWidth, lineWidth));
-                outline.setVertex(i, outline.getVertex(i).add(random));
-            }
-            for (int i = 0; i < fill.getVertexCount(); i++) {
-                PVector random = new PVector(sketch.random(-lineWidth, lineWidth),
-                        sketch.random(-lineWidth, lineWidth));
-                fill.setVertex(i, fill.getVertex(i).add(random));
-            }
+            token = sketch.handDraw(PConstants.ELLIPSE, strokeColour, fillColour, 20, 0, 0, diameter, diameter);
+            token.translate(pos.x, pos.y);
+        } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
+            PVector movement = pos.copy().sub(oldPos);
+            token.translate(movement.x, movement.y);
         }
 
+        oldPos = pos.copy();
         sketch.shape(token);
         sketch.colorMode(PConstants.RGB, 255, 255, 255);
 

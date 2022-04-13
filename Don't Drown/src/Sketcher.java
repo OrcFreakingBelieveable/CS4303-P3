@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PShape;
@@ -7,24 +5,25 @@ import processing.core.PVector;
 
 public abstract class Sketcher extends PApplet {
 
-    protected final float strokeWeight;
-    protected final float strokeVariability;
-    protected final float shakiness;
+    public static final float RSW_DEF = 3f;
+    public static final float RSV_MIN = 0.15f;
+    public static final float RSV_MAX = 0.5f;
+    public static final float RSS_MIN = 0.05f;
+    public static final float RSS_MAX = 0.2f;
 
-    protected Sketcher(float strokeWeight, float strokeVariabilityRate, float shakiness) {
-        super();
-        this.strokeWeight = strokeWeight;
-        this.strokeVariability = strokeVariabilityRate * strokeWeight;
-        this.shakiness = shakiness;
-    }
+    public float roughStrokeWeight = RSW_DEF; // the average weight of hand drawn lines
+    public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
+    public float roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
+
 
     /* Essentially creates a jagged quadrilteral to act as a hand-drawn line */
-    protected PShape handDrawLine(PVector start, PVector end) {
+    public PShape handDrawLine(PVector start, PVector end) {
         PVector smoothLine = start.copy().sub(end);
         float smoothLineLength = smoothLine.mag();
         float heading = smoothLine.heading();
         heading += HALF_PI;
-        PVector padding = PVector.fromAngle(heading).mult(strokeWeight);
+        PVector padding = PVector.fromAngle(heading).mult(roughStrokeWeight);
+        float roughStrokeVariability = roughStrokeWeight * roughStrokeVariabilityRate;
 
         // topLeft is not necessarily the top left corner, but it's easier to keep track
         // of than just numbering the corners
@@ -37,25 +36,25 @@ public abstract class Sketcher extends PApplet {
         roughLine.beginShape();
         roughLine.vertex(topLeft.x, topLeft.y); // top left corner
 
-        int sections = (int) random(0, Math.max(2, shakiness * smoothLineLength));
+        int sections = (int) random(0, Math.max(2, roughStrokeShakiness * smoothLineLength));
         PVector section = topLeft.copy();
         PVector direction = (topRight.copy().sub(topLeft)).normalize();
         for (int i = 0; i < sections; i++) {
             section = section.add(direction.copy().mult(random(0, smoothLineLength / sections)));
-            roughLine.vertex(section.x + random(-strokeVariability, strokeVariability),
-                    section.y + random(-strokeVariability, strokeVariability));
+            roughLine.vertex(section.x + random(-roughStrokeVariability, roughStrokeVariability),
+                    section.y + random(-roughStrokeVariability, roughStrokeVariability));
         }
 
         roughLine.vertex(topRight.x, topRight.y);
         roughLine.vertex(bottomRight.x, bottomRight.y);
 
-        sections = (int) random(0, Math.max(2, shakiness * smoothLineLength));
+        sections = (int) random(0, Math.max(2, roughStrokeShakiness * smoothLineLength));
         section = bottomRight.copy();
         direction = (bottomLeft.copy().sub(bottomRight)).normalize();
         for (int i = 0; i < sections; i++) {
             section = section.add(direction.copy().mult(random(0, smoothLineLength / sections)));
-            roughLine.vertex(section.x + random(-strokeVariability, strokeVariability),
-                    section.y + random(-strokeVariability, strokeVariability));
+            roughLine.vertex(section.x + random(-roughStrokeVariability, roughStrokeVariability),
+                    section.y + random(-roughStrokeVariability, roughStrokeVariability));
         }
 
         roughLine.vertex(bottomLeft.x, bottomLeft.y);
@@ -73,11 +72,12 @@ public abstract class Sketcher extends PApplet {
             case PConstants.QUAD:
                 // params : x1, y1, x2, y2, x3, y3, x4, y4
                 if (params.length != 8) {
-                    System.err.println("handDraw(QUAD) requires 8 floats in params");
-                    return createShape(type, params);
+                    throw new IndexOutOfBoundsException(
+                            "handDraw(QUAD) requires 8 floats in params, got " + params.length);
                 } else {
                     PShape quad = createShape(GROUP);
 
+                    // add the fill as a normal shape
                     PShape fill = createShape(type, params);
                     fill.setFill(fillColour);
                     quad.addChild(fill);
@@ -103,8 +103,8 @@ public abstract class Sketcher extends PApplet {
             case PConstants.RECT:
                 // params : x, y, width, height
                 if (params.length != 4) {
-                    System.err.println("handDraw(RECT) requires 4 floats in params");
-                    return createShape(type, params);
+                    throw new IndexOutOfBoundsException(
+                            "handDraw(RECT) requires 4 floats in params, got " + params.length);
                 } else {
                     return handDraw(PConstants.QUAD, strokeColour, fillColour,
                             params[0], params[1],
@@ -115,8 +115,8 @@ public abstract class Sketcher extends PApplet {
             case PConstants.ELLIPSE:
                 // params : vertices, x, y, width, height
                 if (params.length != 5) {
-                    System.err.println("handDraw(ELLIPSE) requires 5 floats in params");
-                    return createShape(type, Arrays.copyOfRange(params, 1, 4));
+                    throw new IndexOutOfBoundsException(
+                            "handDraw(ELLIPSE) requires 5 floats in params, got " + params.length);
                 } else {
                     int vertices = (int) params[0];
                     float centreX = params[1];
