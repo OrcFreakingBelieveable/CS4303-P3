@@ -5,19 +5,28 @@ import processing.core.PVector;
 
 public abstract class Sketcher extends PApplet {
 
-    public static final float RSW_DEF = 3f;
+    public final float RSW_DEF;
     public static final float RSV_MIN = 0.15f;
     public static final float RSV_MAX = 0.5f;
     public static final float RSS_MIN = 0.05f;
-    public static final float RSS_MAX = 0.2f;
+    public static final float RSS_MAX = 0.1f;
 
-    public float roughStrokeWeight = RSW_DEF; // the average weight of hand drawn lines
+    public float roughStrokeWeight; // the average weight of hand drawn lines
     public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
     public float roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
 
+    protected Sketcher(int width, int height) {
+        RSW_DEF = height / 240f; 
+    }
+
+    public PShape handDrawLine(int strokeColour, PVector start, PVector end) {
+        PShape line = handDrawLine(start, end);
+        line.setFill(strokeColour);
+        return line; 
+    }
 
     /* Essentially creates a jagged quadrilteral to act as a hand-drawn line */
-    public PShape handDrawLine(PVector start, PVector end) {
+    private PShape handDrawLine(PVector start, PVector end) {
         PVector smoothLine = start.copy().sub(end);
         float smoothLineLength = smoothLine.mag();
         float heading = smoothLine.heading();

@@ -1,8 +1,7 @@
 import processing.core.PConstants;
-import processing.core.PShape;
 import processing.core.PVector;
 
-public class PlayerCharacter {
+public class PlayerCharacter extends AbstractDrawable {
 
     private static final float PC_DIAMETER_DIV = 40f;
     private static final float PC_INCR_DIV = 100f;
@@ -22,8 +21,6 @@ public class PlayerCharacter {
     public static final float PC_MIN_LIGHT = 0.9f;
     public static final float PC_MAX_LIGHT = 0.9f;
 
-    private final DontDrown sketch;
-    private final LevelState state;
     private final float incr; // movement increment
     private final float maxSpeed; // max horizontal speed
 
@@ -53,11 +50,6 @@ public class PlayerCharacter {
     private int hangCounter = 0; // peak of jump
     private int coyoteCounter = 0; // jumping just after leaving the edge of a platform
 
-    // rendering
-    private int frameCounter = 0;
-    public final float lineWidth;
-    private PShape token;
-
     public enum FallState {
         ON_SURFACE(0f),
         RISING(0.5f),
@@ -82,8 +74,7 @@ public class PlayerCharacter {
     }
 
     public PlayerCharacter(DontDrown sketch, LevelState state) {
-        this.sketch = sketch;
-        this.state = state;
+        super(sketch, state);
         this.pos = new PVector(sketch.width / 2f, sketch.height / 2f);
         this.oldPos = pos.copy();
         this.diameter = sketch.width / PC_DIAMETER_DIV;
@@ -92,7 +83,6 @@ public class PlayerCharacter {
         this.maxSpeed = incr * PC_MAX_SPEED_MULT;
         this.horizontalThrustDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_ACC_TIME, 2)) / iWeight;
         this.horizontalFrictionDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_DEC_TIME, 2)) / iWeight;
-        this.lineWidth = diameter / 5;
     }
 
     private void updateVelocity() {
@@ -213,17 +203,22 @@ public class PlayerCharacter {
         } // else leave as it was
     }
 
+    protected void generateToken() {
+        int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2]);
+        int strokeColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1],
+                state.stressHSBColour[2] - PC_MIN_LIGHT / 2);
+
+        token = sketch.handDraw(PConstants.ELLIPSE, strokeColour, fillColour, 20, 0, 0, diameter, diameter);
+        token.translate(pos.x, pos.y);
+    }
+
     public void render() {
         sketch.colorMode(PConstants.HSB, 360f, 1f, 1f);
-        sketch.roughStrokeWeight = 3f;
+        sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-        if (frameCounter++ % state.framesPerResketch == 0 || Math.abs(state.stress - state.oldStress) > 5) {
-            int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2]);
-            int strokeColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1],
-                    state.stressHSBColour[2] - PC_MIN_LIGHT / 2);
-
-            token = sketch.handDraw(PConstants.ELLIPSE, strokeColour, fillColour, 20, 0, 0, diameter, diameter);
-            token.translate(pos.x, pos.y);
+        if (token == null || frameCounter++ % state.framesPerResketch == 0
+                || Math.abs(state.stress - state.oldStress) > 5) {
+            generateToken();
         } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
             PVector movement = pos.copy().sub(oldPos);
             token.translate(movement.x, movement.y);

@@ -4,6 +4,9 @@ import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
 
+    private static final int WIDTH = 1280;
+    private static final int HEIGHT = 720;
+
     LevelState levelState;
     PlayerCharacter pc;
     DebugOverlay debugOverlay;
@@ -12,16 +15,20 @@ public class DontDrown extends Sketcher {
     ArrayList<Platform> platforms = new ArrayList<>();
     CollisionDetector collisionDetector;
 
+    protected DontDrown() {
+        super(WIDTH, HEIGHT);
+    }
+
     @Override
     public void settings() {
-        size(1280, 720);
+        size(WIDTH, HEIGHT);
         levelState = new LevelState(this);
         pc = new PlayerCharacter(this, levelState);
         debugOverlay = new DebugOverlay(this);
         scoreOverlay = new ScoreOverlay(this);
-        ground = new Platform(this, 0, height, width, 10);
+        ground = new Platform(this, levelState, 0, height, width, 10);
         platforms.add(ground);
-        platforms.add(new Platform(this, 1280 * 3 / 4f, 720 * 5 / 6f));
+        platforms.add(new Platform(this, levelState, 1280 * 3 / 4f, 720 * 5 / 6f));
         collisionDetector = new CollisionDetector(this);
 
     }
