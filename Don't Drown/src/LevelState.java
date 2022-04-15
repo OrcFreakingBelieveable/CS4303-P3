@@ -22,7 +22,6 @@ public class LevelState {
     public int maxStress = 100;
     public int minStress = 0;
     public int stressEffectThreshold = 20;
-    public float saturation = 1f; // 0 <= s <= 1
     public Debuff debuff = Debuff.NONE;
     public boolean debugging = true;
 

@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
@@ -11,31 +9,25 @@ public class DontDrown extends Sketcher {
     PlayerCharacter pc;
     DebugOverlay debugOverlay;
     ScoreOverlay scoreOverlay;
-    Platform ground;
-    ArrayList<Platform> platforms = new ArrayList<>();
+    Level level;
     CollisionDetector collisionDetector;
 
     protected DontDrown() {
-        super(WIDTH, HEIGHT);
+        super(HEIGHT);
     }
 
     private void newLevel() {
-        platforms.clear();
-        ground = new Platform(this, levelState, 0, height, width, 10);
-        platforms.add(ground);
-        for (int i = 0; i < 10; i++) {
-            platforms.add(new Platform(this, levelState, width * random(0, 1), height * random(0, 1)));
-        }
-        pc.pos.x = width / 2f;
-        pc.pos.y = height / 2f;
-        pc.jump();
+        level = new Level(this, HEIGHT, true);
+        Platform ground = level.platforms.get(0); 
+        pc.pos.x = ground.pos.x + ground.width/2;
+        pc.pos.y =  ground.pos.y - pc.diameter;
     }
 
     @Override
     public void settings() {
         size(WIDTH, HEIGHT);
         levelState = new LevelState(this);
-        pc = new PlayerCharacter(this, levelState);
+        pc = new PlayerCharacter(this);
         debugOverlay = new DebugOverlay(this);
         scoreOverlay = new ScoreOverlay(this);
         newLevel();
@@ -58,9 +50,7 @@ public class DontDrown extends Sketcher {
 
         // draw
         background(0xFFFFFFEE);
-        for (Platform platform : platforms) {
-            platform.render();
-        }
+        level.render(); 
         pc.render();
         if (levelState.debugging)
             debugOverlay.render();

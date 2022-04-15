@@ -1,6 +1,5 @@
 import processing.core.PApplet;
 import processing.core.PShape;
-import processing.core.PVector;
 
 public class Test extends Sketcher {
 
@@ -8,7 +7,7 @@ public class Test extends Sketcher {
     private static final int HEIGHT = 768;
 
     protected Test() {
-        super(WIDTH, HEIGHT);
+        super(HEIGHT);
     }
 
     PShape s1, s2, s3, s4, s5, s6, s7;

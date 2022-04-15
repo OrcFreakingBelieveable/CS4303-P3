@@ -19,6 +19,7 @@ public class DebugOverlay {
         StringBuilder content = new StringBuilder();
         content.append("fps: " + Math.round(sketch.frameRate) + "\n");
         content.append("pos: " + sketch.pc.pos + "\n");
+        content.append("incr: " + sketch.pc.incr + "\n");
         content.append("horizontal velocity: " + sketch.pc.vel.x + "\n");
         content.append("vertical velocity: " + sketch.pc.vel.y + "\n");
         content.append("fallState: " + sketch.pc.fallState + "\n");
@@ -28,6 +29,7 @@ public class DebugOverlay {
         content.append("framesPerResketch: " + sketch.levelState.framesPerResketch + "\n");
         content.append("roughStrokeVariability: " + sketch.roughStrokeVariabilityRate + "\n");
         content.append("roughStrokeShakiness: " + sketch.roughStrokeShakiness + "\n");
+        content.append("platforms: " + sketch.level.platforms.size() + "\n");
 
         sketch.text(content.toString(), textSize, textSize);
     }

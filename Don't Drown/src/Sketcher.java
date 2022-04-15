@@ -15,7 +15,7 @@ public abstract class Sketcher extends PApplet {
     public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
     public float roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
 
-    protected Sketcher(int width, int height) {
+    protected Sketcher(int height) {
         RSW_DEF = height / 240f; 
     }
 

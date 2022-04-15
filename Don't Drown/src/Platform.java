@@ -10,19 +10,21 @@ public class Platform extends AbstractDrawable {
     public final float height;
     public final float width;
 
+    public boolean supportingPC = false;
+
     private int strokeColour = 0xFFD79B00;
     private int fillColour = 0xFFFFE6CC;
 
-    public Platform(DontDrown sketch, LevelState state, float x, float y) {
-        super(sketch, state);
+    public Platform(DontDrown sketch, float x, float y) {
+        super(sketch);
         this.height = sketch.height / PF_HEIGHT_DIV;
         this.width = sketch.width / PF_WIDTH_DIV;
         this.pos = new PVector(x, y);
     }
 
-    public Platform(DontDrown sketch, LevelState state, float x, float y, float width, float height) {
-        super(sketch, state);
-        this.height = height;
+    public Platform(DontDrown sketch, float x, float y, float width) {
+        super(sketch);
+        this.height = sketch.height / PF_HEIGHT_DIV;
         this.width = width;
         this.pos = new PVector(x, y);
     }
@@ -32,7 +34,7 @@ public class Platform extends AbstractDrawable {
         float thickStrokeWeight = 2 * sketch.RSW_DEF;
 
         token = new PShape(PConstants.GROUP);
-        token.addChild(sketch.handDraw(PConstants.QUAD, strokeColour, fillColour,
+        token.addChild(sketch.handDraw(PConstants.QUAD, supportingPC ? 0xFF000000 : strokeColour, fillColour,
                 2 * sketch.RSW_DEF, sketch.RSW_DEF, width - 2 * sketch.RSW_DEF, sketch.RSW_DEF,
                 width - (2 * sketch.RSW_DEF + width / 16), height, 2 * sketch.RSW_DEF + width / 16, height));
 

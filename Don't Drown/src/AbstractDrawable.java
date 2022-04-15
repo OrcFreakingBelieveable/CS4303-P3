@@ -12,9 +12,9 @@ public abstract class AbstractDrawable {
     protected int frameCounter;
     protected PShape token;
 
-    protected AbstractDrawable(DontDrown sketch, LevelState state) {
+    protected AbstractDrawable(DontDrown sketch) {
         this.sketch = sketch;
-        this.state = state;
+        this.state = sketch.levelState;
         frameCounter = (int) (sketch.random(0,5)); 
     }
 

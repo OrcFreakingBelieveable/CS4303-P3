@@ -13,8 +13,8 @@ public class ScoreOverlay {
         private final float stressBarHeight;
         private final int stressBarOutline;
 
-        protected StressBar(DontDrown sketch, LevelState state) {
-            super(sketch, state);
+        protected StressBar(DontDrown sketch) {
+            super(sketch);
             this.stressBarWidth = sketch.width / STRESS_BAR_WIDTH_DIV;
             this.stressBarHeight = sketch.height / STRESS_BAR_HEIGHT_DIV;
             this.pos = new PVector(sketch.width / 2f - stressBarWidth / 2, stressBarHeight);
@@ -73,7 +73,7 @@ public class ScoreOverlay {
     public ScoreOverlay(DontDrown sketch) {
         this.sketch = sketch;
         this.textSize = sketch.height / SCORE_TEXT_DIV;
-        stressBar = new StressBar(sketch, sketch.levelState);
+        stressBar = new StressBar(sketch);
     }
 
     public void render() {
