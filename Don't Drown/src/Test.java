@@ -28,11 +28,11 @@ public class Test extends Sketcher {
         noStroke();
         fill(0xFF000000);
         if (frame++ % 20 == 0) {
-            s1 = handDrawLine(0xFF000000, new PVector(100f, 100f), new PVector(200f, 100f));
+            /*s1 = handDrawLine(0xFF000000, new PVector(100f, 100f), new PVector(200f, 100f));
             s2 = handDrawLine(0xFF000000, new PVector(200f, 100f - roughStrokeWeight), new PVector(200f, 200f));
             s3 = handDrawLine(0xFF000000, new PVector(200f, 200f), new PVector(100f, 200f));
             s4 = handDrawLine(0xFF000000, new PVector(100f, 200f), new PVector(100f, 100f - roughStrokeWeight));
-
+*/
             // s5 = handDraw(QUAD, 100f, 100f, 200f, 100f, 200f, 200f, 100f, 200f);
             // s5 = handDraw(QUAD, 0xFF000000, 0xFFFF0066, 100f, 150f, 150f, 100f, 200f,
             // 150f, 150f, 200f);
@@ -42,22 +42,21 @@ public class Test extends Sketcher {
 
             roughStrokeWeight = 3.5f;
 
-            roughStrokeVariabilityRate = 0.3f;
+            roughStrokeVariabilityRate = 0.15f;
             roughStrokeShakiness = 0.05f;
             s5 = handDraw(RECT, 100f, 100f, 100f, 100f);
-            roughStrokeVariabilityRate = 0.65f;
+            roughStrokeVariabilityRate = 0.325f;
             roughStrokeShakiness = 0.125f;
             s6 = handDraw(RECT, 250f, 100f, 100f, 100f);
-            roughStrokeVariabilityRate = 1f;
+            roughStrokeVariabilityRate = 0.5f;
             roughStrokeShakiness = 0.2f;
             s7 = handDraw(RECT, 400f, 100f, 100f, 100f);
         }
-        /*
-         * shape(s1);
-         * shape(s2);
-         * shape(s3);
-         * shape(s4);
-         */
+
+        /*shape(s1);
+        shape(s2);
+        shape(s3);
+        shape(s4);*/
         shape(s5);
         shape(s6);
         shape(s7);

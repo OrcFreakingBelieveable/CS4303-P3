@@ -19,6 +19,18 @@ public class DontDrown extends Sketcher {
         super(WIDTH, HEIGHT);
     }
 
+    private void newLevel() {
+        platforms.clear();
+        ground = new Platform(this, levelState, 0, height, width, 10);
+        platforms.add(ground);
+        for (int i = 0; i < 10; i++) {
+            platforms.add(new Platform(this, levelState, width * random(0, 1), height * random(0, 1)));
+        }
+        pc.pos.x = width / 2f;
+        pc.pos.y = height / 2f;
+        pc.jump();
+    }
+
     @Override
     public void settings() {
         size(WIDTH, HEIGHT);
@@ -26,11 +38,8 @@ public class DontDrown extends Sketcher {
         pc = new PlayerCharacter(this, levelState);
         debugOverlay = new DebugOverlay(this);
         scoreOverlay = new ScoreOverlay(this);
-        ground = new Platform(this, levelState, 0, height, width, 10);
-        platforms.add(ground);
-        platforms.add(new Platform(this, levelState, 1280 * 3 / 4f, 720 * 5 / 6f));
+        newLevel();
         collisionDetector = new CollisionDetector(this);
-
     }
 
     @Override
@@ -40,6 +49,9 @@ public class DontDrown extends Sketcher {
         // update positions
         levelState.update();
         pc.integrate();
+        if (pc.pos.y > height) {
+            pc.pos.y = height - pc.diameter; 
+        }
 
         // detect collisions
         collisionDetector.detectCollisions();
@@ -81,6 +93,9 @@ public class DontDrown extends Sketcher {
                 case '`':
                     levelState.stress = 100;
                     break;
+                case ' ':
+                    newLevel();
+                    break;
                 default:
                     if (Character.isDigit(key)) {
                         levelState.stress = Integer.parseInt("" + key) * 10;
@@ -103,6 +118,17 @@ public class DontDrown extends Sketcher {
                     if (pc.getSteerState().equals(PlayerCharacter.SteerState.RIGHT)) {
                         pc.steer(PlayerCharacter.SteerState.NEITHER);
                     }
+                    break;
+                default:
+                    // do nothing
+            }
+        } else {
+            switch (key) {
+                case '+':
+                    levelState.stress++;
+                    break;
+                case '-':
+                    levelState.stress--;
                     break;
                 default:
                     // do nothing

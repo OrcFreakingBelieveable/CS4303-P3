@@ -24,8 +24,6 @@ public class PlayerCharacter extends AbstractDrawable {
     private final float incr; // movement increment
     private final float maxSpeed; // max horizontal speed
 
-    public PVector oldPos; // movement in the last frame
-    public PVector pos; // position
     public PVector vel; // velocity
     public float diameter;
 
@@ -37,7 +35,7 @@ public class PlayerCharacter extends AbstractDrawable {
     public final float horizontalThrustDef; // default thrust
     public final float horizontalFrictionDef; // default friction force
     private SteerState steerState = SteerState.NEITHER;
-    private boolean steerSinceLand = false;
+    public boolean steerSinceLand = false;
     public boolean movingHorizontally = false;
 
     // force resolution

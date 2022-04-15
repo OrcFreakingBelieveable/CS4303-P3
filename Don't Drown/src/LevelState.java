@@ -98,6 +98,11 @@ public class LevelState {
     }
 
     public void update() {
+        if (stress > maxStress) {
+            stress = maxStress;
+        } else if (stress < minStress) {
+            stress = minStress;
+        }
         pcThrust();
         pcFriction();
         stressHSBColour();
