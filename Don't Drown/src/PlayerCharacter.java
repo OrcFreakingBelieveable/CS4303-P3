@@ -3,16 +3,17 @@ import processing.core.PVector;
 
 public class PlayerCharacter extends AbstractDrawable {
 
-    private static final float PC_DIAMETER_DIV = 40f;
+    public static final float PC_DIAMETER_DIV = 40f;
     private static final float PC_INCR_DIV = 100f;
 
     // horizontal movement
-    private static final int PC_MIN_ACC_TIME = 5; // frames to max speed from stop
+    private static final int PC_MIN_ACC_TIME = 10; // frames to max speed from stop
     private static final int PC_MAX_ACC_TIME = 25; // frames to max speed from stop
     private static final int PC_MIN_DEC_TIME = 5; // frames to stop from max speed
     private static final int PC_MAX_DEC_TIME = 20; // frames to stop from max speed
     private static final float PC_MAX_SPEED_MULT = 0.6f; // incr per frame
-    private static final float PC_DRAG_FACTOR = 0.05f; // horizontal drag when mid-air
+    private static final float PC_AIR_THRUST_MULT = 0.15f; // horizontal thrust multiplier when mid-air
+    private static final float PC_AIR_FRICTION_FACTOR = 0.05f; // horizontal friction multiplier when mid-air
 
     // vertical movement
     private static final float PC_JUMP_IMPULSE = 12.5f;
@@ -79,9 +80,15 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     public enum SteerState {
-        LEFT,
-        RIGHT,
-        NEITHER;
+        LEFT(-1),
+        RIGHT(1),
+        NEITHER(0);
+
+        public final int directionMult;
+
+        SteerState(int directionMult) {
+            this.directionMult = directionMult;
+        }
     }
 
     public enum MoveState {
@@ -164,16 +171,20 @@ public class PlayerCharacter extends AbstractDrawable {
         if (fallState.equals(FallState.ON_SURFACE)) {
             resultant.x += state.pcFriction * (vel.x < 0 ? 1 : -1);
         } else {
-            resultant.x += PC_DRAG_FACTOR * (vel.x < 0 ? 1 : -1);
+            resultant.x += state.pcFriction * (vel.x < 0 ? 1 : -1) * PC_AIR_FRICTION_FACTOR;
         }
     }
 
-    private void checkAtHorizontalRest() {
-        if (fallState.equals(FallState.ON_SURFACE) && steerState.equals(SteerState.NEITHER)
-                && Math.abs(vel.x) < state.pcMinSpeed) {
-            vel.x = 0;
-            moveState = MoveState.AT_REST;
-
+    private void applyHorizontalThrust() {
+        if (Math.abs(vel.x) < maxSpeed || steerState.equals(vel.x < 0 ? SteerState.RIGHT : SteerState.LEFT)) {
+            if (fallState.equals(FallState.ON_SURFACE)) {
+                resultant.x += state.pcThrust * steerState.directionMult;
+            } else {
+                resultant.x += state.pcThrust * steerState.directionMult * PC_AIR_THRUST_MULT;
+            }
+        } else if (Math.abs(vel.x) >= maxSpeed && !steerState.equals(SteerState.NEITHER)) {
+            vel.x = maxSpeed * steerState.directionMult;
+            moveState = MoveState.MAX_SPEED;
         }
     }
 
@@ -181,67 +192,44 @@ public class PlayerCharacter extends AbstractDrawable {
         // apply gravity
         resultant.y += fallState.gravity;
 
-        // check if at horizontal rest
-        if (!moveState.equals(MoveState.AT_REST)) {
-            checkAtHorizontalRest();
-        }
-
-        /// apply horizontal steering
-        switch (moveState) {
-            case AT_REST:
-                // do nothing
-                break;
-            case MAX_SPEED:
-                // if still steering into it, do nothing
-                // else, decelerate
-                if (vel.x > 0 && steerState.equals(SteerState.RIGHT)
-                        || vel.x < 0 && steerState.equals(SteerState.LEFT)) {
-                    // do nothing
-                } else {
-                    moveState = MoveState.ACCELERATING;
-                }
-                break;
-            case ACCELERATING:
-                switch (steerState) {
-                    case LEFT:
-                        // accelerate left if not at max speed
-                        if (vel.x > -maxSpeed) {
-                            resultant.x = -state.pcThrust;
-                            applyHorizontalDrag();
-                        } else {
-                            vel.x = -maxSpeed;
-                            moveState = MoveState.MAX_SPEED;
-                        }
-                        break;
-                    case RIGHT:
-                        // accelerate right if not at max speed
-                        if (vel.x < maxSpeed) {
-                            resultant.x = state.pcThrust;
-                            applyHorizontalDrag();
-                        } else {
-                            vel.x = maxSpeed;
-                            moveState = MoveState.MAX_SPEED;
-                        }
-                        break;
-                    case NEITHER:
-                        applyHorizontalDrag();
-                        break;
-                }
-                break;
-        }
-
-        // attempt to jump
+        // jump if landed within 5 frames of pressing the jump button
         if (jumpMemoryCounter-- >= 0 && fallState.equals(FallState.ON_SURFACE)) {
             jump();
         }
 
+        // decrement the coyote time counter
         coyoteCounter--;
 
-        // calulate acceleration and velocity
+        // check if at horizontal rest
+        if (!moveState.equals(MoveState.AT_REST) && steerState.equals(SteerState.NEITHER)
+                && ((fallState.equals(FallState.ON_SURFACE) && Math.abs(vel.x) < state.pcMinSpeed)
+                        || (!fallState.equals(FallState.ON_SURFACE)
+                                && Math.abs(vel.x) < state.pcMinSpeed * PC_AIR_FRICTION_FACTOR))) {
+            vel.x = 0;
+            moveState = MoveState.AT_REST;
+        }
+
+        // if at max speed, check if max speed should be maintained
+        if (moveState.equals(MoveState.MAX_SPEED)) {
+            if (vel.x > 0 && steerState.equals(SteerState.RIGHT)
+                    || vel.x < 0 && steerState.equals(SteerState.LEFT)) {
+                // do nothing
+            } else {
+                moveState = MoveState.ACCELERATING;
+            }
+        }
+
+        // if not at rest or max speed, apply thrust (from steering) and friction
+        if (moveState.equals(MoveState.ACCELERATING)) {
+            applyHorizontalThrust();
+            applyHorizontalDrag();
+        }
+
+        // calulate acceleration and velocity from resultant force
         PVector acc = resultant.mult(I_MASS).mult(incr);
         vel.add(acc);
 
-        // check if peak of jump (i.e. start of hang time) reached
+        // check if peak of jump (i.e. start of hang time) reached, or finished
         if (fallState.equals(FallState.RISING) && vel.y >= 0) {
             fallState = FallState.HANG_TIME;
             hangCounter = 0;
@@ -258,12 +246,14 @@ public class PlayerCharacter extends AbstractDrawable {
     public void integrate() {
         updateVelocity();
         pos.add(vel);
-        if (pos.x - diameter / 2 <= 0) {
-            pos.x = 0 + diameter / 2;
-            vel.x = Math.abs(vel.x) * PC_BOUNCE_MULT;
-        } else if (pos.x + diameter / 2 >= sketch.width) {
-            pos.x = sketch.width - diameter / 2;
-            vel.x = -Math.abs(vel.x) * PC_BOUNCE_MULT;
+        if (sketch.level != null) {
+            if (pos.x - diameter / 2 <= sketch.level.marginX) {
+                pos.x = sketch.level.marginX + diameter / 2;
+                vel.x = Math.abs(vel.x) * PC_BOUNCE_MULT;
+            } else if (pos.x + diameter / 2 >= sketch.width) {
+                pos.x = sketch.width - diameter / 2;
+                vel.x = -Math.abs(vel.x) * PC_BOUNCE_MULT;
+            }
         }
     }
 
@@ -314,7 +304,7 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     public void fall() {
-        if (!steerSinceLand
+        if (steerState.equals(SteerState.NEITHER)
                 || vel.x < 0 && steerState.equals(SteerState.RIGHT)
                 || vel.x > 0 && steerState.equals(SteerState.LEFT)) {
             fall(false);
