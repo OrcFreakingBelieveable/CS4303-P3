@@ -1,8 +1,14 @@
 import java.util.ArrayList;
 
+import processing.core.PConstants;
+import processing.core.PShape;
 import processing.core.PVector;
 
 public class Level {
+
+    private static final int LINE_COLOUR = 0x88666666;
+    private static final int MARGIN_COLOUR = 0x88B85450;
+    public static final int MARGIN_DIV = 10;
 
     private final DontDrown sketch;
     private final LevelState state;
@@ -10,10 +16,12 @@ public class Level {
     public final int height;
     public final int lowestPlatformHeight;
     public final int highestPlatformHeight;
-    private final int width;
+    public final float playableWidth;
+    public final float marginX;
 
     private int viewportHeight; // the y origin (top) of the viewport relative to the level
 
+    public PShape lines = null;
     public Token[] tokens;
     public ArrayList<Platform> platforms = new ArrayList<>();
     public float waveHeight;
@@ -25,9 +33,37 @@ public class Level {
         this.viewportHeight = sketch.height;
         this.lowestPlatformHeight = 9 * viewportHeight / 10;
         this.highestPlatformHeight = viewportHeight / 8;
-        this.width = sketch.width;
+        this.marginX = (float) sketch.width / MARGIN_DIV;
+        this.playableWidth = sketch.width - marginX;
         waveHeight = height;
         generatePlatformsAndTokens(hasGround, 0.5f);
+    }
+
+    private PShape drawLine(PVector start, PVector end, float weight, int colour) {
+        PVector smoothLine = start.copy().sub(end);
+        float angle = smoothLine.heading();
+        angle += PConstants.HALF_PI;
+        PVector padding = PVector.fromAngle(angle).mult(weight / 2);
+        PVector topLeft = start.copy().sub(padding);
+        PVector topRight = end.copy().sub(padding);
+        PVector bottomRight = topRight.copy().add(padding);
+        PVector bottomLeft = topLeft.copy().add(padding);
+
+        PShape line = sketch.createShape(PConstants.QUAD,
+                topLeft.x, topLeft.y, topRight.x, topRight.y,
+                bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
+
+        line.setFill(colour);
+        return line;
+    }
+
+    private void generateLines() {
+        lines = sketch.createShape(PConstants.GROUP);
+        final float lineGap = PlayerCharacter.PC_DIAMETER_DIV; 
+        for (int i = 1; i <= playableWidth / lineGap; i++) {
+            lines.addChild(drawLine(new PVector(0, i * lineGap), new PVector(sketch.width, i * lineGap), 1, LINE_COLOUR));
+        }
+        lines.addChild(drawLine(new PVector(marginX, 0), new PVector(marginX, height), 1, MARGIN_COLOUR)); 
     }
 
     private void generatePlatformsAndTokens(boolean hasGround, float goBackPercentage) {
@@ -38,10 +74,10 @@ public class Level {
         int stuckCount = 0;
 
         if (hasGround) {
-            currentPlatform = new Platform(sketch, 0, lowestPlatformHeight, width);
+            currentPlatform = new Platform(sketch, marginX, lowestPlatformHeight, playableWidth);
             platforms.add(currentPlatform);
         } else {
-            currentPlatform = new Platform(sketch, sketch.random(width), lowestPlatformHeight);
+            currentPlatform = new Platform(sketch, sketch.random(playableWidth), lowestPlatformHeight);
             platforms.add(currentPlatform);
         }
 
@@ -50,11 +86,11 @@ public class Level {
             boolean goingLeft;
             float diffX;
             float diffY;
-            if (currentPlatform.width == width) {
+            if (currentPlatform.width == playableWidth) {
                 goingLeft = false;
-                diffX = sketch.random(0, width - nextPlatform.width);
+                diffX = sketch.random(0, playableWidth - nextPlatform.width);
             } else {
-                goingLeft = sketch.random(0, 1) < currentPlatform.pos.x / (width - currentPlatform.width);
+                goingLeft = sketch.random(0, 1) < currentPlatform.pos.x / (playableWidth - currentPlatform.width);
                 diffX = goingLeft ? sketch.random(-jumpRange, 0) : sketch.random(0, jumpRange - nextPlatform.width);
             }
 
@@ -105,8 +141,8 @@ public class Level {
                 }
             }
 
-            float x = Math.max(0, currentPlatform.pos.x + diffX);
-            x = Math.min(x, width - nextPlatform.width);
+            float x = Math.max(marginX, currentPlatform.pos.x + diffX);
+            x = Math.min(x, playableWidth - nextPlatform.width);
             float y = Math.min(height - nextPlatform.height, currentPlatform.pos.y - diffY);
             y = Math.max(highestPlatformHeight, y);
 
@@ -135,11 +171,21 @@ public class Level {
     }
 
     public void render() {
+        if (lines == null) {
+            generateLines();
+        }
+
+        sketch.colorMode(PConstants.ARGB);
+        sketch.background(0xFFFFFFEE);
+
         int i = 0;
         for (Platform platform : platforms) {
             platform.render();
-            if (state.debugging) sketch.text(i++, platform.pos.x, platform.pos.y);
+            if (state.debugging)
+                sketch.text(i++, platform.pos.x, platform.pos.y);
         }
+
+        sketch.shape(lines);
     }
 
 }

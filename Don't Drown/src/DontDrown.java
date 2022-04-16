@@ -49,7 +49,6 @@ public class DontDrown extends Sketcher {
         collisionDetector.detectCollisions();
 
         // draw
-        background(0xFFFFFFEE);
         level.render();
         pc.render();
         if (levelState.debugging)
