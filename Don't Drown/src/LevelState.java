@@ -27,19 +27,20 @@ public class LevelState {
 
     public float pcThrust;
     public float pcFriction;
+    public float pcMinSpeed; 
     public float[] stressHSBColour;
     public int framesPerResketch;
 
-    private float pcThrustDenominator = (float) ABS_MAX_STRESS - stressEffectThreshold;
-    private float pcFrictionDenominator = pcThrustDenominator * 2f;
+    private float pcThrustMultiplier;
+    private float pcFrictionMultiplier;
 
-    private float stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
+    private final float stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
 
-    private float stressHueMultiplier = (PlayerCharacter.PC_MAX_HUE - PlayerCharacter.PC_MIN_HUE)
+    private final float stressHueMultiplier = (PlayerCharacter.PC_MAX_HUE - PlayerCharacter.PC_MIN_HUE)
             / stressRange;
-    private float stressSatMultiplier = (PlayerCharacter.PC_MAX_SAT - PlayerCharacter.PC_MIN_SAT)
+    private final float stressSatMultiplier = (PlayerCharacter.PC_MAX_SAT - PlayerCharacter.PC_MIN_SAT)
             / stressRange;
-    private float stressLightMultiplier = (PlayerCharacter.PC_MAX_LIGHT - PlayerCharacter.PC_MIN_LIGHT)
+    private final float stressLightMultiplier = (PlayerCharacter.PC_MAX_LIGHT - PlayerCharacter.PC_MIN_LIGHT)
             / stressRange;
 
     private float strokeVariabilityMultiplier = (Sketcher.RSV_MAX - Sketcher.RSV_MIN) / stressRange;
@@ -50,21 +51,32 @@ public class LevelState {
         this.sketch = sketch;
     }
 
+    public void pcCalcs() {
+        this.pcThrustMultiplier = (sketch.pc.maxHorizontalThrust - sketch.pc.minHorizontalThrust) / stressRange;
+        this.pcFrictionMultiplier = (sketch.pc.maxHorizontalFriction - sketch.pc.minHorizontalFriction) / stressRange;
+    }
+
     private void pcThrust() {
+        int stressRating = stress - stressEffectThreshold;
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
-            pcThrust = sketch.pc.horizontalThrustDef * (1 + (stress - stressEffectThreshold) / pcThrustDenominator);
+            pcThrust = sketch.pc.minHorizontalThrust + stressRating * pcThrustMultiplier;
         } else {
-            pcThrust = sketch.pc.horizontalThrustDef;
+            pcThrust = sketch.pc.minHorizontalThrust;
         }
     }
 
     private void pcFriction() {
+        int stressRating = stress - stressEffectThreshold;
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
-            pcFriction = sketch.pc.horizontalFrictionDef
-                    * (1 - (stress - stressEffectThreshold) / pcFrictionDenominator);
+            pcFriction = sketch.pc.maxHorizontalFriction - stressRating * pcFrictionMultiplier;
+
         } else {
-            pcFriction = sketch.pc.horizontalFrictionDef;
+            pcFriction = sketch.pc.maxHorizontalFriction;
         }
+    }
+
+    private void pcMinSpeed() {
+        pcMinSpeed = pcFriction * PlayerCharacter.I_MASS * sketch.pc.incr;
     }
 
     private void stressHSBColour() {
@@ -104,6 +116,7 @@ public class LevelState {
         }
         pcThrust();
         pcFriction();
+        pcMinSpeed(); 
         stressHSBColour();
         sketchiness();
         oldStress = stress;

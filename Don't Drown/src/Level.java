@@ -86,7 +86,7 @@ public class Level {
                 if (Math.abs(diffX) < 2 * Math.max(nextPlatform.width, currentPlatform.width)) {
                     // nextPlatform horizontally overlaps with currentPlatform
                     // therefore it should be between a half jump and a full jump higher
-                    diffY = jumpHeight * sketch.random(0.5f, 1f);
+                    diffY = jumpHeight * sketch.random(0.75f, 1f);
                 } else if (diffX <= (jumpRange / 2)) {
                     // nextPlatform is within jump peak distance
                     // therefore it can be up to jump height above the current platform, and
@@ -138,7 +138,7 @@ public class Level {
         int i = 0;
         for (Platform platform : platforms) {
             platform.render();
-            sketch.text(i++, platform.pos.x, platform.pos.y);
+            if (state.debugging) sketch.text(i++, platform.pos.x, platform.pos.y);
         }
     }
 

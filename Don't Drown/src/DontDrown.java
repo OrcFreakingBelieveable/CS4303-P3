@@ -27,6 +27,7 @@ public class DontDrown extends Sketcher {
         size(WIDTH, HEIGHT);
         levelState = new LevelState(this);
         pc = new PlayerCharacter(this);
+        levelState.pcCalcs();
         debugOverlay = new DebugOverlay(this);
         scoreOverlay = new ScoreOverlay(this);
         newLevel();
@@ -84,6 +85,16 @@ public class DontDrown extends Sketcher {
                     break;
                 case ' ':
                     newLevel();
+                    break;
+                case 'f':
+                case 'F':
+                    if (frameRate > 40) {
+                        frameRate(30);
+                    } else if (frameRate > 20) {
+                        frameRate(10);
+                    } else {
+                        frameRate(60);
+                    }
                     break;
                 default:
                     if (Character.isDigit(key)) {

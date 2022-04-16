@@ -5,16 +5,25 @@ public class PlayerCharacter extends AbstractDrawable {
 
     private static final float PC_DIAMETER_DIV = 40f;
     private static final float PC_INCR_DIV = 100f;
-    private static final int PC_DEF_ACC_TIME = 5; // frames to max speed from stop
-    private static final int PC_DEF_DEC_TIME = 6; // frames to stop from max speed
-    private static final float PC_MAX_SPEED_MULT = 0.05f;
-    private static final float PC_DRAG_FACTOR = 0.1f; // horizontal drag when mid-air
-    private static final float PC_JUMP_IMPULSE = 15f;
-    private static final float PC_BOUNCE_MULT = 0.75f; // coefficient of restitution for horizontal collision
-    private static final int PC_HANG_TIME_DEF = 2; // frames; default hang time
-    private static final int PC_BOUNCE_REMEMBER = 5; // frames; frames before touching the ground for a jump to work
-    private static final int PC_COYOTE_TIME = 5; // frames to jump after end of platform
 
+    // horizontal movement
+    private static final int PC_MIN_ACC_TIME = 5; // frames to max speed from stop
+    private static final int PC_MAX_ACC_TIME = 25; // frames to max speed from stop
+    private static final int PC_MIN_DEC_TIME = 5; // frames to stop from max speed
+    private static final int PC_MAX_DEC_TIME = 20; // frames to stop from max speed
+    private static final float PC_MAX_SPEED_MULT = 0.6f; // incr per frame
+    private static final float PC_DRAG_FACTOR = 0.05f; // horizontal drag when mid-air
+
+    // vertical movement
+    private static final float PC_JUMP_IMPULSE = 12.5f;
+    private static final float PC_RISING_GRAVITY = 0.5f;
+    private static final float PC_FALLING_GRAVITY = 0.7f;
+    private static final float PC_BOUNCE_MULT = 0.75f; // coefficient of restitution for horizontal collision
+    private static final int PC_HANG_TIME_DEF = 3; // frames of (default) hang time
+    private static final int PC_BOUNCE_REMEMBER = 5; // frames before landing on a platform for a jump to work
+    private static final int PC_COYOTE_TIME = 5; // frames to jump after falling off the end of a platform
+
+    // rendering
     public static final float PC_MIN_HUE = 280f;
     public static final float PC_MAX_HUE = 360f;
     public static final float PC_MIN_SAT = 0.2f;
@@ -23,7 +32,7 @@ public class PlayerCharacter extends AbstractDrawable {
     public static final float PC_MAX_LIGHT = 0.9f;
 
     public final float incr; // movement increment
-    private final float maxSpeed; // max horizontal speed, in incr per frame
+    public final float maxSpeed; // max horizontal speed, in incr per frame
 
     public PVector vel; // velocity, in incr per frame
     public float diameter;
@@ -34,21 +43,22 @@ public class PlayerCharacter extends AbstractDrawable {
     public final int riseFrames; // time taken to reach peak of jump
     public final int fallFrames; // time taken to return to ground after peak
     public final int jumpFrames; // total time taken to return to ground after jump
-    private final float jumpRangeIncr; // max horizontal distance travelled in a jump, in incr
     private final float jumpHeightIncr; // vertical jump height at peak, in incr
     public final float jumpRange; // max horizontal distance travelled in a jump, in pixels
     public final float jumpHeight; // vertical jump height at peak, in pixels
 
     // horizontal movement
-    public final float horizontalThrustDef; // default thrust
-    public final float horizontalFrictionDef; // default friction force
+    public final float minHorizontalThrust; // default thrust
+    public final float maxHorizontalThrust; // default thrust
+    public final float minHorizontalFriction; // default friction force
+    public final float maxHorizontalFriction; // default friction force
     private SteerState steerState = SteerState.NEITHER;
+    private MoveState moveState = MoveState.AT_REST;
     public boolean steerSinceLand = false;
-    public boolean movingHorizontally = false;
 
     // force resolution
     private PVector resultant = new PVector();
-    private float iWeight = 1 / 15f; // inverse weight
+    public static final float I_MASS = 1 / 15f; // inverse mass
 
     // frame counters
     private int jumpMemoryCounter = 0; // trying to jump just before hitting the ground
@@ -57,9 +67,9 @@ public class PlayerCharacter extends AbstractDrawable {
 
     public enum FallState {
         ON_SURFACE(0f),
-        RISING(0.5f),
+        RISING(PC_RISING_GRAVITY),
         HANG_TIME(0f),
-        FALLING(0.7f);
+        FALLING(PC_FALLING_GRAVITY);
 
         final float gravity;
 
@@ -74,15 +84,25 @@ public class PlayerCharacter extends AbstractDrawable {
         NEITHER;
     }
 
+    public enum MoveState {
+        AT_REST,
+        ACCELERATING, // deceleration is acceleration against current velocity
+        MAX_SPEED;
+    }
+
     public SteerState getSteerState() {
         return steerState;
+    }
+
+    public MoveState getMoveState() {
+        return moveState;
     }
 
     private int riseFrames() {
         // v = 0 = u + at -> t = - u/a
         // underestimating / ignoring drag
-        float u = (PC_JUMP_IMPULSE - FallState.RISING.gravity) * iWeight;
-        float a = FallState.RISING.gravity * iWeight;
+        float u = (PC_JUMP_IMPULSE - FallState.RISING.gravity) * I_MASS;
+        float a = FallState.RISING.gravity * I_MASS;
         return (int) Math.floor(u / a);
     }
 
@@ -93,9 +113,9 @@ public class PlayerCharacter extends AbstractDrawable {
         // t = riseFrames (frames)
         // a = - (rising.gravity * iWeight) (underestimating / ignoring drag)
         // ... (incr per frame^2)
-        float u = (PC_JUMP_IMPULSE - FallState.RISING.gravity) * iWeight; // incr per frame
+        float u = (PC_JUMP_IMPULSE - FallState.RISING.gravity) * I_MASS; // incr per frame
         return (float) ((u * riseFrames) +
-                (0.5f * -(FallState.RISING.gravity * iWeight) *
+                (0.5f * -(FallState.RISING.gravity * I_MASS) *
                         Math.pow(riseFrames, 2)));
     }
 
@@ -106,7 +126,7 @@ public class PlayerCharacter extends AbstractDrawable {
         // t = ? (frames)
         // a = falling.gravity * iWeight (underestimating / ignoring drag) (incr per
         // ... frame^2)
-        return (int) Math.floor(Utils.solveQuadratic(-FallState.FALLING.gravity * iWeight / 2, 0, jumpHeightIncr));
+        return (int) Math.floor(Utils.solveQuadratic(-FallState.FALLING.gravity * I_MASS / 2, 0, jumpHeightIncr));
     }
 
     private float jumpRange() {
@@ -126,17 +146,35 @@ public class PlayerCharacter extends AbstractDrawable {
 
         this.incr = sketch.width / PC_INCR_DIV;
         this.maxSpeed = incr * PC_MAX_SPEED_MULT;
-        this.horizontalThrustDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_ACC_TIME, 2)) / iWeight;
-        this.horizontalFrictionDef = (float) ((2 * maxSpeed) / Math.pow(PC_DEF_DEC_TIME, 2)) / iWeight;
+        this.minHorizontalFriction = (maxSpeed / PC_MAX_DEC_TIME);
+        this.maxHorizontalFriction = (maxSpeed / PC_MIN_DEC_TIME);
+        this.minHorizontalThrust = maxHorizontalFriction + (maxSpeed / PC_MAX_ACC_TIME);
+        this.maxHorizontalThrust = minHorizontalFriction + (maxSpeed / PC_MIN_ACC_TIME);
 
         this.riseFrames = riseFrames();
         this.jumpHeightIncr = jumpHeight();
         this.jumpHeight = incr * jumpHeightIncr;
         this.fallFrames = fallFrames();
         this.jumpFrames = riseFrames + PC_HANG_TIME_DEF + fallFrames;
-        this.jumpRangeIncr = jumpRange();
-        this.jumpRange = jumpRangeIncr * incr;
-        System.out.println("");
+        this.jumpRange = jumpRange();
+    }
+
+    private void applyHorizontalDrag() {
+        // horizontally deccelerate, dependent upon surface/air
+        if (fallState.equals(FallState.ON_SURFACE)) {
+            resultant.x += state.pcFriction * (vel.x < 0 ? 1 : -1);
+        } else {
+            resultant.x += PC_DRAG_FACTOR * (vel.x < 0 ? 1 : -1);
+        }
+    }
+
+    private void checkAtHorizontalRest() {
+        if (fallState.equals(FallState.ON_SURFACE) && steerState.equals(SteerState.NEITHER)
+                && Math.abs(vel.x) < state.pcMinSpeed) {
+            vel.x = 0;
+            moveState = MoveState.AT_REST;
+
+        }
     }
 
     private void updateVelocity() {
@@ -144,40 +182,52 @@ public class PlayerCharacter extends AbstractDrawable {
         resultant.y += fallState.gravity;
 
         // check if at horizontal rest
-        if (fallState.equals(FallState.ON_SURFACE) && steerState.equals(SteerState.NEITHER)
-                && Math.abs(vel.x) < horizontalFrictionDef / 2) {
-            vel.x = 0;
-            movingHorizontally = false;
+        if (!moveState.equals(MoveState.AT_REST)) {
+            checkAtHorizontalRest();
         }
 
         /// apply horizontal steering
-        if (movingHorizontally) {
-            switch (steerState) {
-                case LEFT:
-                    // accelerate left if not at max speed
-                    if (vel.x >= -maxSpeed) {
-                        resultant.x = -state.pcThrust;
-                    } else {
-                        vel.x = -maxSpeed;
-                    }
-                    break;
-                case RIGHT:
-                    // accelerate right if not at max speed
-                    if (vel.x <= maxSpeed) {
-                        resultant.x = state.pcThrust;
-                    } else {
-                        vel.x = maxSpeed;
-                    }
-                    break;
-                case NEITHER:
-                    // horizontally deccelerate, dependent upon surface/air
-                    if (fallState.equals(FallState.ON_SURFACE)) {
-                        resultant.x = -(vel.x / Math.abs(vel.x)) * state.pcFriction;
-                    } else {
-                        resultant.x = -(vel.x / Math.abs(vel.x)) * PC_DRAG_FACTOR;
-                    }
-                    break;
-            }
+        switch (moveState) {
+            case AT_REST:
+                // do nothing
+                break;
+            case MAX_SPEED:
+                // if still steering into it, do nothing
+                // else, decelerate
+                if (vel.x > 0 && steerState.equals(SteerState.RIGHT)
+                        || vel.x < 0 && steerState.equals(SteerState.LEFT)) {
+                    // do nothing
+                } else {
+                    moveState = MoveState.ACCELERATING;
+                }
+                break;
+            case ACCELERATING:
+                switch (steerState) {
+                    case LEFT:
+                        // accelerate left if not at max speed
+                        if (vel.x > -maxSpeed) {
+                            resultant.x = -state.pcThrust;
+                            applyHorizontalDrag();
+                        } else {
+                            vel.x = -maxSpeed;
+                            moveState = MoveState.MAX_SPEED;
+                        }
+                        break;
+                    case RIGHT:
+                        // accelerate right if not at max speed
+                        if (vel.x < maxSpeed) {
+                            resultant.x = state.pcThrust;
+                            applyHorizontalDrag();
+                        } else {
+                            vel.x = maxSpeed;
+                            moveState = MoveState.MAX_SPEED;
+                        }
+                        break;
+                    case NEITHER:
+                        applyHorizontalDrag();
+                        break;
+                }
+                break;
         }
 
         // attempt to jump
@@ -188,7 +238,7 @@ public class PlayerCharacter extends AbstractDrawable {
         coyoteCounter--;
 
         // calulate acceleration and velocity
-        PVector acc = resultant.mult(iWeight);
+        PVector acc = resultant.mult(I_MASS).mult(incr);
         vel.add(acc);
 
         // check if peak of jump (i.e. start of hang time) reached
@@ -207,10 +257,7 @@ public class PlayerCharacter extends AbstractDrawable {
 
     public void integrate() {
         updateVelocity();
-        pos.add(vel.copy().mult(incr));
-        if (pos.x == Float.NaN || pos.x < 0 || pos.x > sketch.width) {
-            pos.x = oldPos.x; // TODO find out why this happens
-        }
+        pos.add(vel);
         if (pos.x - diameter / 2 <= 0) {
             pos.x = 0 + diameter / 2;
             vel.x = Math.abs(vel.x) * PC_BOUNCE_MULT;
@@ -246,10 +293,17 @@ public class PlayerCharacter extends AbstractDrawable {
         }
     }
 
-    public void fall() {
-        if (!steerSinceLand) {
-            // stop the player from sliding off the edge of a platform when they land
-            vel.x = -vel.x;
+    private void fall(boolean fall) {
+        if (!fall) {
+            // stop the player from sliding off the edge of a platform
+            this.steer(SteerState.NEITHER);
+            if (surface != null) {
+                // turn away from nearest edge
+                vel.x = Math.abs(vel.x * PC_BOUNCE_MULT) * (pos.x < surface.pos.x + surface.width / 2 ? 1 : -1);
+            } else {
+                // turn around
+                vel.x = -vel.x * PC_BOUNCE_MULT;
+            }
         } else {
             if (surface != null)
                 surface.supportingPC = false;
@@ -259,12 +313,23 @@ public class PlayerCharacter extends AbstractDrawable {
         }
     }
 
+    public void fall() {
+        if (!steerSinceLand
+                || vel.x < 0 && steerState.equals(SteerState.RIGHT)
+                || vel.x > 0 && steerState.equals(SteerState.LEFT)) {
+            fall(false);
+        } else {
+            fall(true);
+        }
+    }
+
     public void steer(SteerState direction) {
-        this.steerState = direction;
-        if (direction != SteerState.NEITHER) {
-            movingHorizontally = true;
-            steerSinceLand = true;
+        if (!direction.equals(steerState)) {
+            moveState = MoveState.ACCELERATING;
+            this.steerState = direction;
         } // else leave as it was
+        if (!direction.equals(SteerState.NEITHER))
+            steerSinceLand = true;
     }
 
     public void reset(float x, float y) {
@@ -275,9 +340,9 @@ public class PlayerCharacter extends AbstractDrawable {
         this.vel.x = 0;
         this.vel.y = 0;
         this.steer(SteerState.NEITHER);
-        this.movingHorizontally = false;
+        moveState = MoveState.AT_REST;
         this.steerSinceLand = true;
-        this.fall();
+        this.fall(true);
         if (this.token != null) {
             this.generateToken();
         }

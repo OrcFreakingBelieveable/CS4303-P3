@@ -20,11 +20,14 @@ public class DebugOverlay {
         content.append("fps: " + Math.round(sketch.frameRate) + "\n");
         content.append("pos: " + sketch.pc.pos + "\n");
         content.append("incr: " + sketch.pc.incr + "\n");
+        content.append("maxSpeed: " + sketch.pc.maxSpeed + "\n");
         content.append("horizontal velocity: " + sketch.pc.vel.x + "\n");
         content.append("vertical velocity: " + sketch.pc.vel.y + "\n");
+        content.append("pcThrust: " + sketch.levelState.pcThrust + "\n");
+        content.append("pcFriction: " + sketch.levelState.pcFriction + "\n");
         content.append("fallState: " + sketch.pc.fallState + "\n");
         content.append("steerState: " + sketch.pc.getSteerState() + "\n");
-        content.append("movingHorizontally: " + sketch.pc.movingHorizontally + "\n");
+        content.append("moveState: " + sketch.pc.getMoveState() + "\n");
         content.append("stress: " + sketch.levelState.stress + "\n");
         content.append("framesPerResketch: " + sketch.levelState.framesPerResketch + "\n");
         content.append("roughStrokeVariability: " + sketch.roughStrokeVariabilityRate + "\n");
