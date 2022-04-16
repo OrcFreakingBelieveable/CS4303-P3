@@ -18,9 +18,8 @@ public class DontDrown extends Sketcher {
 
     private void newLevel() {
         level = new Level(this, HEIGHT, true);
-        Platform ground = level.platforms.get(0); 
-        pc.pos.x = ground.pos.x + ground.width/2;
-        pc.pos.y =  ground.pos.y - pc.diameter;
+        Platform ground = level.platforms.get(0);
+        pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - pc.diameter);
     }
 
     @Override
@@ -42,7 +41,7 @@ public class DontDrown extends Sketcher {
         levelState.update();
         pc.integrate();
         if (pc.pos.y > height) {
-            pc.pos.y = height - pc.diameter; 
+            pc.pos.y = height - pc.diameter;
         }
 
         // detect collisions
@@ -50,7 +49,7 @@ public class DontDrown extends Sketcher {
 
         // draw
         background(0xFFFFFFEE);
-        level.render(); 
+        level.render();
         pc.render();
         if (levelState.debugging)
             debugOverlay.render();

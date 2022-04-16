@@ -170,7 +170,7 @@ public class PlayerCharacter extends AbstractDrawable {
                     }
                     break;
                 case NEITHER:
-                    // horizontally deccelerate if on a surface
+                    // horizontally deccelerate, dependent upon surface/air
                     if (fallState.equals(FallState.ON_SURFACE)) {
                         resultant.x = -(vel.x / Math.abs(vel.x)) * state.pcFriction;
                     } else {
@@ -208,7 +208,7 @@ public class PlayerCharacter extends AbstractDrawable {
     public void integrate() {
         updateVelocity();
         pos.add(vel.copy().mult(incr));
-        if (pos.x == Float.NaN) {
+        if (pos.x == Float.NaN || pos.x < 0 || pos.x > sketch.width) {
             pos.x = oldPos.x; // TODO find out why this happens
         }
         if (pos.x - diameter / 2 <= 0) {
@@ -267,7 +267,24 @@ public class PlayerCharacter extends AbstractDrawable {
         } // else leave as it was
     }
 
+    public void reset(float x, float y) {
+        this.oldPos.x = x;
+        this.oldPos.y = y;
+        this.pos.x = x;
+        this.pos.y = y;
+        this.vel.x = 0;
+        this.vel.y = 0;
+        this.steer(SteerState.NEITHER);
+        this.movingHorizontally = false;
+        this.steerSinceLand = true;
+        this.fall();
+        if (this.token != null) {
+            this.generateToken();
+        }
+    }
+
     protected void generateToken() {
+        sketch.colorMode(PConstants.HSB, 360f, 1f, 1f);
         int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2]);
         int strokeColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1],
                 state.stressHSBColour[2] - PC_MIN_LIGHT / 2);
@@ -277,7 +294,6 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     public void render() {
-        sketch.colorMode(PConstants.HSB, 360f, 1f, 1f);
         sketch.roughStrokeWeight = sketch.RSW_DEF;
 
         if (token == null || frameCounter++ % state.framesPerResketch == 0
@@ -290,7 +306,6 @@ public class PlayerCharacter extends AbstractDrawable {
 
         oldPos = pos.copy();
         sketch.shape(token);
-        sketch.colorMode(PConstants.RGB, 255, 255, 255);
 
     }
 }

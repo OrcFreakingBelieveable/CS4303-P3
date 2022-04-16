@@ -35,6 +35,7 @@ public class Level {
         float jumpRange = sketch.pc.jumpRange;
         float jumpHeight = sketch.pc.jumpHeight;
         float fallGradient = -jumpHeight / (jumpRange / 2); // approximates the curve of the fall of the jump
+        int stuckCount = 0;
 
         if (hasGround) {
             currentPlatform = new Platform(sketch, 0, lowestPlatformHeight, width);
@@ -44,18 +45,25 @@ public class Level {
             platforms.add(currentPlatform);
         }
 
-        while (currentPlatform.pos.y > highestPlatformHeight) {
+        while (currentPlatform.pos.y > highestPlatformHeight && stuckCount < 3) {
             Platform nextPlatform = new Platform(sketch, 0, 0);
-            boolean goingLeft = sketch.random(0, 1) < currentPlatform.pos.x / (width - currentPlatform.width);
-            float diffX = goingLeft ? sketch.random(-jumpRange, 0) : sketch.random(0, jumpRange - nextPlatform.width);
+            boolean goingLeft;
+            float diffX;
             float diffY;
+            if (currentPlatform.width == width) {
+                goingLeft = false;
+                diffX = sketch.random(0, width - nextPlatform.width);
+            } else {
+                goingLeft = sketch.random(0, 1) < currentPlatform.pos.x / (width - currentPlatform.width);
+                diffX = goingLeft ? sketch.random(-jumpRange, 0) : sketch.random(0, jumpRange - nextPlatform.width);
+            }
 
             if (goingLeft) {
                 // TODO prevent overlapping platforms
-                if (diffX >= -nextPlatform.width) {
+                if (Math.abs(diffX) < 2 * Math.max(nextPlatform.width, currentPlatform.width)) {
                     // nextPlatform horizontally overlaps with currentPlatform
                     // therefore it should be between a half jump and a full jump higher
-                    diffY = jumpHeight * sketch.random(0.5f, 1f);
+                    diffY = jumpHeight * sketch.random(0.75f, 1f);
                     // TODO find out why this doesn't work
                 } else if (diffX >= -(jumpRange / 2)) {
                     // nextPlatform is within jump peak distance
@@ -75,7 +83,7 @@ public class Level {
                 }
             } else {
                 // TODO review if platform width needs to be reconsidered here
-                if (diffX <= currentPlatform.width) {
+                if (Math.abs(diffX) < 2 * Math.max(nextPlatform.width, currentPlatform.width)) {
                     // nextPlatform horizontally overlaps with currentPlatform
                     // therefore it should be between a half jump and a full jump higher
                     diffY = jumpHeight * sketch.random(0.5f, 1f);
@@ -101,9 +109,24 @@ public class Level {
             x = Math.min(x, width - nextPlatform.width);
             float y = Math.min(height - nextPlatform.height, currentPlatform.pos.y - diffY);
             y = Math.max(highestPlatformHeight, y);
-            nextPlatform.pos = new PVector(x, y);
-            currentPlatform = nextPlatform;
-            platforms.add(currentPlatform);
+
+            boolean overlapping = false;
+
+            for (Platform platform : platforms) {
+                if (Math.abs(x - platform.pos.x) < 2 * Math.max(nextPlatform.width, platform.width)
+                        && Math.abs(y - platform.pos.y) < jumpHeight / 2) {
+                    overlapping = true;
+                }
+            }
+
+            if (!overlapping) {
+                nextPlatform.pos = new PVector(x, y);
+                currentPlatform = nextPlatform;
+                platforms.add(currentPlatform);
+                stuckCount = 0;
+            } else {
+                stuckCount++;
+            }
         }
     }
 
