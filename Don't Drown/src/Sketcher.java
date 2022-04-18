@@ -8,7 +8,7 @@ public abstract class Sketcher extends PApplet {
     public static final float RSW_DEF_DIV = 500f; 
     public float RSW_DEF;
     public static final float RSV_MIN = 0.15f;
-    public static final float RSV_MAX = 0.5f;
+    public static final float RSV_MAX = 0.6f;
     public static final int RSS_MIN = 1;
     public static final int RSS_MAX = 5;
 
@@ -42,7 +42,7 @@ public abstract class Sketcher extends PApplet {
         roughLine.beginShape();
         roughLine.vertex(topLeft.x, topLeft.y); // top left corner
 
-        int sections = (int) random(0, 3);
+        int sections = (int) random(0, roughStrokeShakiness);
         PVector section = topLeft.copy();
         PVector direction = (topRight.copy().sub(topLeft)).normalize();
         for (int i = 0; i < sections; i++) {
@@ -54,7 +54,7 @@ public abstract class Sketcher extends PApplet {
         roughLine.vertex(topRight.x, topRight.y);
         roughLine.vertex(bottomRight.x, bottomRight.y);
 
-        sections = (int) random(0, 3);
+        sections = (int) random(0, roughStrokeShakiness);
         section = bottomRight.copy();
         direction = (bottomLeft.copy().sub(bottomRight)).normalize();
         for (int i = 0; i < sections; i++) {
