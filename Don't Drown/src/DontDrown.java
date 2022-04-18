@@ -17,7 +17,7 @@ public class DontDrown extends Sketcher {
     }
 
     private void newLevel() {
-        level = new Level(this, HEIGHT, true);
+        level = new Level(this, HEIGHT * 2, true);
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - pc.diameter);
     }
@@ -41,12 +41,19 @@ public class DontDrown extends Sketcher {
         // update positions
         levelState.update();
         pc.integrate();
-        if (pc.pos.y > height) {
-            pc.pos.y = height - pc.diameter;
-        }
+        level.integrate();
 
         // detect collisions
         collisionDetector.detectCollisions();
+
+        // check if panning needed 
+        if (pc.pos.y < scoreOverlay.height + pc.jumpHeight) {
+            level.panningState = Level.PanningState.UP; 
+        } else if (pc.pos.y > height - (scoreOverlay.height + pc.jumpHeight)) {
+            level.panningState = Level.PanningState.DOWN; 
+        } else {
+            level.panningState = Level.PanningState.NEITHER; 
+        }
 
         // draw
         level.render();
@@ -94,6 +101,15 @@ public class DontDrown extends Sketcher {
                     } else {
                         frameRate(60);
                     }
+                    break;
+                case ',':
+                    level.panningState = Level.PanningState.DOWN;
+                    break;
+                case '.':
+                    level.panningState = Level.PanningState.NEITHER;
+                    break;
+                case '/':
+                    level.panningState = Level.PanningState.UP;
                     break;
                 default:
                     if (Character.isDigit(key)) {

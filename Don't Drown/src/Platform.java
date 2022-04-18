@@ -49,8 +49,10 @@ public class Platform extends AbstractDrawable {
         sketch.colorMode(PConstants.RGB, 255, 255, 255);
         sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-        if (token == null || frameCounter++ % state.framesPerResketch == 0
-                || Math.abs(state.stress - state.oldStress) > 5) {
+        if (token == null ||
+                (pos.y <= sketch.height && pos.y >= height) // only re-sketch on-screen platforms
+                        && (frameCounter++ % state.framesPerResketch == 0
+                                || Math.abs(state.stress - state.oldStress) > 5)) {
             generateToken();
         } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
             PVector movement = pos.copy().sub(oldPos);

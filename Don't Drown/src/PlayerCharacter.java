@@ -19,6 +19,7 @@ public class PlayerCharacter extends AbstractDrawable {
     private static final float PC_JUMP_IMPULSE = 12.5f;
     private static final float PC_RISING_GRAVITY = 0.5f;
     private static final float PC_FALLING_GRAVITY = 0.7f;
+    private static final float PC_FALLING_DRAG_FACTOR = 0.025f; // vertical drag multiplier when falling
     private static final float PC_BOUNCE_MULT = 0.75f; // coefficient of restitution for horizontal collision
     private static final int PC_HANG_TIME_DEF = 3; // frames of (default) hang time
     private static final int PC_BOUNCE_REMEMBER = 5; // frames before landing on a platform for a jump to work
@@ -209,7 +210,7 @@ public class PlayerCharacter extends AbstractDrawable {
             moveState = MoveState.AT_REST;
         }
 
-        // if at max speed, check if max speed should be maintained
+        // if at max horizontal speed, check if max speed should be maintained
         if (moveState.equals(MoveState.MAX_SPEED)) {
             if (vel.x > 0 && steerState.equals(SteerState.RIGHT)
                     || vel.x < 0 && steerState.equals(SteerState.LEFT)) {
@@ -237,7 +238,10 @@ public class PlayerCharacter extends AbstractDrawable {
         } else if (fallState.equals(FallState.HANG_TIME) && hangCounter++ >= PC_HANG_TIME_DEF) {
             // check if end of hang time reached
             fallState = FallState.FALLING;
+        } else if (fallState.equals(FallState.FALLING)) {
+            vel.y -= vel.y * PC_FALLING_DRAG_FACTOR; 
         }
+
 
         // reset resultant force
         resultant = new PVector();

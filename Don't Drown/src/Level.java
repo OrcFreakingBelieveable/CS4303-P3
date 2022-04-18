@@ -9,21 +9,34 @@ public class Level {
     private static final int LINE_COLOUR = 0x88666666;
     private static final int MARGIN_COLOUR = 0x88B85450;
     public static final int MARGIN_DIV = 10;
+    public static final float PAN_RATE_DIV = PlayerCharacter.PC_DIAMETER_DIV * 10f;
 
     private final DontDrown sketch;
     private final LevelState state;
 
+    public final float panRate;
     public final int height;
-    public final int lowestPlatformHeight;
-    public final int highestPlatformHeight;
+    public final int topLimit;
+    public final float lowestPlatformHeight;
+    public final float highestPlatformHeight;
     public final float playableWidth;
     public final float marginX;
 
-    private int viewportHeight; // the y origin (top) of the viewport relative to the level
+    public enum PanningState {
+        UP,
+        DOWN,
+        NEITHER;
+    }
 
+    private float viewportHeight; // the y origin (top) of the viewport relative to the level
+
+    public PanningState panningState = PanningState.NEITHER;
+
+    public float top;
     public PShape lines = null;
     public Token[] tokens;
     public ArrayList<Platform> platforms = new ArrayList<>();
+    public Platform highestPlatform;
     public float waveHeight;
 
     public Level(DontDrown sketch, int height, boolean hasGround) {
@@ -32,10 +45,13 @@ public class Level {
         this.height = height;
         this.viewportHeight = sketch.height;
         this.lowestPlatformHeight = 9 * viewportHeight / 10;
-        this.highestPlatformHeight = viewportHeight / 8;
+        topLimit = sketch.height - height;
+        top = topLimit;
+        this.highestPlatformHeight = topLimit + viewportHeight / 10 + sketch.scoreOverlay.height;
         this.marginX = (float) sketch.width / MARGIN_DIV;
         this.playableWidth = sketch.width - marginX;
         waveHeight = height;
+        panRate = height / PAN_RATE_DIV;
         generatePlatformsAndTokens(hasGround, 0.5f);
     }
 
@@ -59,11 +75,13 @@ public class Level {
 
     private void generateLines() {
         lines = sketch.createShape(PConstants.GROUP);
-        final float lineGap = PlayerCharacter.PC_DIAMETER_DIV; 
-        for (int i = 1; i <= playableWidth / lineGap; i++) {
-            lines.addChild(drawLine(new PVector(0, i * lineGap), new PVector(sketch.width, i * lineGap), 1, LINE_COLOUR));
+        final float lineGap = PlayerCharacter.PC_DIAMETER_DIV;
+        for (int i = 1; i <= height / lineGap; i++) {
+            lines.addChild(
+                    drawLine(new PVector(0, topLimit + i * lineGap), new PVector(sketch.width, topLimit + i * lineGap),
+                            1, LINE_COLOUR));
         }
-        lines.addChild(drawLine(new PVector(marginX, 0), new PVector(marginX, height), 1, MARGIN_COLOUR)); 
+        lines.addChild(drawLine(new PVector(marginX, topLimit), new PVector(marginX, height), 1, MARGIN_COLOUR));
     }
 
     private void generatePlatformsAndTokens(boolean hasGround, float goBackPercentage) {
@@ -81,64 +99,39 @@ public class Level {
             platforms.add(currentPlatform);
         }
 
+        highestPlatform = currentPlatform;
+
         while (currentPlatform.pos.y > highestPlatformHeight && stuckCount < 3) {
             Platform nextPlatform = new Platform(sketch, 0, 0);
-            boolean goingLeft;
             float diffX;
             float diffY;
+
             if (currentPlatform.width == playableWidth) {
-                goingLeft = false;
                 diffX = sketch.random(0, playableWidth - nextPlatform.width);
             } else {
-                goingLeft = sketch.random(0, 1) < currentPlatform.pos.x / (playableWidth - currentPlatform.width);
+                boolean goingLeft = sketch.random(0, 1) < currentPlatform.pos.x / (playableWidth - currentPlatform.width);
                 diffX = goingLeft ? sketch.random(-jumpRange, 0) : sketch.random(0, jumpRange - nextPlatform.width);
             }
 
-            if (goingLeft) {
-                // TODO prevent overlapping platforms
-                if (Math.abs(diffX) < 2 * Math.max(nextPlatform.width, currentPlatform.width)) {
-                    // nextPlatform horizontally overlaps with currentPlatform
-                    // therefore it should be between a half jump and a full jump higher
-                    diffY = jumpHeight * sketch.random(0.75f, 1f);
-                    // TODO find out why this doesn't work
-                } else if (diffX >= -(jumpRange / 2)) {
-                    // nextPlatform is within jump peak distance
-                    // therefore it can be up to jump height above the current platform, and
-                    // ... anywhere below it
-                    diffY = sketch.random(0f, 1f) < goBackPercentage
-                            ? sketch.random(currentPlatform.pos.y - lowestPlatformHeight, 0)
-                            : jumpHeight * sketch.random(0f, 1f);
-                } else {
-                    // nextPlatform is beyond peak jump distance
-                    // therefore it is either below the currentPlatform, or at a height dependent
-                    // .. upon horizontal displacement
-                    float maxDiffY = jumpHeight - fallGradient * (diffX + jumpRange / 2);
-                    diffY = sketch.random(0f, 1f) < goBackPercentage
-                            ? sketch.random(currentPlatform.pos.y - lowestPlatformHeight, 0)
-                            : maxDiffY * sketch.random(0f, 1f);
-                }
+            if (Math.abs(diffX) < 2 * Math.max(nextPlatform.width, currentPlatform.width)) {
+                // nextPlatform horizontally overlaps with currentPlatform
+                // therefore it should be between a half jump and a full jump higher
+                diffY = jumpHeight * sketch.random(0.75f, 1f);
+            } else if (diffX <= (jumpRange / 2)) {
+                // nextPlatform is within jump peak distance
+                // therefore it can be up to jump height above the current platform, and
+                // ... anywhere below it
+                diffY = sketch.random(0f, 1f) < goBackPercentage
+                        ? sketch.random(currentPlatform.pos.y - lowestPlatformHeight, 0)
+                        : jumpHeight * sketch.random(0f, 1f);
             } else {
-                // TODO review if platform width needs to be reconsidered here
-                if (Math.abs(diffX) < 2 * Math.max(nextPlatform.width, currentPlatform.width)) {
-                    // nextPlatform horizontally overlaps with currentPlatform
-                    // therefore it should be between a half jump and a full jump higher
-                    diffY = jumpHeight * sketch.random(0.75f, 1f);
-                } else if (diffX <= (jumpRange / 2)) {
-                    // nextPlatform is within jump peak distance
-                    // therefore it can be up to jump height above the current platform, and
-                    // ... anywhere below it
-                    diffY = sketch.random(0f, 1f) < goBackPercentage
-                            ? sketch.random(currentPlatform.pos.y - lowestPlatformHeight, 0)
-                            : jumpHeight * sketch.random(0f, 1f);
-                } else {
-                    // nextPlatform is beyond peak jump distance
-                    // therefore it is either below the currentPlatform, or at a height dependent
-                    // .. upon horizontal displacement
-                    float maxDiffY = jumpHeight + fallGradient * (diffX - jumpRange / 2);
-                    diffY = sketch.random(0f, 1f) < goBackPercentage
-                            ? sketch.random(currentPlatform.pos.y - lowestPlatformHeight, 0)
-                            : maxDiffY * sketch.random(0f, 1f);
-                }
+                // nextPlatform is beyond peak jump distance
+                // therefore it is either below the currentPlatform, or at a height dependent
+                // .. upon horizontal displacement
+                float maxDiffY = jumpHeight - fallGradient * (diffX + jumpRange / 2);
+                diffY = sketch.random(0f, 1f) < goBackPercentage
+                        ? sketch.random(currentPlatform.pos.y - lowestPlatformHeight, 0)
+                        : maxDiffY * sketch.random(0f, 1f);
             }
 
             float x = Math.max(marginX, currentPlatform.pos.x + diffX);
@@ -160,6 +153,8 @@ public class Level {
                 currentPlatform = nextPlatform;
                 platforms.add(currentPlatform);
                 stuckCount = 0;
+                if (currentPlatform.pos.y < highestPlatform.pos.y)
+                    highestPlatform = currentPlatform;
             } else {
                 stuckCount++;
             }
@@ -167,7 +162,30 @@ public class Level {
     }
 
     public void integrate() {
+        if (panningState.equals(PanningState.UP)) {
+            if (top + panRate >= 0f) {
+                pan(0f - top);
+                panningState = PanningState.NEITHER;
+            } else {
+                pan(Math.max(panRate, Math.abs(sketch.pc.vel.y)));
+            }
+        } else if (panningState.equals(PanningState.DOWN)) {
+            if (top - panRate <= topLimit) {
+                pan(topLimit - top);
+                panningState = PanningState.NEITHER;
+            } else {
+                pan(-Math.max(panRate, Math.abs(sketch.pc.vel.y)));
+            }
+        }
+    }
 
+    private void pan(float y) {
+        top += y;
+        lines.translate(0, y);
+        for (Platform platform : platforms) {
+            platform.pan(y);
+        }
+        sketch.pc.pan(y);
     }
 
     public void render() {

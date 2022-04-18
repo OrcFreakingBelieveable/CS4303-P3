@@ -20,6 +20,10 @@ public abstract class AbstractDrawable {
         frameCounter = (int) (sketch.random(0,5)); 
     }
 
+    public void pan(float y) {
+        pos.y += y; 
+    }
+
     protected abstract void generateToken();
 
     public abstract void render();
