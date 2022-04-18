@@ -26,7 +26,7 @@ public class CollisionDetector {
 
             PVector dir = (pc.pos.copy().sub(pc.oldPos)).normalize();
             for (Platform platform : sortedPlatforms) {
-                float x;
+                float x; // used to stop the PC phasing through platforms when at high speed
 
                 if (dir.y != 0) {
                     if (dir.x < 0) {
@@ -53,6 +53,7 @@ public class CollisionDetector {
                                 && platform.pos.y > pc.pos.y) {
                     // collision
                     pc.land(platform);
+                    break;
                 } else {
                     // platform too far left, up, or down
                     // continue search
