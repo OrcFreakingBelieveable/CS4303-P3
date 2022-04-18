@@ -6,7 +6,7 @@ import processing.core.PVector;
 
 public class Level {
 
-    private static final int LINE_COLOUR = 0x88666666;
+    private static final int LINE_COLOUR = 0xFF666666;
     private static final int MARGIN_COLOUR = 0x88B85450;
     public static final int MARGIN_DIV = 10;
     public static final float PAN_RATE_DIV = PlayerCharacter.PC_DIAMETER_DIV * 10f;
@@ -75,7 +75,7 @@ public class Level {
 
     private void generateLines() {
         lines = sketch.createShape(PConstants.GROUP);
-        final float lineGap = PlayerCharacter.PC_DIAMETER_DIV;
+        final float lineGap = sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
         for (int i = 1; i <= height / lineGap; i++) {
             lines.addChild(
                     drawLine(new PVector(0, topLimit + i * lineGap), new PVector(sketch.width, topLimit + i * lineGap),
@@ -109,7 +109,7 @@ public class Level {
             if (currentPlatform.width == playableWidth) {
                 diffX = sketch.random(0, playableWidth - nextPlatform.width);
             } else {
-                boolean goingLeft = sketch.random(0, 1) < currentPlatform.pos.x / (playableWidth - currentPlatform.width);
+                boolean goingLeft = sketch.random(0f, 1f) < (currentPlatform.pos.x - marginX) / playableWidth;
                 diffX = goingLeft ? sketch.random(-jumpRange, 0) : sketch.random(0, jumpRange - nextPlatform.width);
             }
 
@@ -128,14 +128,14 @@ public class Level {
                 // nextPlatform is beyond peak jump distance
                 // therefore it is either below the currentPlatform, or at a height dependent
                 // .. upon horizontal displacement
-                float maxDiffY = jumpHeight - fallGradient * (diffX + jumpRange / 2);
+                float maxDiffY = jumpHeight + fallGradient * (Math.abs(diffX) + jumpRange / 2);
                 diffY = sketch.random(0f, 1f) < goBackPercentage
                         ? sketch.random(currentPlatform.pos.y - lowestPlatformHeight, 0)
                         : maxDiffY * sketch.random(0f, 1f);
             }
 
             float x = Math.max(marginX, currentPlatform.pos.x + diffX);
-            x = Math.min(x, playableWidth - nextPlatform.width);
+            x = Math.min(x, sketch.width - nextPlatform.width);
             float y = Math.min(height - nextPlatform.height, currentPlatform.pos.y - diffY);
             y = Math.max(highestPlatformHeight, y);
 
@@ -193,9 +193,10 @@ public class Level {
             generateLines();
         }
 
-        sketch.colorMode(PConstants.ARGB);
+        sketch.colorModeRGB();
         sketch.background(0xFFFFFFEE);
-
+        sketch.shape(lines);
+        
         int i = 0;
         for (Platform platform : platforms) {
             platform.render();
@@ -203,7 +204,6 @@ public class Level {
                 sketch.text(i++, platform.pos.x, platform.pos.y);
         }
 
-        sketch.shape(lines);
     }
 
 }
