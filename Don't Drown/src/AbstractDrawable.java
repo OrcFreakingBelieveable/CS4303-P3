@@ -2,9 +2,6 @@ import processing.core.PShape;
 import processing.core.PVector;
 
 public abstract class AbstractDrawable {
-    // TODO make all objects semi-transparent 
-    // TODO statically define my two colour modes 
-
     protected final DontDrown sketch;
     protected final LevelState state;
 
