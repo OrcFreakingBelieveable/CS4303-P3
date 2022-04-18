@@ -9,12 +9,12 @@ public abstract class Sketcher extends PApplet {
     public float RSW_DEF;
     public static final float RSV_MIN = 0.15f;
     public static final float RSV_MAX = 0.5f;
-    public static final float RSS_MIN = 0.05f;
-    public static final float RSS_MAX = 0.1f;
+    public static final int RSS_MIN = 1;
+    public static final int RSS_MAX = 5;
 
     public float roughStrokeWeight; // the average weight of hand drawn lines
     public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
-    public float roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
+    public int roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
 
     public PShape handDrawLine(int strokeColour, PVector start, PVector end) {
         PShape line = handDrawLine(start, end);
@@ -42,7 +42,7 @@ public abstract class Sketcher extends PApplet {
         roughLine.beginShape();
         roughLine.vertex(topLeft.x, topLeft.y); // top left corner
 
-        int sections = (int) random(0, Math.max(2, roughStrokeShakiness * smoothLineLength));
+        int sections = (int) random(0, 3);
         PVector section = topLeft.copy();
         PVector direction = (topRight.copy().sub(topLeft)).normalize();
         for (int i = 0; i < sections; i++) {
@@ -54,7 +54,7 @@ public abstract class Sketcher extends PApplet {
         roughLine.vertex(topRight.x, topRight.y);
         roughLine.vertex(bottomRight.x, bottomRight.y);
 
-        sections = (int) random(0, Math.max(2, roughStrokeShakiness * smoothLineLength));
+        sections = (int) random(0, 3);
         section = bottomRight.copy();
         direction = (bottomLeft.copy().sub(bottomRight)).normalize();
         for (int i = 0; i < sections; i++) {

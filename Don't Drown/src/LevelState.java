@@ -99,7 +99,7 @@ public class LevelState {
             int stressRating = stress - stressEffectThreshold;
             framesPerResketch = (int) (FRAMES_PER_RESKETCH_MAX - stressRating * framesPerResketchMultiplier);
             sketch.roughStrokeVariabilityRate = Sketcher.RSV_MIN + stressRating * strokeVariabilityMultiplier;
-            sketch.roughStrokeShakiness = Sketcher.RSS_MIN + stressRating * strokeShakinessMultiplier;
+            sketch.roughStrokeShakiness = (int) (Sketcher.RSS_MIN + stressRating * strokeShakinessMultiplier);
 
         } else {
             framesPerResketch = FRAMES_PER_RESKETCH_MAX;
