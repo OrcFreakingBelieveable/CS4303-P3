@@ -7,7 +7,7 @@ public class ScoreOverlay {
     private class StressBar extends AbstractDrawable {
 
         private static final float STRESS_BAR_WIDTH_DIV = 2f;
-        private static final float STRESS_BAR_HEIGHT_DIV = 20f;
+        private static final float STRESS_BAR_HEIGHT_DIV = 20f; // as a ratio of width 
 
         private final float width;
         private final float height;
@@ -16,7 +16,7 @@ public class ScoreOverlay {
         protected StressBar(DontDrown sketch) {
             super(sketch);
             this.width = sketch.width / STRESS_BAR_WIDTH_DIV;
-            this.height = sketch.height / STRESS_BAR_HEIGHT_DIV;
+            this.height = width / STRESS_BAR_HEIGHT_DIV;
             this.pos = new PVector(sketch.width / 2f - width / 2, height);
             this.outlineWeight = (int) (height / 10);
         }
@@ -24,17 +24,17 @@ public class ScoreOverlay {
         @Override
         protected void generateToken() {
             token = new PShape(PConstants.GROUP);
-            sketch.roughStrokeWeight = sketch.RSW_DEF;
+            sketch.roughStrokeWeight = outlineWeight;
 
             /* outer box */
-            sketch.colorMode(PConstants.RGB, 255, 255, 255);
+            sketch.colorModeRGB();
             token.addChild(sketch.handDraw(PConstants.RECT, 0xFF000000, 0xFFFFFFFF, pos.x,
                     pos.y, width,
                     height));
 
             /* bar fill */
             if (state.stress != 0) {
-                sketch.colorMode(PConstants.HSB, 360, 1, 1);
+                sketch.colorModeHSB();
                 float[] colour = sketch.levelState.stressHSBColour;
                 int fillColour = sketch.color(colour[0], colour[1], colour[2]);
                 token.addChild(
@@ -64,7 +64,7 @@ public class ScoreOverlay {
 
     }
 
-    private static final float SCORE_TEXT_DIV = 20f;
+    private static final float SCORE_TEXT_DIV = 60f;
 
     public final float height; 
 
@@ -74,7 +74,7 @@ public class ScoreOverlay {
 
     public ScoreOverlay(DontDrown sketch) {
         this.sketch = sketch;
-        this.textSize = sketch.height / SCORE_TEXT_DIV;
+        this.textSize = sketch.width / SCORE_TEXT_DIV;
         stressBar = new StressBar(sketch);
         this.height = stressBar.height * 3; 
     }
@@ -84,7 +84,7 @@ public class ScoreOverlay {
         stressBar.render();
 
         // token count
-        sketch.colorMode(PConstants.RGB, 255, 255, 255);
+        sketch.colorModeRGB();
         sketch.fill(0xFF000000);
         sketch.textAlign(PConstants.RIGHT, PConstants.TOP);
         sketch.textSize(textSize);

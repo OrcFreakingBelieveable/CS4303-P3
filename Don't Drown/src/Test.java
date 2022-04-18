@@ -6,10 +6,6 @@ public class Test extends Sketcher {
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 768;
 
-    protected Test() {
-        super(HEIGHT);
-    }
-
     PShape s1, s2, s3, s4, s5, s6, s7;
     int frame = 0;
 

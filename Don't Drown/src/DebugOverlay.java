@@ -5,11 +5,11 @@ public class DebugOverlay {
     private final DontDrown sketch;
     private final float textSize;
 
-    private static final float DEBUG_TEXT_DIV = 50f;
+    private static final float DEBUG_TEXT_DIV = 100f;
 
     public DebugOverlay(DontDrown sketch) {
         this.sketch = sketch;
-        this.textSize = sketch.height / DEBUG_TEXT_DIV;
+        this.textSize = sketch.width / DEBUG_TEXT_DIV;
     }
 
     public void render() {

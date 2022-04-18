@@ -32,11 +32,13 @@ public class PlayerCharacter extends AbstractDrawable {
     public static final float PC_MAX_SAT = 1f;
     public static final float PC_MIN_LIGHT = 0.9f;
     public static final float PC_MAX_LIGHT = 0.9f;
+    public static final float PC_STROKE_ALPHA = 1f;
+    public static final float PC_FILL_ALPHA = 0.85f;
 
     public final float incr; // movement increment
     public final float maxSpeed; // max horizontal speed, in incr per frame
 
-    public PVector vel; // velocity, in incr per frame
+    public PVector vel; // current velocity
     public float diameter;
 
     // vertical movement
@@ -239,9 +241,8 @@ public class PlayerCharacter extends AbstractDrawable {
             // check if end of hang time reached
             fallState = FallState.FALLING;
         } else if (fallState.equals(FallState.FALLING)) {
-            vel.y -= vel.y * PC_FALLING_DRAG_FACTOR; 
+            vel.y -= vel.y * PC_FALLING_DRAG_FACTOR;
         }
-
 
         // reset resultant force
         resultant = new PVector();
@@ -343,10 +344,11 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     protected void generateToken() {
-        sketch.colorMode(PConstants.HSB, 360f, 1f, 1f);
-        int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2]);
+        sketch.colorModeHSB();
+        int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2],
+                PC_FILL_ALPHA);
         int strokeColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1],
-                state.stressHSBColour[2] - PC_MIN_LIGHT / 2);
+                state.stressHSBColour[2] - PC_MIN_LIGHT / 2, PC_STROKE_ALPHA);
 
         token = sketch.handDraw(PConstants.ELLIPSE, strokeColour, fillColour, 20, 0, 0, diameter, diameter);
         token.translate(pos.x, pos.y);

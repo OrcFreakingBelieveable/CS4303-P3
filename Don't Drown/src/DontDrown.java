@@ -2,9 +2,6 @@ import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
 
-    private static final int WIDTH = 1280;
-    private static final int HEIGHT = 720;
-
     LevelState levelState;
     PlayerCharacter pc;
     DebugOverlay debugOverlay;
@@ -12,19 +9,24 @@ public class DontDrown extends Sketcher {
     Level level;
     CollisionDetector collisionDetector;
 
-    protected DontDrown() {
-        super(HEIGHT);
+    public void colorModeHSB() {
+        colorMode(HSB, 360f, 1f, 1f, 1f);
+    }
+
+    public void colorModeRGB() {
+        colorMode(ARGB, 255, 255, 255, 255);
     }
 
     private void newLevel() {
-        level = new Level(this, HEIGHT * 2, true);
+        level = new Level(this, height * 2, true);
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - pc.diameter);
     }
 
     @Override
     public void settings() {
-        size(WIDTH, HEIGHT);
+        size(displayWidth, displayHeight); 
+        this.RSW_DEF = width / RSW_DEF_DIV; 
         levelState = new LevelState(this);
         pc = new PlayerCharacter(this);
         levelState.pcCalcs();
@@ -47,7 +49,7 @@ public class DontDrown extends Sketcher {
         collisionDetector.detectCollisions();
 
         // check if panning needed 
-        if (pc.pos.y < scoreOverlay.height + pc.jumpHeight) {
+        if (pc.pos.y < scoreOverlay.height + 2 * pc.jumpHeight) {
             level.panningState = Level.PanningState.UP; 
         } else if (pc.pos.y > height - (scoreOverlay.height + pc.jumpHeight)) {
             level.panningState = Level.PanningState.DOWN; 

@@ -5,7 +5,8 @@ import processing.core.PVector;
 
 public abstract class Sketcher extends PApplet {
 
-    public final float RSW_DEF;
+    public static final float RSW_DEF_DIV = 500f; 
+    public float RSW_DEF;
     public static final float RSV_MIN = 0.15f;
     public static final float RSV_MAX = 0.5f;
     public static final float RSS_MIN = 0.05f;
@@ -14,10 +15,6 @@ public abstract class Sketcher extends PApplet {
     public float roughStrokeWeight; // the average weight of hand drawn lines
     public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
     public float roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
-
-    protected Sketcher(int height) {
-        RSW_DEF = height / 240f; 
-    }
 
     public PShape handDrawLine(int strokeColour, PVector start, PVector end) {
         PShape line = handDrawLine(start, end);
