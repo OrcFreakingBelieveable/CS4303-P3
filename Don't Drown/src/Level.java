@@ -22,6 +22,9 @@ public class Level {
     public final float playableWidth;
     public final float marginX;
 
+    private final float tokenElevation; // height above platforms
+    private final float pToken;
+
     public enum PanningState {
         UP,
         DOWN,
@@ -34,12 +37,12 @@ public class Level {
 
     public float top;
     public PShape lines = null;
-    public Token[] tokens;
+    public ArrayList<Token> tokens = new ArrayList<>();
     public ArrayList<Platform> platforms = new ArrayList<>();
     public Platform highestPlatform;
     public float waveHeight;
 
-    public Level(DontDrown sketch, int height, boolean hasGround) {
+    public Level(DontDrown sketch, int height, boolean hasGround, float pToken) {
         this.sketch = sketch;
         this.state = sketch.levelState;
         this.height = height;
@@ -52,6 +55,9 @@ public class Level {
         this.playableWidth = sketch.width - marginX;
         waveHeight = height;
         panRate = height / PAN_RATE_DIV;
+        this.pToken = pToken;
+        tokenElevation = 0.75f * sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
+
         generatePlatformsAndTokens(hasGround, 0.5f);
     }
 
@@ -82,6 +88,10 @@ public class Level {
                             1, LINE_COLOUR));
         }
         lines.addChild(drawLine(new PVector(marginX, topLimit), new PVector(marginX, height), 1, MARGIN_COLOUR));
+    }
+
+    private void addToken(float x, float y) {
+        tokens.add(new Token(sketch, x, y));
     }
 
     private void generatePlatformsAndTokens(boolean hasGround, float goBackPercentage) {
@@ -153,6 +163,9 @@ public class Level {
                 currentPlatform = nextPlatform;
                 platforms.add(currentPlatform);
                 stuckCount = 0;
+                if (sketch.random(0, 1) < pToken) {
+                    addToken(x + currentPlatform.width / 2, y - tokenElevation);
+                }
                 if (currentPlatform.pos.y < highestPlatform.pos.y)
                     highestPlatform = currentPlatform;
             } else {
@@ -162,6 +175,10 @@ public class Level {
     }
 
     public void integrate() {
+        for (Token token : tokens) {
+            token.integrate();
+        }
+
         if (panningState.equals(PanningState.UP)) {
             if (top + panRate >= 0f) {
                 pan(0f - top);
@@ -185,6 +202,9 @@ public class Level {
         for (Platform platform : platforms) {
             platform.pan(y);
         }
+        for (Token token : tokens) {
+            token.pan(y);
+        }
         sketch.pc.pan(y);
     }
 
@@ -196,7 +216,7 @@ public class Level {
         sketch.colorModeRGB();
         sketch.background(0xFFFFFFEE);
         sketch.shape(lines);
-        
+
         int i = 0;
         for (Platform platform : platforms) {
             platform.render();
@@ -204,6 +224,9 @@ public class Level {
                 sketch.text(i++, platform.pos.x, platform.pos.y);
         }
 
+        for (Token token : tokens) {
+            token.render();
+        }
     }
 
 }

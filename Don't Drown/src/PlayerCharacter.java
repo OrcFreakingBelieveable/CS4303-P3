@@ -222,9 +222,13 @@ public class PlayerCharacter extends AbstractDrawable {
             }
         }
 
-        // if not at rest or max speed, apply thrust (from steering) and friction
+        // if not at rest or max speed, apply thrust from steering
         if (moveState.equals(MoveState.ACCELERATING)) {
             applyHorizontalThrust();
+        }
+
+        // if not at rest or max speed, apply friction force 
+        if (moveState.equals(MoveState.ACCELERATING)) {
             applyHorizontalDrag();
         }
 

@@ -17,8 +17,8 @@ public class DontDrown extends Sketcher {
         colorMode(ARGB, 255, 255, 255, 255);
     }
 
-    private void newLevel() {
-        level = new Level(this, height * 2, true);
+    private void newLevel(DontDrown sketch) {
+        level = new Level(sketch, height * 2, true, 0.15f);
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - pc.diameter);
     }
@@ -32,7 +32,7 @@ public class DontDrown extends Sketcher {
         levelState.pcCalcs();
         debugOverlay = new DebugOverlay(this);
         scoreOverlay = new ScoreOverlay(this);
-        newLevel();
+        newLevel(this);
         collisionDetector = new CollisionDetector(this);
     }
 
@@ -92,7 +92,7 @@ public class DontDrown extends Sketcher {
                     levelState.stress = 100;
                     break;
                 case ' ':
-                    newLevel();
+                    newLevel(this);
                     break;
                 case 'f':
                 case 'F':
