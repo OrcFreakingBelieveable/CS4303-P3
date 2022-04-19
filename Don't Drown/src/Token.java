@@ -4,15 +4,15 @@ import processing.core.PVector;
 public class Token extends AbstractDrawable {
 
     private static final float T_HEIGHT_DIV = 40f;
+    private static final int T_BOUNCE_FRAMES = 30;
 
     public final float height;
     public final float width;
     private final float bounceHeight;
-    private final int bounceBuffer;
+    private final float bounceIncr;
 
     private int strokeColour = 0xDDB09500;
     private int fillColour = 0xAAE3C800;
-    private int bounceFrames = 30;
     private boolean movingDown = false;
 
     public Token(DontDrown sketch, float x, float y) {
@@ -20,20 +20,20 @@ public class Token extends AbstractDrawable {
         this.height = sketch.width / T_HEIGHT_DIV;
         this.width = height + sketch.random(-sketch.RSW_DEF, sketch.RSW_DEF);
         this.bounceHeight = height / 4;
-        this.bounceBuffer = (int) sketch.random(0, bounceFrames / 2f);
+        this.bounceIncr = (bounceHeight / T_BOUNCE_FRAMES);
         this.pos = new PVector(x, y);
-        pos.y -= (bounceHeight - bounceBuffer) * (bounceHeight / bounceFrames);
+        pos.y -= bounceIncr * (sketch.frameCount % T_BOUNCE_FRAMES);
     }
 
     public void integrate() {
-        if ((sketch.frameCount - bounceBuffer) % bounceFrames == 0) {
+        if (sketch.frameCount % T_BOUNCE_FRAMES == 0) {
             movingDown = !movingDown;
         }
 
         if (movingDown) {
-            pos.y += bounceHeight / bounceFrames;
+            pos.y += bounceIncr;
         } else {
-            pos.y -= bounceHeight / bounceFrames;
+            pos.y -= bounceIncr;
         }
     }
 
