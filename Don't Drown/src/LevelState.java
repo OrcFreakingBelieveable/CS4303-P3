@@ -23,7 +23,6 @@ public class LevelState {
     public int minStress = 0;
     public int stressEffectThreshold = 20;
     public Debuff debuff = Debuff.NONE;
-    public boolean debugging = true;
 
     public float pcThrust;
     public float pcFriction;

@@ -12,7 +12,6 @@ public class Level {
     public static final float PAN_RATE_DIV = PlayerCharacter.PC_DIAMETER_DIV * 10f;
 
     private final DontDrown sketch;
-    private final LevelState state;
 
     public final float panRate;
     public final int height;
@@ -44,7 +43,6 @@ public class Level {
 
     public Level(DontDrown sketch, int height, boolean hasGround, float pToken) {
         this.sketch = sketch;
-        this.state = sketch.levelState;
         this.height = height;
         this.viewportHeight = sketch.height;
         this.lowestPlatformHeight = 9 * viewportHeight / 10;
@@ -220,7 +218,7 @@ public class Level {
         int i = 0;
         for (Platform platform : platforms) {
             platform.render();
-            if (state.debugging)
+            if (sketch.debugging)
                 sketch.text(i++, platform.pos.x, platform.pos.y);
         }
 

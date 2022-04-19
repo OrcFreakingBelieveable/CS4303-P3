@@ -8,6 +8,7 @@ public class DontDrown extends Sketcher {
     ScoreOverlay scoreOverlay;
     Level level;
     CollisionDetector collisionDetector;
+    public boolean debugging = true;
 
     public void colorModeHSB() {
         colorMode(HSB, 360f, 1f, 1f, 1f);
@@ -18,15 +19,15 @@ public class DontDrown extends Sketcher {
     }
 
     private void newLevel(DontDrown sketch) {
-        level = new Level(sketch, height * 2, true, 0.15f);
+        level = new Level(sketch, height * 2, true, 1f);
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - pc.diameter);
     }
 
     @Override
     public void settings() {
-        size(displayWidth, displayHeight); 
-        this.RSW_DEF = width / RSW_DEF_DIV; 
+        size(displayWidth, displayHeight);
+        this.RSW_DEF = width / RSW_DEF_DIV;
         levelState = new LevelState(this);
         pc = new PlayerCharacter(this);
         levelState.pcCalcs();
@@ -48,19 +49,19 @@ public class DontDrown extends Sketcher {
         // detect collisions
         collisionDetector.detectCollisions();
 
-        // check if panning needed 
+        // check if panning needed
         if (pc.pos.y < scoreOverlay.height + 2 * pc.jumpHeight) {
-            level.panningState = Level.PanningState.UP; 
+            level.panningState = Level.PanningState.UP;
         } else if (pc.pos.y > height - (scoreOverlay.height + pc.jumpHeight)) {
-            level.panningState = Level.PanningState.DOWN; 
+            level.panningState = Level.PanningState.DOWN;
         } else {
-            level.panningState = Level.PanningState.NEITHER; 
+            level.panningState = Level.PanningState.NEITHER;
         }
 
         // draw
         level.render();
         pc.render();
-        if (levelState.debugging)
+        if (debugging)
             debugOverlay.render();
         scoreOverlay.render();
 
@@ -82,12 +83,10 @@ public class DontDrown extends Sketcher {
                 default:
                     // do nothing
             }
-        } else {
+        } else if (key == 'd' || key == 'D') {
+            debugging = !debugging;
+        } else if (debugging) {
             switch (key) {
-                case 'd':
-                case 'D':
-                    levelState.debugging = !levelState.debugging;
-                    break;
                 case '`':
                     levelState.stress = 100;
                     break;
@@ -113,6 +112,12 @@ public class DontDrown extends Sketcher {
                 case '/':
                     level.panningState = Level.PanningState.UP;
                     break;
+                case '+':
+                    levelState.stress++;
+                    break;
+                case '-':
+                    levelState.stress--;
+                    break;
                 default:
                     if (Character.isDigit(key)) {
                         levelState.stress = Integer.parseInt("" + key) * 10;
@@ -135,17 +140,6 @@ public class DontDrown extends Sketcher {
                     if (pc.getSteerState().equals(PlayerCharacter.SteerState.RIGHT)) {
                         pc.steer(PlayerCharacter.SteerState.NEITHER);
                     }
-                    break;
-                default:
-                    // do nothing
-            }
-        } else {
-            switch (key) {
-                case '+':
-                    levelState.stress++;
-                    break;
-                case '-':
-                    levelState.stress--;
                     break;
                 default:
                     // do nothing
