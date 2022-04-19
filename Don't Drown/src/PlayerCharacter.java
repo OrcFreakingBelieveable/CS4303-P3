@@ -23,7 +23,7 @@ public class PlayerCharacter extends AbstractDrawable {
     private static final float PC_BOUNCE_MULT = 0.75f; // coefficient of restitution for horizontal collision
     private static final int PC_HANG_TIME_DEF = 3; // frames of (default) hang time
     private static final int PC_BOUNCE_REMEMBER = 5; // frames before landing on a platform for a jump to work
-    private static final int PC_COYOTE_TIME = 5; // frames to jump after falling off the end of a platform
+    private static final int PC_COYOTE_TIME = 2; // frames to jump after falling off the end of a platform
 
     // rendering
     public static final float PC_MIN_HUE = 280f;
@@ -71,6 +71,7 @@ public class PlayerCharacter extends AbstractDrawable {
 
     public enum FallState {
         ON_SURFACE(0f),
+        COYOTE_TIME(0f),
         RISING(PC_RISING_GRAVITY),
         HANG_TIME(0f),
         FALLING(PC_FALLING_GRAVITY);
@@ -200,9 +201,6 @@ public class PlayerCharacter extends AbstractDrawable {
             jump();
         }
 
-        // decrement the coyote time counter
-        coyoteCounter--;
-
         // check if at horizontal rest
         if (!moveState.equals(MoveState.AT_REST) && steerState.equals(SteerState.NEITHER)
                 && ((fallState.equals(FallState.ON_SURFACE) && Math.abs(vel.x) < state.pcMinSpeed)
@@ -227,7 +225,7 @@ public class PlayerCharacter extends AbstractDrawable {
             applyHorizontalThrust();
         }
 
-        // if not at rest or max speed, apply friction force 
+        // if not at rest or max speed, apply friction force
         if (moveState.equals(MoveState.ACCELERATING)) {
             applyHorizontalDrag();
         }
@@ -245,8 +243,10 @@ public class PlayerCharacter extends AbstractDrawable {
             // check if end of hang time reached
             fallState = FallState.FALLING;
         } else if (fallState.equals(FallState.FALLING)) {
-            // apply drag if falling 
+            // apply drag if falling
             vel.y -= vel.y * PC_FALLING_DRAG_FACTOR;
+        } else if (fallState.equals(FallState.COYOTE_TIME) && coyoteCounter-- == 0) {
+            fallState = FallState.FALLING;
         }
 
         // reset resultant force
@@ -268,7 +268,8 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     public void jump() {
-        if (fallState.equals(PlayerCharacter.FallState.ON_SURFACE) || coyoteCounter >= 0) {
+        if (fallState.equals(PlayerCharacter.FallState.ON_SURFACE)
+                || fallState.equals(PlayerCharacter.FallState.COYOTE_TIME)) {
             fallState = FallState.RISING;
             resultant.y = -PC_JUMP_IMPULSE;
             jumpMemoryCounter = 0;
@@ -308,7 +309,7 @@ public class PlayerCharacter extends AbstractDrawable {
             if (surface != null)
                 surface.supportingPC = false;
             surface = null;
-            fallState = FallState.FALLING;
+            fallState = FallState.COYOTE_TIME;
             coyoteCounter = PC_COYOTE_TIME;
         }
     }
@@ -327,7 +328,7 @@ public class PlayerCharacter extends AbstractDrawable {
         if (!direction.equals(steerState)) {
             moveState = MoveState.ACCELERATING;
             this.steerState = direction;
-        } 
+        }
         if (!direction.equals(SteerState.NEITHER))
             steerSinceLand = true;
     }
