@@ -245,6 +245,7 @@ public class PlayerCharacter extends AbstractDrawable {
             // check if end of hang time reached
             fallState = FallState.FALLING;
         } else if (fallState.equals(FallState.FALLING)) {
+            // apply drag if falling 
             vel.y -= vel.y * PC_FALLING_DRAG_FACTOR;
         }
 
@@ -326,7 +327,7 @@ public class PlayerCharacter extends AbstractDrawable {
         if (!direction.equals(steerState)) {
             moveState = MoveState.ACCELERATING;
             this.steerState = direction;
-        } // else leave as it was
+        } 
         if (!direction.equals(SteerState.NEITHER))
             steerSinceLand = true;
     }
