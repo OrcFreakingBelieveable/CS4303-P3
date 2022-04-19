@@ -20,6 +20,7 @@ public class DontDrown extends Sketcher {
 
     private void newLevel(DontDrown sketch) {
         level = new Level(sketch, height * 2, true, 1f);
+        levelState.reset(level);
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - pc.diameter);
     }
@@ -50,9 +51,9 @@ public class DontDrown extends Sketcher {
         collisionDetector.detectCollisions();
 
         // check if panning needed
-        if (pc.pos.y < scoreOverlay.height + 2 * pc.jumpHeight) {
+        if (pc.pos.y < scoreOverlay.endOfPadding + 2 * pc.jumpHeight) {
             level.panningState = Level.PanningState.UP;
-        } else if (pc.pos.y > height - (scoreOverlay.height + pc.jumpHeight)) {
+        } else if (pc.pos.y > height - (scoreOverlay.endOfPadding + pc.jumpHeight)) {
             level.panningState = Level.PanningState.DOWN;
         } else {
             level.panningState = Level.PanningState.NEITHER;

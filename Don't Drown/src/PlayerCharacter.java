@@ -39,7 +39,8 @@ public class PlayerCharacter extends AbstractDrawable {
     public final float maxSpeed; // max horizontal speed, in incr per frame
 
     public PVector vel; // current velocity
-    public float diameter;
+    public final float diameter;
+    public final float radius; 
 
     // vertical movement
     public Platform surface = null; // platform that the PC is on
@@ -153,6 +154,7 @@ public class PlayerCharacter extends AbstractDrawable {
         this.oldPos = pos.copy();
 
         this.diameter = sketch.width / PC_DIAMETER_DIV;
+        this.radius = diameter / 2f;
         this.vel = new PVector();
 
         this.incr = sketch.width / PC_INCR_DIV;

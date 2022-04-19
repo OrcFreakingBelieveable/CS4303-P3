@@ -16,6 +16,7 @@ public class LevelState {
         NONE;
     }
 
+    public int tokensAvailable = 0; 
     public int tokensCollected = 0;
     public int oldStress = 0;
     public int stress = 0;
@@ -26,7 +27,7 @@ public class LevelState {
 
     public float pcThrust;
     public float pcFriction;
-    public float pcMinSpeed; 
+    public float pcMinSpeed;
     public float[] stressHSBColour;
     public int framesPerResketch;
 
@@ -48,6 +49,18 @@ public class LevelState {
 
     public LevelState(DontDrown sketch) {
         this.sketch = sketch;
+    }
+
+    public void reset(Level level) {
+        tokensAvailable = level.tokens.size(); 
+        tokensCollected = 0;
+        oldStress = 0;
+        stress = 0;
+        maxStress = 100;
+        minStress = 0;
+        stressEffectThreshold = 20;
+        debuff = Debuff.NONE;
+        update(); 
     }
 
     public void pcCalcs() {
@@ -107,6 +120,11 @@ public class LevelState {
         }
     }
 
+    public void collectToken(Token token) {
+        sketch.level.tokens.remove(token);
+        tokensCollected++;
+    }
+
     public void update() {
         if (stress > maxStress) {
             stress = maxStress;
@@ -115,7 +133,7 @@ public class LevelState {
         }
         pcThrust();
         pcFriction();
-        pcMinSpeed(); 
+        pcMinSpeed();
         stressHSBColour();
         sketchiness();
         oldStress = stress;
