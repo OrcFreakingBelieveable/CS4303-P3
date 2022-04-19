@@ -5,7 +5,7 @@ import processing.core.PVector;
 
 public abstract class Sketcher extends PApplet {
 
-    public static final float RSW_DEF_DIV = 500f; 
+    public static final float RSW_DEF_DIV = 500f;
     public float RSW_DEF;
     public static final float RSV_MIN = 0.15f;
     public static final float RSV_MAX = 0.6f;
@@ -16,13 +16,33 @@ public abstract class Sketcher extends PApplet {
     public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
     public int roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
 
+    private PShape drawLine(PVector start, PVector end, float startWeight, float endWeight) {
+        float heading = (start.copy().sub(end)).heading();
+        heading += HALF_PI;
+        PVector startPadding = PVector.fromAngle(heading).mult(startWeight);
+        PVector endPadding = PVector.fromAngle(heading).mult(endWeight);
+        
+        PVector topLeft = start.copy().sub(startPadding);
+        PVector topRight = end.copy().sub(endPadding);
+        PVector bottomRight = topRight.copy().add(endPadding);
+        PVector bottomLeft = topLeft.copy().add(startPadding);
+
+        return createShape(PConstants.QUAD,
+                topLeft.x, topLeft.y,
+                topRight.x, topRight.y,
+                bottomRight.x, bottomRight.y,
+                bottomLeft.x, bottomLeft.y);
+    }
+
     public PShape handDrawLine(int strokeColour, PVector start, PVector end) {
         PShape line = handDrawLine(start, end);
         line.setFill(strokeColour);
-        return line; 
+        return line;
     }
 
-    /* Essentially creates a jagged quadrilteral to act as a hand-drawn line */
+    /*
+     * Essentially creates a jagged quasi-quadrilteral to act as a hand-drawn line
+     */
     private PShape handDrawLine(PVector start, PVector end) {
         PVector smoothLine = start.copy().sub(end);
         float smoothLineLength = smoothLine.mag();
@@ -140,18 +160,23 @@ public abstract class Sketcher extends PApplet {
                     // generate the lines around the circumference of the ellipse
                     PVector start = new PVector(centreX + width * cos(0), centreY + height * sin(0));
                     PVector end = new PVector();
+                    float startWeight = roughStrokeWeight; 
+                    float roughStrokeVariability = roughStrokeWeight * roughStrokeVariabilityRate;
+                    float endWeight = roughStrokeWeight + random(-roughStrokeVariability, roughStrokeVariability);
 
                     for (int i = 1; i <= vertices; i++) {
                         float angle = i * TAU / vertices;
                         end.x = (centreX + width * cos(angle));
                         end.y = (centreY + height * sin(angle));
 
-                        PShape line = handDrawLine(start, end);
+                        PShape line = drawLine(start, end, startWeight, endWeight);
                         line.setFill(strokeColour);
                         ellipse.addChild(line);
 
                         start.x = end.x;
                         start.y = end.y;
+                        startWeight = endWeight; 
+                        endWeight = roughStrokeWeight + random(-roughStrokeVariability, roughStrokeVariability);
                     }
 
                     return ellipse;
