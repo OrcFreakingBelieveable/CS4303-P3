@@ -39,7 +39,6 @@ public class Level {
     public ArrayList<Token> tokens = new ArrayList<>();
     public ArrayList<Platform> platforms = new ArrayList<>();
     public Platform highestPlatform;
-    public float waveHeight;
 
     public Level(DontDrown sketch, int height, boolean hasGround, float pToken) {
         this.sketch = sketch;
@@ -51,7 +50,6 @@ public class Level {
         this.highestPlatformHeight = topLimit + viewportHeight / 10 + sketch.scoreOverlay.endOfPadding;
         this.marginX = (float) sketch.width / MARGIN_DIV;
         this.playableWidth = sketch.width - marginX;
-        waveHeight = height;
         panRate = height / PAN_RATE_DIV;
         this.pToken = pToken;
         tokenElevation = 0.75f * sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
