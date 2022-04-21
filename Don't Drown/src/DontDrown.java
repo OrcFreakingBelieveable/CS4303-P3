@@ -2,9 +2,17 @@ import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
 
+    enum GameState {
+        STARTUP,
+        MID_LEVEL,
+        BETWEEN_LEVELS,
+        ;
+    }
+
+    GameState gameState = GameState.STARTUP;
     LevelState levelState;
     PlayerCharacter pc;
-    Wave risingWave; 
+    Wave risingWave;
     DebugOverlay debugOverlay;
     ScoreOverlay scoreOverlay;
     Level level;
@@ -20,56 +28,65 @@ public class DontDrown extends Sketcher {
     }
 
     private void newLevel(DontDrown sketch) {
-        level = new Level(sketch, height * 2, true, 1f);
+        level = new Level(sketch, height * 2, true, 0.1f);
         levelState.reset(level);
-        risingWave.waveDepth = level.height; 
-        risingWave.pos.y = risingWave.waveInitHeight;
+        risingWave.pos.y = Wave.waveInitHeight;
         Platform ground = level.platforms.get(0);
-        pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - pc.diameter);
+        pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - PlayerCharacter.diameter);
+        collisionDetector.pcOldPos = pc.oldPos; 
     }
 
     @Override
     public void settings() {
         size(displayWidth, displayHeight);
         this.RSW_DEF = width / RSW_DEF_DIV;
-        levelState = new LevelState(this);
-        pc = new PlayerCharacter(this);
-        risingWave = new Wave(this);
-        levelState.pcCalcs();
-        debugOverlay = new DebugOverlay(this);
-        scoreOverlay = new ScoreOverlay(this);
-        newLevel(this);
-        collisionDetector = new CollisionDetector(this);
     }
 
     @Override
     public void draw() {
-        noStroke();
+        switch (gameState) {
+            case STARTUP:
+                noStroke();
+                levelState = new LevelState(this);
+                pc = new PlayerCharacter(this);
+                risingWave = new Wave(this);
+                levelState.pcCalcs();
+                debugOverlay = new DebugOverlay(this);
+                scoreOverlay = new ScoreOverlay(this);
+                newLevel(this);
+                collisionDetector = new CollisionDetector(this);
 
-        // update positions
-        levelState.update();
-        pc.integrate();
-        level.integrate();
+                gameState = GameState.MID_LEVEL;
+                break;
+            case BETWEEN_LEVELS:
+            case MID_LEVEL:
+                // update positions
+                levelState.update();
+                pc.integrate();
+                level.integrate();
 
-        // check if panning needed
-        if (pc.pos.y < scoreOverlay.endOfPadding + 2 * pc.jumpHeight) {
-            level.panningState = Level.PanningState.UP;
-        } else if (pc.pos.y > height - (scoreOverlay.endOfPadding + pc.jumpHeight)) {
-            level.panningState = Level.PanningState.DOWN;
-        } else {
-            level.panningState = Level.PanningState.NEITHER;
+                // check if panning needed
+                if (pc.pos.y < scoreOverlay.endOfPadding + 2 * pc.jumpHeight) {
+                    level.panningState = Level.PanningState.UP;
+                } else if (pc.pos.y > height - (scoreOverlay.endOfPadding + pc.jumpHeight)) {
+                    level.panningState = Level.PanningState.DOWN;
+                } else {
+                    level.panningState = Level.PanningState.NEITHER;
+                }
+
+                // draw
+                level.render();
+                pc.render();
+                risingWave.render();
+                if (debugging)
+                    debugOverlay.render();
+                scoreOverlay.render();
+
+                // detect collisions (after they visually occur)
+                collisionDetector.detectCollisions();
+                break;
         }
 
-        // draw
-        level.render();
-        pc.render();
-        risingWave.render(); 
-        if (debugging)
-            debugOverlay.render();
-        scoreOverlay.render();
-        
-        // detect collisions (after they visually occur)
-        collisionDetector.detectCollisions();
     }
 
     @Override
@@ -122,6 +139,14 @@ public class DontDrown extends Sketcher {
                     break;
                 case '-':
                     levelState.stress--;
+                    break;
+                case 'w':
+                case 'W':
+                    if (risingWave.waveRiseRate == risingWave.defaultWaveRiseRate) {
+                        risingWave.waveRiseRate = 0;
+                    } else {
+                        risingWave.waveRiseRate = risingWave.defaultWaveRiseRate;
+                    }
                     break;
                 default:
                     if (Character.isDigit(key)) {

@@ -1,4 +1,5 @@
 import processing.core.PConstants;
+import processing.core.PShape;
 import processing.core.PVector;
 
 public class Token extends AbstractDrawable {
@@ -9,19 +10,15 @@ public class Token extends AbstractDrawable {
     private static final float T_HEIGHT_DIV = 40f;
     private static final int T_BOUNCE_FRAMES = 30;
 
-    public final float height;
-    public final float width;
-    private final float bounceHeight;
-    private final float bounceIncr;
+    private static PShape[][] staticTokens = null;
+    private static float bounceIncr;
+    public static float height;
+    public static float width;
 
     private boolean movingDown = false;
 
     public Token(DontDrown sketch, float x, float y) {
-        super(sketch);
-        this.height = sketch.width / T_HEIGHT_DIV;
-        this.width = height + sketch.random(-sketch.RSW_DEF, sketch.RSW_DEF);
-        this.bounceHeight = height / 4;
-        this.bounceIncr = (bounceHeight / T_BOUNCE_FRAMES);
+        super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
         this.pos = new PVector(x, y);
         pos.y -= bounceIncr * (sketch.frameCount % T_BOUNCE_FRAMES);
     }
@@ -38,35 +35,34 @@ public class Token extends AbstractDrawable {
         }
     }
 
-    public void render() {
-        sketch.roughStrokeWeight = sketch.RSW_DEF;
+    protected static PShape[][] generateTokens(DontDrown sketch) {
+        staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
 
-        if (token == null ||
-                (pos.y <= sketch.height && pos.y >= height) // only re-sketch on-screen tokens
-                        && (frameCounter++ % state.framesPerResketch == 0
-                                || Math.abs(state.stress - state.oldStress) > 5)) {
-            generateToken();
-        } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
-            PVector movement = pos.copy().sub(oldPos);
-            token.translate(movement.x, movement.y);
-        }
+        height = sketch.width / T_HEIGHT_DIV;
+        width = height + sketch.random(-sketch.RSW_DEF, sketch.RSW_DEF);
+        float bounceHeight = height / 4;
+        bounceIncr = (bounceHeight / T_BOUNCE_FRAMES);
 
-        oldPos = pos.copy();
-        sketch.shape(token);
-    }
-
-    @Override
-    protected void generateToken() {
         sketch.colorModeRGB();
         sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-        token = sketch.handDraw(PConstants.QUAD, T_STROKE_COLOUR, T_FILL_COLOUR,
-                0, -height / 2,
-                width / 2, 0,
-                0, height / 2,
-                -width / 2, 0);
+        for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+            sketch.levelState.stress = i;
+            sketch.levelState.sketchiness();
 
-        token.translate(pos.x, pos.y);
+            for (int j = 0; j < VARIANT_TOKENS; j++) {
+                staticTokens[i][j] = sketch.handDraw(PConstants.QUAD, T_STROKE_COLOUR, T_FILL_COLOUR,
+                        0, -height / 2,
+                        width / 2, 0,
+                        0, height / 2,
+                        -width / 2, 0);
+            }
+        }
+
+        return staticTokens;
     }
 
+    protected boolean onScreen() {
+        return pos.y - height <= sketch.height && pos.y + height >= height;
+    }
 }

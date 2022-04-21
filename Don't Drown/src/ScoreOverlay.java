@@ -4,101 +4,100 @@ import processing.core.PVector;
 
 public class ScoreOverlay {
 
-    private class StressBar extends AbstractDrawable {
+    private static class StressBar extends AbstractDrawable {
 
         private static final float STRESS_BAR_WIDTH_DIV = 2f;
         private static final float STRESS_BAR_HEIGHT_DIV = 20f; // as a ratio of width
 
-        private final float width;
-        private final float height;
-        private final int outlineWeight;
+        private static PShape[][] staticTokens = null;
+
+        private static float width;
+        private static float height;
 
         protected StressBar(DontDrown sketch) {
-            super(sketch);
-            this.width = sketch.width / STRESS_BAR_WIDTH_DIV;
-            this.height = width / STRESS_BAR_HEIGHT_DIV;
-            this.pos = new PVector(sketch.width / 2f - width / 2, height);
-            this.outlineWeight = (int) (height / 10);
+            super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
+            pos = new PVector(0,0);
         }
 
-        @Override
-        protected void generateToken() {
-            token = new PShape(PConstants.GROUP);
-            sketch.roughStrokeWeight = outlineWeight;
+        protected static PShape[][] generateTokens(DontDrown sketch) {
+            staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+            width = sketch.width / STRESS_BAR_WIDTH_DIV;
+            height = width / STRESS_BAR_HEIGHT_DIV;
+            int outlineWeight = (int) (height / 10);
+            PVector pos = new PVector(sketch.width / 2f - width / 2, height);
 
-            /* outer box */
-            sketch.colorModeRGB();
-            token.addChild(sketch.handDraw(PConstants.RECT, 0xFF000000, 0xFFFFFFFF, pos.x,
-                    pos.y, width,
-                    height));
+            for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+                sketch.levelState.stress = i;
+                sketch.levelState.sketchiness();
+                sketch.levelState.recalcStressHSBColour();
 
-            /* bar fill */
-            if (state.stress != 0) {
-                sketch.colorModeHSB();
-                float[] colour = sketch.levelState.stressHSBColour;
-                int fillColour = sketch.color(colour[0], colour[1], colour[2]);
-                token.addChild(
-                        sketch.handDraw(PConstants.RECT, fillColour, fillColour, pos.x + outlineWeight,
-                                pos.y + outlineWeight,
-                                (width - 2 * outlineWeight)
-                                        * ((float) sketch.levelState.stress / LevelState.ABS_MAX_STRESS),
-                                height - 2 * outlineWeight));
-            }
-        }
+                for (int j = 0; j < VARIANT_TOKENS; j++) {
+                    PShape token = new PShape(PConstants.GROUP);
+                    sketch.roughStrokeWeight = outlineWeight;
 
-        @Override
-        public void render() {
-            sketch.roughStrokeWeight = sketch.RSW_DEF;
+                    /* outer box */
+                    sketch.colorModeRGB();
+                    token.addChild(sketch.handDraw(PConstants.RECT, 0xFF000000, 0xFFFFFFFF,
+                            pos.x, pos.y, width, height));
 
-            if (token == null || frameCounter++ % state.framesPerResketch == 0
-                    || Math.abs(state.stress - state.oldStress) > 5) {
-                generateToken();
-            } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
-                PVector movement = pos.copy().sub(oldPos);
-                token.translate(movement.x, movement.y);
+                    /* bar fill */
+                    if (sketch.levelState.stress != 0) {
+                        sketch.colorModeHSB();
+                        float[] colour = sketch.levelState.stressHSBColour;
+                        int fillColour = sketch.color(colour[0], colour[1], colour[2]);
+                        token.addChild(
+                                sketch.handDraw(PConstants.RECT, fillColour, fillColour, pos.x + outlineWeight,
+                                        pos.y + outlineWeight,
+                                        (width - 2 * outlineWeight)
+                                                * ((float) sketch.levelState.stress / LevelState.ABS_MAX_STRESS),
+                                        height - 2 * outlineWeight));
+                    }
+
+                    staticTokens[i][j] = token;
+                }
             }
 
-            oldPos = pos.copy();
-            sketch.shape(token);
+            return staticTokens;
         }
 
+        protected boolean onScreen() {
+            return true;
+        }
     }
 
-    private class BigToken extends AbstractDrawable {
+    private static class BigToken extends AbstractDrawable {
+
+        private static PShape[][] staticTokens = null;
 
         protected BigToken(DontDrown sketch) {
-            super(sketch);
-            pos = new PVector(sketch.width - stressBar.width / 3, 1.5f * stressBar.height);
+            super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
+            pos = new PVector(sketch.width - StressBar.width / 3, 1.5f * StressBar.height);
         }
 
-        @Override
-        protected void generateToken() {
+        protected static PShape[][] generateTokens(DontDrown sketch) {
+            staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
             sketch.colorModeRGB();
-            token = sketch.handDraw(PConstants.QUAD, Token.T_STROKE_COLOUR, Token.T_FILL_COLOUR,
-                    0, -stressBar.height,
-                    stressBar.height, 0,
-                    0, stressBar.height,
-                    -stressBar.height, 0);
-            token.translate(pos.x, pos.y);
-
-        }
-
-        @Override
-        public void render() {
             sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-            if (token == null || frameCounter++ % state.framesPerResketch == 0
-                    || Math.abs(state.stress - state.oldStress) > 5) {
-                generateToken();
-            } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
-                PVector movement = pos.copy().sub(oldPos);
-                token.translate(movement.x, movement.y);
+            for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+                sketch.levelState.stress = i;
+                sketch.levelState.sketchiness();
+
+                for (int j = 0; j < VARIANT_TOKENS; j++) {
+                    staticTokens[i][j] = sketch.handDraw(PConstants.QUAD, Token.T_STROKE_COLOUR, Token.T_FILL_COLOUR,
+                            0, -StressBar.height,
+                            StressBar.height, 0,
+                            0, StressBar.height,
+                            -StressBar.height, 0);
+                }
             }
 
-            oldPos = pos.copy();
-            sketch.shape(token);
+            return staticTokens;
         }
 
+        protected boolean onScreen() {
+            return true;
+        }
     }
 
     private static final float SCORE_TEXT_DIV = 65f;
@@ -115,7 +114,7 @@ public class ScoreOverlay {
         this.textSize = sketch.width / SCORE_TEXT_DIV;
         stressBar = new StressBar(sketch);
         bigToken = new BigToken(sketch);
-        this.endOfPadding = stressBar.height * 3;
+        this.endOfPadding = StressBar.height * 3;
     }
 
     public void render() {
@@ -132,7 +131,7 @@ public class ScoreOverlay {
         content.append(sketch.levelState.tokensCollected);
         content.append("/");
         content.append(sketch.levelState.tokensAvailable);
-        sketch.text(content.toString(), bigToken.pos.x, bigToken.pos.y - textSize/6);
+        sketch.text(content.toString(), bigToken.pos.x, bigToken.pos.y - textSize / 6);
     }
 
 }

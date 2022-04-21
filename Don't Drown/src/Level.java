@@ -45,7 +45,7 @@ public class Level {
         this.sketch = sketch;
         this.height = height;
         this.viewportHeight = sketch.height;
-        this.lowestPlatformHeight = 9 * viewportHeight / 10;
+        this.lowestPlatformHeight = .75f * sketch.height;
         topLimit = sketch.height - height;
         top = topLimit;
         this.highestPlatformHeight = topLimit + viewportHeight / 10 + sketch.scoreOverlay.endOfPadding;
@@ -198,13 +198,13 @@ public class Level {
         top += y;
         lines.translate(0, y);
         for (Platform platform : platforms) {
-            platform.pan(y);
+            platform.pos.y += y;
         }
         for (Token token : tokens) {
-            token.pan(y);
+            token.pos.y += y;
         }
-        sketch.pc.pan(y);
-        sketch.risingWave.pan(y); 
+        sketch.pc.pos.y += y;
+        sketch.risingWave.pos.y += y;
     }
 
     public void render() {

@@ -7,18 +7,21 @@ public class CollisionDetector {
 
     private final DontDrown sketch;
 
+    public PVector pcOldPos;
+
     public CollisionDetector(DontDrown sketch) {
         this.sketch = sketch;
+        pcOldPos = sketch.pc.oldPos; 
     }
 
     private float getXAtYOverlap(PlayerCharacter pc, PVector dir, float otherY) {
         if (dir.y != 0) {
             if (dir.x < 0) {
                 return Math.min(pc.pos.x,
-                        pc.oldPos.x + (dir.x * ((otherY - (pc.oldPos.y + pc.diameter / 2)) / dir.y)));
+                        pc.oldPos.x + (dir.x * ((otherY - (pc.oldPos.y + PlayerCharacter.diameter / 2)) / dir.y)));
             } else {
                 return Math.max(pc.pos.x,
-                        pc.oldPos.x + (dir.x * ((otherY - (pc.oldPos.y + pc.diameter / 2)) / dir.y)));
+                        pc.oldPos.x + (dir.x * ((otherY - (pc.oldPos.y + PlayerCharacter.diameter / 2)) / dir.y)));
             }
         } else {
             return -1;
@@ -46,11 +49,11 @@ public class CollisionDetector {
                     // platform too high
                     // cut off search
                     break;
-                } else if (platform.pos.y > (pc.pos.y + pc.radius)) {
+                } else if (platform.pos.y > (pc.pos.y + PlayerCharacter.radius)) {
                     // platform too low
                     // continue search
                 } else {
-                    // platform vertically between oldPos and pos + pc.radius
+                    // platform vertically between oldPos and pos + PlayerCharacter.radius
                     // check horizontal overlap to confirm collision
                     float xAtYOverlap = getXAtYOverlap(pc, dir, platform.pos.y);
                     if (xAtYOverlap >= platform.pos.x && xAtYOverlap <= platform.pos.x + platform.width
@@ -71,38 +74,38 @@ public class CollisionDetector {
     /* See report for a diagram of what this is doing */
     private boolean basicRayTracing(PlayerCharacter pc, Token token) {
         Line[] tokenLines = new Line[4];
-        PVector top = new PVector(token.pos.x, token.pos.y - token.height / 2);
-        PVector right = new PVector(token.pos.x + token.width / 2, token.pos.y);
-        PVector bottom = new PVector(token.pos.x, token.pos.y + token.height / 2);
-        PVector left = new PVector(token.pos.x - token.width / 2, token.pos.y);
+        PVector top = new PVector(token.pos.x, token.pos.y - Token.height / 2);
+        PVector right = new PVector(token.pos.x + Token.width / 2, token.pos.y);
+        PVector bottom = new PVector(token.pos.x, token.pos.y + Token.height / 2);
+        PVector left = new PVector(token.pos.x - Token.width / 2, token.pos.y);
         tokenLines[0] = new Line(top, right);
         tokenLines[1] = new Line(right, bottom);
         tokenLines[2] = new Line(bottom, left);
         tokenLines[3] = new Line(left, top);
 
         Line[] pcLines = new Line[12];
-        pcLines[0] = new Line(new PVector(pc.oldPos.x, pc.oldPos.y - pc.radius),
-                new PVector(pc.pos.x, pc.pos.y - pc.radius)); // top to top
-        pcLines[1] = new Line(new PVector(pc.oldPos.x + pc.radius, pc.oldPos.y),
-                new PVector(pc.pos.x + pc.radius, pc.pos.y)); // right to right
-        pcLines[2] = new Line(new PVector(pc.oldPos.x, pc.oldPos.y + pc.radius),
-                new PVector(pc.pos.x, pc.pos.y + pc.radius)); // bottom to bottom
-        pcLines[3] = new Line(new PVector(pc.oldPos.x - pc.radius, pc.oldPos.y),
-                new PVector(pc.pos.x - pc.radius, pc.pos.y)); // left to left
+        pcLines[0] = new Line(new PVector(pc.oldPos.x, pc.oldPos.y - PlayerCharacter.radius),
+                new PVector(pc.pos.x, pc.pos.y - PlayerCharacter.radius)); // top to top
+        pcLines[1] = new Line(new PVector(pc.oldPos.x + PlayerCharacter.radius, pc.oldPos.y),
+                new PVector(pc.pos.x + PlayerCharacter.radius, pc.pos.y)); // right to right
+        pcLines[2] = new Line(new PVector(pc.oldPos.x, pc.oldPos.y + PlayerCharacter.radius),
+                new PVector(pc.pos.x, pc.pos.y + PlayerCharacter.radius)); // bottom to bottom
+        pcLines[3] = new Line(new PVector(pc.oldPos.x - PlayerCharacter.radius, pc.oldPos.y),
+                new PVector(pc.pos.x - PlayerCharacter.radius, pc.pos.y)); // left to left
 
-        top = new PVector(pc.pos.x, pc.pos.y - pc.radius);
-        right = new PVector(pc.pos.x + pc.radius, pc.pos.y);
-        bottom = new PVector(pc.pos.x, pc.pos.y + pc.radius);
-        left = new PVector(pc.pos.x - pc.radius, pc.pos.y);
+        top = new PVector(pc.pos.x, pc.pos.y - PlayerCharacter.radius);
+        right = new PVector(pc.pos.x + PlayerCharacter.radius, pc.pos.y);
+        bottom = new PVector(pc.pos.x, pc.pos.y + PlayerCharacter.radius);
+        left = new PVector(pc.pos.x - PlayerCharacter.radius, pc.pos.y);
         pcLines[4] = new Line(top, right);
         pcLines[5] = new Line(right, bottom);
         pcLines[6] = new Line(bottom, left);
         pcLines[7] = new Line(left, top);
 
-        top = new PVector(pc.oldPos.x, pc.oldPos.y - pc.radius);
-        right = new PVector(pc.oldPos.x + pc.radius, pc.oldPos.y);
-        bottom = new PVector(pc.oldPos.x, pc.oldPos.y + pc.radius);
-        left = new PVector(pc.oldPos.x - pc.radius, pc.oldPos.y);
+        top = new PVector(pc.oldPos.x, pc.oldPos.y - PlayerCharacter.radius);
+        right = new PVector(pc.oldPos.x + PlayerCharacter.radius, pc.oldPos.y);
+        bottom = new PVector(pc.oldPos.x, pc.oldPos.y + PlayerCharacter.radius);
+        left = new PVector(pc.oldPos.x - PlayerCharacter.radius, pc.oldPos.y);
         pcLines[8] = new Line(top, right);
         pcLines[9] = new Line(right, bottom);
         pcLines[10] = new Line(bottom, left);
@@ -131,25 +134,25 @@ public class CollisionDetector {
         });
 
         for (Token token : sortedTokens) {
-            if (token.pos.y - token.height / 2 > sketch.height && token.pos.y < token.height / 2) {
+            if (token.pos.y - Token.height / 2 > sketch.height && token.pos.y < Token.height / 2) {
                 // token not on screen
                 // continue search
-            } else if (token.pos.y + token.height / 2 < Math.min(pc.oldPos.y, pc.pos.y) - pc.radius) {
+            } else if (token.pos.y + Token.height / 2 < Math.min(pc.oldPos.y, pc.pos.y) - PlayerCharacter.radius) {
                 // token too high
                 // cut off search
                 break;
-            } else if (token.pos.y - token.height / 2 > Math.max(pc.oldPos.y, pc.pos.y) + pc.radius) {
+            } else if (token.pos.y - Token.height / 2 > Math.max(pc.oldPos.y, pc.pos.y) + PlayerCharacter.radius) {
                 // token too low
                 // continue search
             } else {
-                // token vertically between oldPos and pos + pc.radius
+                // token vertically between oldPos and pos + PlayerCharacter.radius
                 // check horizontal overlap to confirm collision
                 if (dir.y == 0) {
                     // pc was moving horizontally
                     // check if token between start and end of movement
-                    float left = Math.min(pc.pos.x, pc.oldPos.x) - pc.radius;
-                    float right = Math.max(pc.pos.x, pc.oldPos.x) + pc.radius;
-                    if (token.pos.x + token.width / 2 >= left && token.pos.x - token.width / 2 <= right) {
+                    float left = Math.min(pc.pos.x, pc.oldPos.x) - PlayerCharacter.radius;
+                    float right = Math.max(pc.pos.x, pc.oldPos.x) + PlayerCharacter.radius;
+                    if (token.pos.x + Token.width / 2 >= left && token.pos.x - Token.width / 2 <= right) {
                         sketch.levelState.collectToken(token);
                         break;
                     }
@@ -159,8 +162,8 @@ public class CollisionDetector {
                                 ) {
                     // pc moved vertically through the token
                     // check if token horizontally overlaps with pc('s vertical path)
-                    if (token.pos.x + token.width / 2 >= pc.pos.x - pc.radius
-                            && token.pos.x - token.width / 2 <= pc.pos.x + pc.radius) {
+                    if (token.pos.x + Token.width / 2 >= pc.pos.x - PlayerCharacter.radius
+                            && token.pos.x - Token.width / 2 <= pc.pos.x + PlayerCharacter.radius) {
                         sketch.levelState.collectToken(token);
                         break;
                     }

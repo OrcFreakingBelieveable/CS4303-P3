@@ -17,7 +17,6 @@ public abstract class Sketcher extends PApplet {
     public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
     public int roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
 
-    // TODO statically define a sin wave 
     private PVector[] sinWave(float waveWidth, int nSections, float sectionDepth, int verticesPerSection,
             int startOffset) {
         PVector[] vertices = new PVector[nSections * verticesPerSection];

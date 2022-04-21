@@ -1,3 +1,4 @@
+import processing.core.PShape;
 import processing.core.PVector;
 
 public class Wave extends AbstractDrawable {
@@ -5,53 +6,48 @@ public class Wave extends AbstractDrawable {
     public static final float WAVE_INIT_HEIGHT_MOD_DIV = 20f;
     public static final float WAVE_SECTION_DEPTH_DIV = 160f;
     public static final int WAVE_SECTIONS = 12;
-    public static final int WAVE_VERTICES_PER_SECTION = 3;
+    public static final int WAVE_VERTICES_PER_SECTION = 6;
     public static final int WAVE_RISE_RATE_DIV = 8; // seconds to reach the top of the screen
 
-    private static final int FILL_COLOUR = 0xAA0050EF;
-    private static final int STROKE_COLOUR = 0xDD0050EF;
+    private static final int FILL_COLOUR = 0xFF99BBFF;
+    private static final int STROKE_COLOUR = 0xFF0050EF;
 
-    public final float waveInitHeight;
-    public final float waveSectionDepth;
-    public final float waveRiseRate;
+    private static PShape[][] staticTokens = null;
+    public static float waveInitHeight;
 
-    public float waveDepth;
+    public final float defaultWaveRiseRate; 
+    public float waveRiseRate;
 
     protected Wave(DontDrown sketch) {
-        super(sketch);
-        waveInitHeight = sketch.height + sketch.width / WAVE_INIT_HEIGHT_MOD_DIV;
-        waveSectionDepth = sketch.width / WAVE_SECTION_DEPTH_DIV;
-        waveRiseRate = sketch.height / (60f * WAVE_RISE_RATE_DIV);
+        super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
         pos = new PVector(0, waveInitHeight);
-        waveDepth = sketch.height;
+        defaultWaveRiseRate = sketch.height / (60f * WAVE_RISE_RATE_DIV);
+        waveRiseRate = defaultWaveRiseRate;
     }
 
-    @Override
-    protected void generateToken() {
+    protected static PShape[][] generateTokens(DontDrown sketch) {
+        staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+        waveInitHeight = sketch.height + sketch.width / WAVE_INIT_HEIGHT_MOD_DIV;
+        float waveSectionDepth = sketch.width / WAVE_SECTION_DEPTH_DIV;
+        float waveDepth = sketch.height;
+
         sketch.colorModeRGB();
         sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-        token = sketch.handDraw(Sketcher.WAVE, STROKE_COLOUR, FILL_COLOUR, sketch.width, waveDepth, WAVE_SECTIONS,
-                waveSectionDepth, WAVE_VERTICES_PER_SECTION, frameCounter);
+        for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+            sketch.levelState.stress = i;
+            sketch.levelState.sketchiness();
 
-        token.translate(pos.x, pos.y);
-    }
-
-    @Override
-    public void render() {
-        sketch.roughStrokeWeight = sketch.RSW_DEF;
-
-        if (token == null ||
-                (pos.y - waveSectionDepth <= sketch.height) // only re-sketch if on-screen
-                        && (frameCounter++ % (state.framesPerResketch * 2) == 0)) {
-            generateToken();
-        } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
-            PVector movement = pos.copy().sub(oldPos);
-            token.translate(movement.x, movement.y);
+            for (int j = 0; j < VARIANT_TOKENS; j++) {
+                staticTokens[i][j] = sketch.handDraw(Sketcher.WAVE, STROKE_COLOUR, FILL_COLOUR, sketch.width, waveDepth,
+                        WAVE_SECTIONS, waveSectionDepth, WAVE_VERTICES_PER_SECTION, j * 10);
+            }
         }
 
-        oldPos = pos.copy();
-        sketch.shape(token);
+        return staticTokens;
     }
 
+    protected boolean onScreen() {
+        return true;
+    }
 }

@@ -1,4 +1,5 @@
 import processing.core.PConstants;
+import processing.core.PShape;
 import processing.core.PVector;
 
 public class PlayerCharacter extends AbstractDrawable {
@@ -26,6 +27,7 @@ public class PlayerCharacter extends AbstractDrawable {
     private static final int PC_COYOTE_TIME = 2; // frames to jump after falling off the end of a platform
 
     // rendering
+    private static PShape[][] staticTokens = null;
     public static final float PC_MIN_HUE = 280f;
     public static final float PC_MAX_HUE = 360f;
     public static final float PC_MIN_SAT = 0.2f;
@@ -34,13 +36,13 @@ public class PlayerCharacter extends AbstractDrawable {
     public static final float PC_MAX_LIGHT = 0.9f;
     public static final float PC_STROKE_ALPHA = 1f;
     public static final float PC_FILL_ALPHA = 0.85f;
+    public static float diameter;
+    public static float radius;
 
+    // general movement
     public final float incr; // movement increment
     public final float maxSpeed; // max horizontal speed, in incr per frame
-
     public PVector vel; // current velocity
-    public final float diameter;
-    public final float radius; 
 
     // vertical movement
     public Platform surface = null; // platform that the PC is on
@@ -148,13 +150,11 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     public PlayerCharacter(DontDrown sketch) {
-        super(sketch);
+        super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
 
         this.pos = new PVector(sketch.width / 2f, sketch.height / 2f);
         this.oldPos = pos.copy();
 
-        this.diameter = sketch.width / PC_DIAMETER_DIV;
-        this.radius = diameter / 2f;
         this.vel = new PVector();
 
         this.incr = sketch.width / PC_INCR_DIV;
@@ -346,35 +346,37 @@ public class PlayerCharacter extends AbstractDrawable {
         moveState = MoveState.AT_REST;
         this.steerSinceLand = true;
         this.fall(true);
-        if (this.token != null) {
-            this.generateToken();
-        }
     }
 
-    protected void generateToken() {
+    protected static PShape[][] generateTokens(DontDrown sketch) {
+        staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+        diameter = sketch.width / PC_DIAMETER_DIV;
+        radius = diameter / 2f;
+
         sketch.colorModeHSB();
-        int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2],
-                PC_FILL_ALPHA);
-        int strokeColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1],
-                state.stressHSBColour[2] - PC_MIN_LIGHT / 2, PC_STROKE_ALPHA);
-
-        token = sketch.handDraw(PConstants.ELLIPSE, strokeColour, fillColour, 20, 0, 0, diameter, diameter);
-        token.translate(pos.x, pos.y);
-    }
-
-    public void render() {
         sketch.roughStrokeWeight = sketch.RSW_DEF;
+        LevelState state = sketch.levelState;
 
-        if (token == null || frameCounter++ % state.framesPerResketch == 0
-                || Math.abs(state.stress - state.oldStress) > 5) {
-            generateToken();
-        } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
-            PVector movement = pos.copy().sub(oldPos);
-            token.translate(movement.x, movement.y);
+        for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+            state.stress = i;
+            state.sketchiness();
+            state.recalcStressHSBColour();
+
+            int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2],
+                    PC_FILL_ALPHA);
+            int strokeColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1],
+                    state.stressHSBColour[2] - PC_MIN_LIGHT / 2, PC_STROKE_ALPHA);
+            for (int j = 0; j < VARIANT_TOKENS; j++) {
+                staticTokens[i][j] = sketch.handDraw(PConstants.ELLIPSE, strokeColour, fillColour, 20, 0, 0, diameter,
+                        diameter);
+            }
         }
 
-        oldPos = pos.copy();
-        sketch.shape(token);
-
+        return staticTokens;
     }
+
+    protected boolean onScreen() {
+        return true;
+    }
+
 }

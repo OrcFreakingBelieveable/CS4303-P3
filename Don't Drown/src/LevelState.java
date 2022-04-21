@@ -3,10 +3,9 @@ public class LevelState {
     private final DontDrown sketch;
 
     public static final int ABS_MAX_STRESS = 100;
-
-    private static final int FRAMES_PER_RESKETCH_MAX = 40;
-    private static final int FRAMES_PER_RESKETCH_MIN = 10;
-    private static final int FRAMES_PER_RESKETCH_RANGE = FRAMES_PER_RESKETCH_MAX - FRAMES_PER_RESKETCH_MIN;
+    public static final int FRAMES_PER_RESKETCH_MAX = 40;
+    public static final int FRAMES_PER_RESKETCH_MIN = 10;
+    public static final int FRAMES_PER_RESKETCH_RANGE = FRAMES_PER_RESKETCH_MAX - FRAMES_PER_RESKETCH_MIN;
 
     public enum Debuff {
         STRESS_MOTIVATED,
@@ -91,7 +90,7 @@ public class LevelState {
         pcMinSpeed = pcFriction * PlayerCharacter.I_MASS * sketch.pc.incr;
     }
 
-    private void stressHSBColour() {
+    public void recalcStressHSBColour() {
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             float[] hsb = new float[3];
             int stressRating = stress - stressEffectThreshold;
@@ -106,7 +105,7 @@ public class LevelState {
 
     }
 
-    private void sketchiness() {
+    public void sketchiness() {
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             int stressRating = stress - stressEffectThreshold;
             framesPerResketch = (int) (FRAMES_PER_RESKETCH_MAX - stressRating * framesPerResketchMultiplier);
@@ -134,7 +133,7 @@ public class LevelState {
         pcThrust();
         pcFriction();
         pcMinSpeed();
-        stressHSBColour();
+        recalcStressHSBColour();
         sketchiness();
         sketch.risingWave.pos.sub(0, sketch.risingWave.waveRiseRate); 
         oldStress = stress;
