@@ -48,7 +48,7 @@ public class Level {
         this.lowestPlatformHeight = 9 * viewportHeight / 10;
         topLimit = sketch.height - height;
         top = topLimit;
-        this.highestPlatformHeight = topLimit + viewportHeight / 10 + sketch.scoreOverlay.height;
+        this.highestPlatformHeight = topLimit + viewportHeight / 10 + sketch.scoreOverlay.endOfPadding;
         this.marginX = (float) sketch.width / MARGIN_DIV;
         this.playableWidth = sketch.width - marginX;
         waveHeight = height;

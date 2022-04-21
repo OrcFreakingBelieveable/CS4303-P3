@@ -7,7 +7,7 @@ public class ScoreOverlay {
     private class StressBar extends AbstractDrawable {
 
         private static final float STRESS_BAR_WIDTH_DIV = 2f;
-        private static final float STRESS_BAR_HEIGHT_DIV = 20f; // as a ratio of width 
+        private static final float STRESS_BAR_HEIGHT_DIV = 20f; // as a ratio of width
 
         private final float width;
         private final float height;
@@ -64,11 +64,49 @@ public class ScoreOverlay {
 
     }
 
-    private static final float SCORE_TEXT_DIV = 60f;
+    private class BigToken extends AbstractDrawable {
 
-    public final float height; 
+        protected BigToken(DontDrown sketch) {
+            super(sketch);
+            pos = new PVector(sketch.width - stressBar.width / 3, 1.5f * stressBar.height);
+        }
+
+        @Override
+        protected void generateToken() {
+            sketch.colorModeRGB();
+            token = sketch.handDraw(PConstants.QUAD, Token.T_STROKE_COLOUR, Token.T_FILL_COLOUR,
+                    0, -stressBar.height,
+                    stressBar.height, 0,
+                    0, stressBar.height,
+                    -stressBar.height, 0);
+            token.translate(pos.x, pos.y);
+
+        }
+
+        @Override
+        public void render() {
+            sketch.roughStrokeWeight = sketch.RSW_DEF;
+
+            if (token == null || frameCounter++ % state.framesPerResketch == 0
+                    || Math.abs(state.stress - state.oldStress) > 5) {
+                generateToken();
+            } else if (oldPos.x != pos.x || oldPos.y != pos.y) {
+                PVector movement = pos.copy().sub(oldPos);
+                token.translate(movement.x, movement.y);
+            }
+
+            oldPos = pos.copy();
+            sketch.shape(token);
+        }
+
+    }
+
+    private static final float SCORE_TEXT_DIV = 65f;
+
+    public final float endOfPadding;
 
     private final StressBar stressBar;
+    private final BigToken bigToken;
     private final DontDrown sketch;
     private final float textSize;
 
@@ -76,7 +114,8 @@ public class ScoreOverlay {
         this.sketch = sketch;
         this.textSize = sketch.width / SCORE_TEXT_DIV;
         stressBar = new StressBar(sketch);
-        this.height = stressBar.height * 3; 
+        bigToken = new BigToken(sketch);
+        this.endOfPadding = stressBar.height * 3;
     }
 
     public void render() {
@@ -85,11 +124,15 @@ public class ScoreOverlay {
 
         // token count
         sketch.colorModeRGB();
+        bigToken.render();
         sketch.fill(0xFF000000);
-        sketch.textAlign(PConstants.RIGHT, PConstants.TOP);
+        sketch.textAlign(PConstants.CENTER, PConstants.CENTER);
         sketch.textSize(textSize);
         StringBuilder content = new StringBuilder();
-        sketch.text(content.toString(), textSize, textSize);
+        content.append(sketch.levelState.tokensCollected);
+        content.append("/");
+        content.append(sketch.levelState.tokensAvailable);
+        sketch.text(content.toString(), bigToken.pos.x, bigToken.pos.y - textSize/6);
     }
 
 }

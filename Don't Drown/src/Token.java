@@ -3,6 +3,9 @@ import processing.core.PVector;
 
 public class Token extends AbstractDrawable {
 
+    public static final int T_STROKE_COLOUR = 0xDDB09500;
+    public static final int T_FILL_COLOUR = 0xAAE3C800;
+
     private static final float T_HEIGHT_DIV = 40f;
     private static final int T_BOUNCE_FRAMES = 30;
 
@@ -11,8 +14,6 @@ public class Token extends AbstractDrawable {
     private final float bounceHeight;
     private final float bounceIncr;
 
-    private int strokeColour = 0xDDB09500;
-    private int fillColour = 0xAAE3C800;
     private boolean movingDown = false;
 
     public Token(DontDrown sketch, float x, float y) {
@@ -59,7 +60,7 @@ public class Token extends AbstractDrawable {
         sketch.colorModeRGB();
         sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-        token = sketch.handDraw(PConstants.QUAD, strokeColour, fillColour,
+        token = sketch.handDraw(PConstants.QUAD, T_STROKE_COLOUR, T_FILL_COLOUR,
                 0, -height / 2,
                 width / 2, 0,
                 0, height / 2,
