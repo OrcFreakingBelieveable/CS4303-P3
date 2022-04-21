@@ -74,6 +74,9 @@ public class DontDrown extends Sketcher {
                     level.panningState = Level.PanningState.NEITHER;
                 }
 
+                // detect collisions
+                collisionDetector.detectCollisions();
+
                 // draw
                 level.render();
                 pc.render();
@@ -81,10 +84,9 @@ public class DontDrown extends Sketcher {
                 if (debugging)
                     debugOverlay.render();
                 scoreOverlay.render();
-
-                // detect collisions (after they visually occur)
-                collisionDetector.detectCollisions();
+                
                 break;
+
         }
 
     }
