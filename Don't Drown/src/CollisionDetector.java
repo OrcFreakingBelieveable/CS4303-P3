@@ -153,8 +153,11 @@ public class CollisionDetector {
                         sketch.levelState.collectToken(token);
                         break;
                     }
-                } else if (dir.x == 0) {
-                    // pc was moving vertically
+                } else if (dir.x == 0 &&
+                        (pc.pos.y <= token.pos.y && pc.oldPos.y >= token.pos.y // pc moved downward through the token 
+                                || pc.oldPos.y <= token.pos.y && pc.pos.y >= token.pos.y) // pc moved upward through the token 
+                                ) {
+                    // pc moved vertically through the token
                     // check if token horizontally overlaps with pc('s vertical path)
                     if (token.pos.x + token.width / 2 >= pc.pos.x - pc.radius
                             && token.pos.x - token.width / 2 <= pc.pos.x + pc.radius) {
@@ -168,7 +171,7 @@ public class CollisionDetector {
                         sketch.levelState.collectToken(token);
                         break;
                     }
-                }  
+                }
             }
         }
     }

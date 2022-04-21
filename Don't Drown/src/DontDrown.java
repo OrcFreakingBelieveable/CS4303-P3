@@ -47,9 +47,6 @@ public class DontDrown extends Sketcher {
         pc.integrate();
         level.integrate();
 
-        // detect collisions
-        collisionDetector.detectCollisions();
-
         // check if panning needed
         if (pc.pos.y < scoreOverlay.endOfPadding + 2 * pc.jumpHeight) {
             level.panningState = Level.PanningState.UP;
@@ -65,7 +62,9 @@ public class DontDrown extends Sketcher {
         if (debugging)
             debugOverlay.render();
         scoreOverlay.render();
-
+        
+        // detect collisions (after they visually occur)
+        collisionDetector.detectCollisions();
     }
 
     @Override
