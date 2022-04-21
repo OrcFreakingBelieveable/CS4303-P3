@@ -6,26 +6,40 @@ import processing.core.PVector;
 public abstract class Sketcher extends PApplet {
 
     public static final float RSW_DEF_DIV = 500f;
-    public float RSW_DEF;
     public static final float RSV_MIN = 0.15f;
     public static final float RSV_MAX = 0.6f;
     public static final int RSS_MIN = 1;
     public static final int RSS_MAX = 5;
+    public static final int WAVE = 69;
 
+    public float RSW_DEF;
     public float roughStrokeWeight; // the average weight of hand drawn lines
     public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
     public int roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
 
-    private PShape drawLine(PVector start, PVector end, float startWeight, float endWeight) {
+    // TODO statically define a sin wave 
+    private PVector[] sinWave(float waveWidth, int nSections, float sectionDepth, int verticesPerSection,
+            int startOffset) {
+        PVector[] vertices = new PVector[nSections * verticesPerSection];
+        float xIncr = waveWidth / (vertices.length - 1);
+        for (int i = 0; i < vertices.length; i++) {
+            vertices[i] = new PVector(i * xIncr,
+                    sectionDepth
+                            * sin(TAU * (((i + startOffset) % (2f * verticesPerSection)) / (2f * verticesPerSection))));
+        }
+        return vertices;
+    }
+
+    private PShape drawDualWeightedLine(PVector start, PVector end, float startWeight, float endWeight) {
         float heading = (start.copy().sub(end)).heading();
         heading += HALF_PI;
         PVector startPadding = PVector.fromAngle(heading).mult(startWeight);
         PVector endPadding = PVector.fromAngle(heading).mult(endWeight);
-        
+
         PVector topLeft = start.copy().sub(startPadding);
         PVector topRight = end.copy().sub(endPadding);
-        PVector bottomRight = topRight.copy().add(endPadding);
-        PVector bottomLeft = topLeft.copy().add(startPadding);
+        PVector bottomRight = end.copy();
+        PVector bottomLeft = start.copy();
 
         return createShape(PConstants.QUAD,
                 topLeft.x, topLeft.y,
@@ -160,7 +174,7 @@ public abstract class Sketcher extends PApplet {
                     // generate the lines around the circumference of the ellipse
                     PVector start = new PVector(centreX + width * cos(0), centreY + height * sin(0));
                     PVector end = new PVector();
-                    float startWeight = roughStrokeWeight; 
+                    float startWeight = roughStrokeWeight;
                     float roughStrokeVariability = roughStrokeWeight * roughStrokeVariabilityRate;
                     float endWeight = roughStrokeWeight + random(-roughStrokeVariability, roughStrokeVariability);
 
@@ -169,22 +183,53 @@ public abstract class Sketcher extends PApplet {
                         end.x = (centreX + width * cos(angle));
                         end.y = (centreY + height * sin(angle));
 
-                        PShape line = drawLine(start, end, startWeight, endWeight);
+                        PShape line = drawDualWeightedLine(start, end, startWeight, endWeight);
                         line.setFill(strokeColour);
                         ellipse.addChild(line);
 
                         start.x = end.x;
                         start.y = end.y;
-                        startWeight = endWeight; 
+                        startWeight = endWeight;
                         endWeight = roughStrokeWeight + random(-roughStrokeVariability, roughStrokeVariability);
                     }
 
                     return ellipse;
                 }
+            case WAVE:
+                // width, height, nSections, sectionDepth, verticesPerSection, startOffset
+
+                PShape wave = createShape(GROUP);
+                PVector[] vertices = sinWave(params[0], (int) params[2], params[3], (int) params[4], (int) params[5]);
+
+                // add the fill as a normal shape
+                PShape fill = createShape();
+                fill.beginShape();
+                for (PVector vertex : vertices) {
+                    fill.vertex(vertex.x, vertex.y);
+                }
+                fill.vertex(params[0], params[1]);
+                fill.vertex(0, params[1]);
+                fill.fill(fillColour);
+                fill.endShape(CLOSE);
+                wave.addChild(fill);
+
+                // generate the weighted line at the top of the wave
+                float startWeight = roughStrokeWeight;
+                float roughStrokeVariability = roughStrokeWeight * roughStrokeVariabilityRate;
+                float endWeight = roughStrokeWeight + random(-roughStrokeVariability, roughStrokeVariability);
+                for (int i = 0; i < vertices.length - 1; i++) {
+                    PShape line = drawDualWeightedLine(vertices[i], vertices[i + 1], startWeight, endWeight);
+                    line.setFill(strokeColour);
+                    wave.addChild(line);
+
+                    startWeight = endWeight;
+                    endWeight = roughStrokeWeight + random(-roughStrokeVariability, roughStrokeVariability);
+                }
+
+                return wave;
             default:
-                System.err.println("handDraw() only works with QUAD, RECT, and ELLIPSE objects");
+                System.err.println("handDraw() only works with QUAD, RECT, ELLIPSE and WAVE objects");
                 return createShape(type, params);
         }
     }
-
 }

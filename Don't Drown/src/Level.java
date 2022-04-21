@@ -204,6 +204,7 @@ public class Level {
             token.pan(y);
         }
         sketch.pc.pan(y);
+        sketch.risingWave.pan(y); 
     }
 
     public void render() {

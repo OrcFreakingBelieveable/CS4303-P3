@@ -4,6 +4,7 @@ public class DontDrown extends Sketcher {
 
     LevelState levelState;
     PlayerCharacter pc;
+    Wave risingWave; 
     DebugOverlay debugOverlay;
     ScoreOverlay scoreOverlay;
     Level level;
@@ -21,6 +22,8 @@ public class DontDrown extends Sketcher {
     private void newLevel(DontDrown sketch) {
         level = new Level(sketch, height * 2, true, 1f);
         levelState.reset(level);
+        risingWave.waveDepth = level.height; 
+        risingWave.pos.y = risingWave.waveInitHeight;
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - pc.diameter);
     }
@@ -31,6 +34,7 @@ public class DontDrown extends Sketcher {
         this.RSW_DEF = width / RSW_DEF_DIV;
         levelState = new LevelState(this);
         pc = new PlayerCharacter(this);
+        risingWave = new Wave(this);
         levelState.pcCalcs();
         debugOverlay = new DebugOverlay(this);
         scoreOverlay = new ScoreOverlay(this);
@@ -59,6 +63,7 @@ public class DontDrown extends Sketcher {
         // draw
         level.render();
         pc.render();
+        risingWave.render(); 
         if (debugging)
             debugOverlay.render();
         scoreOverlay.render();

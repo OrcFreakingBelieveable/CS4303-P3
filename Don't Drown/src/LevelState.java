@@ -136,6 +136,7 @@ public class LevelState {
         pcMinSpeed();
         stressHSBColour();
         sketchiness();
+        sketch.risingWave.pos.sub(0, sketch.risingWave.waveRiseRate); 
         oldStress = stress;
     }
 }
