@@ -153,8 +153,6 @@ public class PlayerCharacter extends AbstractDrawable {
         super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
 
         this.pos = new PVector(sketch.width / 2f, sketch.height / 2f);
-        this.oldPos = pos.copy();
-
         this.vel = new PVector();
 
         this.incr = sketch.width / PC_INCR_DIV;
@@ -336,8 +334,6 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     public void reset(float x, float y) {
-        this.oldPos.x = x;
-        this.oldPos.y = y;
         this.pos.x = x;
         this.pos.y = y;
         this.vel.x = 0;

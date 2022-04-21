@@ -33,7 +33,7 @@ public class DontDrown extends Sketcher {
         risingWave.pos.y = Wave.waveInitHeight;
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - PlayerCharacter.diameter);
-        collisionDetector.pcOldPos = pc.oldPos; 
+        collisionDetector.pcOldPos = pc.pos.copy(); 
     }
 
     @Override
@@ -53,8 +53,8 @@ public class DontDrown extends Sketcher {
                 levelState.pcCalcs();
                 debugOverlay = new DebugOverlay(this);
                 scoreOverlay = new ScoreOverlay(this);
-                newLevel(this);
                 collisionDetector = new CollisionDetector(this);
+                newLevel(this);
 
                 gameState = GameState.MID_LEVEL;
                 break;

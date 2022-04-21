@@ -13,7 +13,6 @@ public abstract class AbstractDrawable {
     protected final LevelState state;
     protected final int redrawOffset;
 
-    public PVector oldPos; // movement in the last frame
     public PVector pos; // position
 
     private final PShape[][] tokens;
@@ -30,8 +29,6 @@ public abstract class AbstractDrawable {
     }
 
     public void render() {
-        oldPos = pos.copy();
-
         if (onScreen()) {
             if (token == null
                     || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0
