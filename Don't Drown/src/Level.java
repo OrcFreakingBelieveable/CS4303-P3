@@ -1,25 +1,21 @@
 import java.util.ArrayList;
 
-import processing.core.PConstants;
-import processing.core.PShape;
 import processing.core.PVector;
 
 public class Level {
 
-    private static final int LINE_COLOUR = 0xFF666666;
-    private static final int MARGIN_COLOUR = 0x88B85450;
-    public static final int MARGIN_DIV = 10;
     public static final float PAN_RATE_DIV = PlayerCharacter.PC_DIAMETER_DIV * 10f;
 
     private final DontDrown sketch;
 
+    public final String name;
+    private final Page page;
     public final float panRate;
     public final int height;
-    public final int topLimit;
+    public final int topLimit; // used to stop over-apnning 
     public final float lowestPlatformHeight;
     public final float highestPlatformHeight;
     public final float playableWidth;
-    public final float marginX;
 
     private final float tokenElevation; // height above platforms
     private final float pToken;
@@ -34,56 +30,27 @@ public class Level {
 
     public PanningState panningState = PanningState.NEITHER;
 
-    public float top;
-    public PShape lines = null;
+    public int top;
     public ArrayList<Token> tokens = new ArrayList<>();
     public ArrayList<Platform> platforms = new ArrayList<>();
     public Platform highestPlatform;
 
-    public Level(DontDrown sketch, int height, boolean hasGround, float pToken) {
+    public Level(DontDrown sketch, String name, int height, boolean hasGround, float pToken) {
         this.sketch = sketch;
+        this.name = name;
         this.height = height;
-        this.viewportHeight = sketch.height;
-        this.lowestPlatformHeight = .75f * sketch.height;
+        page = new Page(sketch, height); 
+        viewportHeight = sketch.height;
+        lowestPlatformHeight = .75f * sketch.height;
         topLimit = sketch.height - height;
         top = topLimit;
-        this.highestPlatformHeight = topLimit + viewportHeight / 10 + sketch.scoreOverlay.endOfPadding;
-        this.marginX = (float) sketch.width / MARGIN_DIV;
-        this.playableWidth = sketch.width - marginX;
+        highestPlatformHeight = top + viewportHeight / 10 + sketch.scoreOverlay.endOfPadding;
+        playableWidth = sketch.width - Page.marginX;
         panRate = height / PAN_RATE_DIV;
         this.pToken = pToken;
         tokenElevation = 0.75f * sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
 
         generatePlatformsAndTokens(hasGround, 0.5f);
-    }
-
-    private PShape drawLine(PVector start, PVector end, float weight, int colour) {
-        PVector smoothLine = start.copy().sub(end);
-        float angle = smoothLine.heading();
-        angle += PConstants.HALF_PI;
-        PVector padding = PVector.fromAngle(angle).mult(weight / 2);
-        PVector topLeft = start.copy().sub(padding);
-        PVector topRight = end.copy().sub(padding);
-        PVector bottomRight = topRight.copy().add(padding);
-        PVector bottomLeft = topLeft.copy().add(padding);
-
-        PShape line = sketch.createShape(PConstants.QUAD,
-                topLeft.x, topLeft.y, topRight.x, topRight.y,
-                bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
-
-        line.setFill(colour);
-        return line;
-    }
-
-    private void generateLines() {
-        lines = sketch.createShape(PConstants.GROUP);
-        final float lineGap = sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
-        for (int i = 1; i <= height / lineGap; i++) {
-            lines.addChild(
-                    drawLine(new PVector(0, topLimit + i * lineGap), new PVector(sketch.width, topLimit + i * lineGap),
-                            1, LINE_COLOUR));
-        }
-        lines.addChild(drawLine(new PVector(marginX, topLimit), new PVector(marginX, height), 1, MARGIN_COLOUR));
     }
 
     private void addToken(float x, float y) {
@@ -98,7 +65,7 @@ public class Level {
         int stuckCount = 0;
 
         if (hasGround) {
-            currentPlatform = new Platform(sketch, marginX, lowestPlatformHeight, playableWidth);
+            currentPlatform = new Platform(sketch, Page.marginX, lowestPlatformHeight, playableWidth);
             platforms.add(currentPlatform);
         } else {
             currentPlatform = new Platform(sketch, sketch.random(playableWidth), lowestPlatformHeight);
@@ -115,7 +82,7 @@ public class Level {
             if (currentPlatform.width == playableWidth) {
                 diffX = sketch.random(0, playableWidth - nextPlatform.width);
             } else {
-                boolean goingLeft = sketch.random(0f, 1f) < (currentPlatform.pos.x - marginX) / playableWidth;
+                boolean goingLeft = sketch.random(0f, 1f) < (currentPlatform.pos.x - Page.marginX) / playableWidth;
                 diffX = goingLeft ? sketch.random(-jumpRange, 0) : sketch.random(0, jumpRange - nextPlatform.width);
             }
 
@@ -140,7 +107,7 @@ public class Level {
                         : maxDiffY * sketch.random(0f, 1f);
             }
 
-            float x = Math.max(marginX, currentPlatform.pos.x + diffX);
+            float x = Math.max(Page.marginX, currentPlatform.pos.x + diffX);
             x = Math.min(x, sketch.width - nextPlatform.width);
             float y = Math.min(height - nextPlatform.height, currentPlatform.pos.y - diffY);
             y = Math.max(highestPlatformHeight, y);
@@ -183,7 +150,7 @@ public class Level {
                 pan(Math.max(panRate, Math.abs(sketch.pc.vel.y)));
             }
         } else if (panningState.equals(PanningState.DOWN)) {
-            if (top - panRate <= topLimit) {
+            if (top - panRate <= page.topLineY) {
                 pan(topLimit - top);
                 panningState = PanningState.NEITHER;
             } else {
@@ -194,7 +161,7 @@ public class Level {
 
     private void pan(float y) {
         top += y;
-        lines.translate(0, y);
+        page.lines.translate(0, y);
         for (Platform platform : platforms) {
             platform.pos.y += y;
         }
@@ -205,14 +172,8 @@ public class Level {
         sketch.risingWave.pos.y += y;
     }
 
-    public void render() {
-        if (lines == null) {
-            generateLines();
-        }
-
-        sketch.colorModeRGB();
-        sketch.background(0xFFFFFFEE);
-        sketch.shape(lines);
+    public void render() {     
+        page.render(); 
 
         int i = 0;
         for (Platform platform : platforms) {

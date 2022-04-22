@@ -257,8 +257,8 @@ public class PlayerCharacter extends AbstractDrawable {
         updateVelocity();
         pos.add(vel);
         if (sketch.level != null) {
-            if (pos.x - diameter / 2 <= sketch.level.marginX) {
-                pos.x = sketch.level.marginX + diameter / 2;
+            if (pos.x - diameter / 2 <= Page.marginX) {
+                pos.x = Page.marginX + diameter / 2;
                 vel.x = Math.abs(vel.x) * PC_BOUNCE_MULT;
             } else if (pos.x + diameter / 2 >= sketch.width) {
                 pos.x = sketch.width - diameter / 2;

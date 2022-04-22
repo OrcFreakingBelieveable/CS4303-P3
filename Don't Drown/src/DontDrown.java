@@ -2,19 +2,25 @@ import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
 
-    enum GameState {
+    public static String[] levelTitles = new String[] { "Tutorial", "Panic Prone", "Overworked", "Can't Unwind",
+            "Stress Motivated", "Tunnel Vision", "Lacking Self-awareness" };
+
+    public enum GameState {
         STARTUP,
         MID_LEVEL,
-        BETWEEN_LEVELS,
+        IN_MENU,
         ;
     }
 
     GameState gameState = GameState.STARTUP;
+    GameMenu gameMenu;
     LevelState levelState;
     PlayerCharacter pc;
     Wave risingWave;
+    Wave staticWave;
     DebugOverlay debugOverlay;
     ScoreOverlay scoreOverlay;
+    Level[] levels;
     Level level;
     CollisionDetector collisionDetector;
     public boolean debugging = true;
@@ -27,8 +33,19 @@ public class DontDrown extends Sketcher {
         colorMode(ARGB, 255, 255, 255, 255);
     }
 
+    private void generateLevels() {
+        levels = new Level[] {
+                new Level(this, "Feeling Typical", height * 2, true, 0.1f),
+                new Level(this, "Panic Prone", height * 2, true, 0.1f),
+                new Level(this, "Overworked", height * 2, true, 0.1f),
+                new Level(this, "Can't Unwind", height * 2, true, 0.1f),
+                new Level(this, "Stress Motivated", height * 2, true, 0.1f),
+                new Level(this, "Tunnel Vision", height * 2, true, 0.1f),
+                new Level(this, "Lacking Self-awareness", height * 2, true, 0.1f) };
+    }
+
     private void newLevel(DontDrown sketch) {
-        level = new Level(sketch, height * 2, true, 0.1f);
+        level = new Level(sketch, "Generic", height * 2, true, 0.1f);
         levelState.reset(level);
         risingWave.pos.y = Wave.waveInitHeight;
         Platform ground = level.platforms.get(0);
@@ -38,7 +55,7 @@ public class DontDrown extends Sketcher {
 
     @Override
     public void settings() {
-        size(displayWidth, displayHeight);
+        size((int) (displayWidth * 0.9), (int) (displayHeight * 0.9));
         this.RSW_DEF = width / RSW_DEF_DIV;
     }
 
@@ -50,15 +67,20 @@ public class DontDrown extends Sketcher {
                 levelState = new LevelState(this);
                 pc = new PlayerCharacter(this);
                 risingWave = new Wave(this);
+                staticWave = new Wave(this);
                 levelState.pcCalcs();
                 debugOverlay = new DebugOverlay(this);
                 scoreOverlay = new ScoreOverlay(this);
                 collisionDetector = new CollisionDetector(this);
+                gameMenu = new GameMenu(this);
+                generateLevels();
                 newLevel(this);
 
-                gameState = GameState.MID_LEVEL;
+                gameState = GameState.IN_MENU;
                 break;
-            case BETWEEN_LEVELS:
+            case IN_MENU:
+                gameMenu.render();
+                break;
             case MID_LEVEL:
                 // update positions
                 levelState.update();
@@ -84,7 +106,7 @@ public class DontDrown extends Sketcher {
                 if (debugging)
                     debugOverlay.render();
                 scoreOverlay.render();
-                
+
                 break;
 
         }
@@ -94,7 +116,7 @@ public class DontDrown extends Sketcher {
     @Override
     public void keyPressed() {
         switch (gameState) {
-            case BETWEEN_LEVELS:
+            case IN_MENU:
             case STARTUP:
                 // ignore inputs
                 break;
@@ -115,6 +137,10 @@ public class DontDrown extends Sketcher {
                     }
                 } else if (key == 'd' || key == 'D') {
                     debugging = !debugging;
+                } else if (key == 'p' || key == 'P') {
+                    gameMenu.midLevel = true;
+                    gameMenu.menuState = GameMenu.MenuState.PAUSE_MENU;
+                    gameState = GameState.IN_MENU;
                 } else if (debugging) {
                     switch (key) {
                         case '`':
@@ -184,6 +210,13 @@ public class DontDrown extends Sketcher {
                 default:
                     // do nothing
             }
+        }
+    }
+
+    @Override
+    public void mouseClicked() {
+        if (gameState.equals(GameState.IN_MENU)) {
+            gameMenu.resolveClick();
         }
     }
 
