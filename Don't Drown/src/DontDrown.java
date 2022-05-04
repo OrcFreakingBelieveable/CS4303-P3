@@ -2,6 +2,9 @@ import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
 
+    // TODO sort tokens and platforms at start of level 
+    // TODO make stress relative to distance between PC and wave 
+
     public enum GameState {
         STARTUP,
         MID_LEVEL,

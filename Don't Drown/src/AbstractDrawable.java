@@ -8,6 +8,7 @@ import processing.core.PVector;
 public abstract class AbstractDrawable {
 
     public static final int VARIANT_TOKENS = 15;
+    public static final int FRAMES_PER_STRESS_BAR_RESKETCH = 2;
 
     protected final DontDrown sketch;
     protected final LevelState state;
@@ -31,15 +32,27 @@ public abstract class AbstractDrawable {
     protected void renderAD() {
         if (onScreen()) {
             if (token == null
-                    || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0
-            /* || Math.abs(state.stress - state.oldStress) > 5 */) {
+                    || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0) {
                 tokenIndex = (tokenIndex + 1) % VARIANT_TOKENS;
-                token = tokens[state.stress][tokenIndex];
+                token = tokens[(int) state.stress][tokenIndex];
             }
 
             sketch.shape(token, pos.x, pos.y);
         }
     }
 
-    public abstract void render(); 
+    protected void renderADStress() {
+        if (onScreen()) {
+            if (token == null
+                    || (sketch.frameCount + redrawOffset) % FRAMES_PER_STRESS_BAR_RESKETCH == 0) {
+                tokenIndex = (tokenIndex + 1) % VARIANT_TOKENS;
+                int stressIndex = (int) Math.max(0, (state.stress * ScoreOverlay.StressBar.STRESS_BAR_RESOLUTION));
+                token = tokens[stressIndex][tokenIndex];
+            }
+
+            sketch.shape(token, pos.x, pos.y);
+        }
+    }
+
+    public abstract void render();
 }

@@ -4,8 +4,9 @@ import processing.core.PVector;
 
 public class ScoreOverlay {
 
-    private static class StressBar extends AbstractDrawable {
+    public static class StressBar extends AbstractDrawable {
 
+        public static final int STRESS_BAR_RESOLUTION = 10;
         private static final float STRESS_BAR_WIDTH_DIV = 2f;
         private static final float STRESS_BAR_HEIGHT_DIV = 20f; // as a ratio of width
 
@@ -20,14 +21,14 @@ public class ScoreOverlay {
         }
 
         protected static PShape[][] generateTokens(DontDrown sketch) {
-            staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+            staticTokens = new PShape[(LevelState.ABS_MAX_STRESS + 1) * STRESS_BAR_RESOLUTION][VARIANT_TOKENS];
             width = sketch.width / STRESS_BAR_WIDTH_DIV;
             height = width / STRESS_BAR_HEIGHT_DIV;
             int outlineWeight = (int) (height / 10);
             PVector pos = new PVector(sketch.width / 2f - width / 2, height);
 
-            for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
-                sketch.levelState.stress = i;
+            for (int i = 0; i <= LevelState.ABS_MAX_STRESS * STRESS_BAR_RESOLUTION; i++) {
+                sketch.levelState.stress = i / (float) STRESS_BAR_RESOLUTION;
                 sketch.levelState.sketchiness();
                 sketch.levelState.recalcStressHSBColour();
 
@@ -41,7 +42,7 @@ public class ScoreOverlay {
                             pos.x, pos.y, width, height));
 
                     /* bar fill */
-                    if (sketch.levelState.stress != 0) {
+                    if (sketch.levelState.stress > 0) {
                         sketch.colorModeHSB();
                         float[] colour = sketch.levelState.stressHSBColour;
                         int fillColour = sketch.color(colour[0], colour[1], colour[2]);
@@ -49,7 +50,7 @@ public class ScoreOverlay {
                                 sketch.handDraw(PConstants.RECT, fillColour, fillColour, pos.x + outlineWeight,
                                         pos.y + outlineWeight,
                                         (width - 2 * outlineWeight)
-                                                * ((float) sketch.levelState.stress / LevelState.ABS_MAX_STRESS),
+                                                * (sketch.levelState.stress / LevelState.ABS_MAX_STRESS),
                                         height - 2 * outlineWeight));
                     }
 
@@ -65,7 +66,7 @@ public class ScoreOverlay {
         }
 
         public void render() {
-            renderAD();
+            renderADStress();
         }
     }
 

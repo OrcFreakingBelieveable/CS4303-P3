@@ -6,6 +6,8 @@ public class LevelState {
     public static final int FRAMES_PER_RESKETCH_MAX = 40;
     public static final int FRAMES_PER_RESKETCH_MIN = 10;
     public static final int FRAMES_PER_RESKETCH_RANGE = FRAMES_PER_RESKETCH_MAX - FRAMES_PER_RESKETCH_MIN;
+    public static final float STRESS_INCR_RATE = 0.1f;
+    public static final float STRESS_DECR_RATE = 0.1f;
 
     public enum Debuff {
         STRESS_MOTIVATED,
@@ -17,8 +19,8 @@ public class LevelState {
 
     public int tokensAvailable = 0;
     public int tokensCollected = 0;
-    public int oldStress = 0;
-    public int stress = 0;
+    public float oldStress = 0;
+    public float stress = 0f;
     public int maxStress = 100;
     public int minStress = 0;
     public int stressEffectThreshold = 20;
@@ -69,7 +71,7 @@ public class LevelState {
     }
 
     private void pcThrust() {
-        int stressRating = stress - stressEffectThreshold;
+        float stressRating = stress - stressEffectThreshold;
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             pcThrust = sketch.pc.minHorizontalThrust + stressRating * pcThrustMultiplier;
         } else {
@@ -78,7 +80,7 @@ public class LevelState {
     }
 
     private void pcFriction() {
-        int stressRating = stress - stressEffectThreshold;
+        float stressRating = stress - stressEffectThreshold;
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             pcFriction = sketch.pc.maxHorizontalFriction - stressRating * pcFrictionMultiplier;
 
@@ -94,7 +96,7 @@ public class LevelState {
     public void recalcStressHSBColour() {
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             float[] hsb = new float[3];
-            int stressRating = stress - stressEffectThreshold;
+            float stressRating = stress - stressEffectThreshold;
             hsb[0] = PlayerCharacter.PC_MIN_HUE + stressRating * stressHueMultiplier;
             hsb[1] = PlayerCharacter.PC_MIN_SAT + stressRating * stressSatMultiplier;
             hsb[2] = PlayerCharacter.PC_MIN_LIGHT + stressRating * stressLightMultiplier;
@@ -108,7 +110,7 @@ public class LevelState {
 
     public void sketchiness() {
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
-            int stressRating = stress - stressEffectThreshold;
+            float stressRating = stress - stressEffectThreshold;
             framesPerResketch = (int) (FRAMES_PER_RESKETCH_MAX - stressRating * framesPerResketchMultiplier);
             sketch.roughStrokeVariabilityRate = Sketcher.RSV_MIN + stressRating * strokeVariabilityMultiplier;
             sketch.roughStrokeShakiness = (int) (Sketcher.RSS_MIN + stressRating * strokeShakinessMultiplier);

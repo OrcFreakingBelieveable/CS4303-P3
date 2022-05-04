@@ -183,12 +183,23 @@ public class CollisionDetector {
         }
     }
 
+    public void detectWaveProximity() {
+        if (sketch.risingWave.pos.y <= sketch.height) {
+            sketch.levelState.stress += LevelState.STRESS_INCR_RATE;
+        } else {
+            sketch.levelState.stress -= LevelState.STRESS_DECR_RATE;
+        }
+    }
+
     public void detectCollisions() {
         PlayerCharacter pc = sketch.pc;
-        PVector dir = (pc.pos.copy().sub(pcOldPos)).normalize(); // i.e. pc.vel from last frame + panning
+        PVector dir = (pc.pos.copy().sub(pcOldPos)).normalize(); // i.e. bearing of (pc.vel from last frame + panning)
         detectPlatformCollisions(pc, dir);
         detectTokenCollisions(pc, dir);
+        detectWaveProximity();
         pcOldPos = pc.pos.copy();
+
+        // check level end conditions
         if (pc.surface != null && pc.surface.equals(sketch.level.highestPlatform)) {
             sketch.endLevel(true);
         } else if (pc.pos.y > sketch.risingWave.pos.y) {
