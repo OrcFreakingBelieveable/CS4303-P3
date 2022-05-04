@@ -83,9 +83,6 @@ public class GameMenu {
 
         static Menu getLevelSelectorMenu() {
             Menu menu = new Menu("Level Selector", true);
-            for (String level : DontDrown.levelTitles) {
-                menu.clickables.add(new ClickableText("• " + level, PConstants.LEFT));
-            }
             return menu;
         }
 
@@ -130,8 +127,7 @@ public class GameMenu {
                 if (clickable.hover(sketch)) {
                     switch (gameMenu.menuState) {
                         case LEVEL_SELECTION:
-                            // sketch.level = sketch.levels[i];
-                            sketch.gameState = DontDrown.GameState.MID_LEVEL;
+                            sketch.startLevel(sketch.levels[i]);
                             break;
                         case MAIN_MENU:
                             if (i == 0) {
@@ -144,9 +140,9 @@ public class GameMenu {
                             break;
                         case PAUSE_MENU:
                             if (i == 0) {
-                                sketch.gameState = DontDrown.GameState.MID_LEVEL; 
+                                sketch.gameState = DontDrown.GameState.MID_LEVEL;
                             } else {
-                                gameMenu.menuState = MenuState.INSTRUCTIONS;  
+                                gameMenu.menuState = MenuState.INSTRUCTIONS;
                             }
                             break;
                     }
@@ -229,6 +225,15 @@ public class GameMenu {
 
     public void resolveClick() {
         menuState.menu.resolveClick(sketch, this);
+    }
+
+    public void updateLevelSelector() {
+        MenuState.LEVEL_SELECTION.menu.clickables.clear();
+        for (Level level : sketch.levels) {
+            MenuState.LEVEL_SELECTION.menu.clickables.add(new ClickableText(
+                    String.format("• %-25s %d/%d", level.name, level.highScore, level.tokens.size()), PConstants.LEFT));
+        }
+        MenuState.LEVEL_SELECTION.menu.populateClickables(sketch, page);
     }
 
     public void render() {

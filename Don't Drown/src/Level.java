@@ -12,13 +12,13 @@ public class Level {
     private final Page page;
     public final float panRate;
     public final int height;
-    public final int topLimit; // used to stop over-apnning 
+    public final int topLimit; // used to stop over-panning
     public final float lowestPlatformHeight;
     public final float highestPlatformHeight;
-    public final float playableWidth;
+    public final float playableWidth; // width - margin
 
     private final float tokenElevation; // height above platforms
-    private final float pToken;
+    private final float pToken; // probability of a token spawning per platform
 
     public enum PanningState {
         UP,
@@ -30,16 +30,17 @@ public class Level {
 
     public PanningState panningState = PanningState.NEITHER;
 
-    public int top;
+    public int top; // the top of the level relative to the viewport
     public ArrayList<Token> tokens = new ArrayList<>();
     public ArrayList<Platform> platforms = new ArrayList<>();
+    public int highScore = 0;
     public Platform highestPlatform;
 
     public Level(DontDrown sketch, String name, int height, boolean hasGround, float pToken) {
         this.sketch = sketch;
         this.name = name;
         this.height = height;
-        page = new Page(sketch, height); 
+        page = new Page(sketch, height);
         viewportHeight = sketch.height;
         lowestPlatformHeight = .75f * sketch.height;
         topLimit = sketch.height - height;
@@ -122,7 +123,8 @@ public class Level {
             }
 
             if (!overlapping) {
-                nextPlatform.pos = new PVector(x, y);
+                nextPlatform.initPos = new PVector(x, y);
+                nextPlatform.pos = nextPlatform.initPos.copy();
                 currentPlatform = nextPlatform;
                 platforms.add(currentPlatform);
                 stuckCount = 0;
@@ -134,6 +136,22 @@ public class Level {
             } else {
                 stuckCount++;
             }
+        }
+    }
+
+    public void reset() {
+        panningState = PanningState.NEITHER;
+        viewportHeight = sketch.height;
+        top = topLimit;
+
+        if (page.lines != null) {
+            page.lines.resetMatrix();
+        }
+        for (Platform platform : platforms) {
+            platform.pos = platform.initPos.copy();
+        }
+        for (Token token : tokens) {
+            token.reset();
         }
     }
 
@@ -151,7 +169,7 @@ public class Level {
             }
         } else if (panningState.equals(PanningState.DOWN)) {
             if (top - panRate <= page.topLineY) {
-                pan(topLimit - top);
+                pan((float) topLimit - top);
                 panningState = PanningState.NEITHER;
             } else {
                 pan(-Math.max(panRate, Math.abs(sketch.pc.vel.y)));
@@ -172,8 +190,8 @@ public class Level {
         sketch.risingWave.pos.y += y;
     }
 
-    public void render() {     
-        page.render(); 
+    public void render() {
+        page.render();
 
         int i = 0;
         for (Platform platform : platforms) {

@@ -28,7 +28,7 @@ public abstract class AbstractDrawable {
         this.tokens = tokens;
     }
 
-    public void render() {
+    protected void renderAD() {
         if (onScreen()) {
             if (token == null
                     || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0
@@ -40,4 +40,6 @@ public abstract class AbstractDrawable {
             sketch.shape(token, pos.x, pos.y);
         }
     }
+
+    public abstract void render(); 
 }

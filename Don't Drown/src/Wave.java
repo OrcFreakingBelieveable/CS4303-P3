@@ -50,4 +50,8 @@ public class Wave extends AbstractDrawable {
     protected boolean onScreen() {
         return true;
     }
+
+    public void render() {
+        renderAD(); 
+    }
 }

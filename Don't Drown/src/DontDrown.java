@@ -2,9 +2,6 @@ import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
 
-    public static String[] levelTitles = new String[] { "Tutorial", "Panic Prone", "Overworked", "Can't Unwind",
-            "Stress Motivated", "Tunnel Vision", "Lacking Self-awareness" };
-
     public enum GameState {
         STARTUP,
         MID_LEVEL,
@@ -35,22 +32,39 @@ public class DontDrown extends Sketcher {
 
     private void generateLevels() {
         levels = new Level[] {
+                new Level(this, "Tutorial", height * 2, true, 0.1f),
                 new Level(this, "Feeling Typical", height * 2, true, 0.1f),
                 new Level(this, "Panic Prone", height * 2, true, 0.1f),
                 new Level(this, "Overworked", height * 2, true, 0.1f),
                 new Level(this, "Can't Unwind", height * 2, true, 0.1f),
                 new Level(this, "Stress Motivated", height * 2, true, 0.1f),
                 new Level(this, "Tunnel Vision", height * 2, true, 0.1f),
-                new Level(this, "Lacking Self-awareness", height * 2, true, 0.1f) };
+                new Level(this, "Lacking Self-awareness", height * 2, true, 0.1f)
+        };
+        gameMenu.updateLevelSelector();
     }
 
-    private void newLevel(DontDrown sketch) {
-        level = new Level(sketch, "Generic", height * 2, true, 0.1f);
+    public void startLevel(Level levelToStart) {
+        if (levelToStart == null) {
+            level = new Level(this, "Generic", height * 2, true, 0.1f);
+        } else {
+            level = levelToStart; 
+        }
         levelState.reset(level);
         risingWave.pos.y = Wave.waveInitHeight;
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - PlayerCharacter.diameter);
         collisionDetector.pcOldPos = pc.pos.copy();
+        gameState = DontDrown.GameState.MID_LEVEL;
+    }
+
+    public void endLevel(boolean completed) {
+        if (completed) {
+            level.highScore = levelState.tokensCollected;
+            gameMenu.updateLevelSelector();
+        }
+        gameState = GameState.IN_MENU;
+        gameMenu.menuState = GameMenu.MenuState.LEVEL_SELECTION;
     }
 
     @Override
@@ -74,7 +88,7 @@ public class DontDrown extends Sketcher {
                 collisionDetector = new CollisionDetector(this);
                 gameMenu = new GameMenu(this);
                 generateLevels();
-                newLevel(this);
+                startLevel(null);
 
                 gameState = GameState.IN_MENU;
                 break;
@@ -147,7 +161,7 @@ public class DontDrown extends Sketcher {
                             levelState.stress = 100;
                             break;
                         case ' ':
-                            newLevel(this);
+                            startLevel(null);
                             break;
                         case 'f':
                         case 'F':

@@ -1,8 +1,7 @@
 import processing.core.PConstants;
 import processing.core.PShape;
-import processing.core.PVector;
 
-public class Token extends AbstractDrawable {
+public class Token extends AbstractCollectable {
 
     public static final int T_STROKE_COLOUR = 0xDDB09500;
     public static final int T_FILL_COLOUR = 0xAAE3C800;
@@ -18,8 +17,12 @@ public class Token extends AbstractDrawable {
     private boolean movingDown = false;
 
     public Token(DontDrown sketch, float x, float y) {
-        super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
-        this.pos = new PVector(x, y);
+        super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens), x, y);
+        pos.y -= bounceIncr * (sketch.frameCount % T_BOUNCE_FRAMES);
+    }
+
+    public void reset() {
+        resetAC();
         pos.y -= bounceIncr * (sketch.frameCount % T_BOUNCE_FRAMES);
     }
 
@@ -65,4 +68,5 @@ public class Token extends AbstractDrawable {
     protected boolean onScreen() {
         return pos.y - height <= sketch.height && pos.y + height >= height;
     }
+
 }

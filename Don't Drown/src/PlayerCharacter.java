@@ -375,4 +375,7 @@ public class PlayerCharacter extends AbstractDrawable {
         return true;
     }
 
+    public void render() {
+        renderAD();
+    }
 }

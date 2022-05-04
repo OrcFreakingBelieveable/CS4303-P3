@@ -49,7 +49,7 @@ public class Page {
                             new PVector(sketch.width, topLineY + i * lineGap),
                             1, LINE_COLOUR));
         }
-        lines.addChild(drawLine(new PVector(marginX, sketch.height), new PVector(marginX, sketch.height - height), 1, MARGIN_COLOUR));
+        lines.addChild(drawLine(new PVector(marginX, sketch.height), new PVector(marginX, (float) sketch.height - height), 1, MARGIN_COLOUR));
     }
 
     private PShape drawLine(PVector start, PVector end, float weight, int colour) {

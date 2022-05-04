@@ -11,7 +11,7 @@ public class CollisionDetector {
 
     public CollisionDetector(DontDrown sketch) {
         this.sketch = sketch;
-        pcOldPos = sketch.pc.pos.copy(); 
+        pcOldPos = sketch.pc.pos.copy();
     }
 
     private float getXAtYOverlap(PlayerCharacter pc, PVector dir, float otherY) {
@@ -134,7 +134,10 @@ public class CollisionDetector {
         });
 
         for (Token token : sortedTokens) {
-            if (token.pos.y - Token.height / 2 > sketch.height && token.pos.y < Token.height / 2) {
+            if (token.collected) {
+                // token already collected
+                // continue search
+            } else if (token.pos.y - Token.height / 2 > sketch.height && token.pos.y < Token.height / 2) {
                 // token not on screen
                 // continue search
             } else if (token.pos.y + Token.height / 2 < Math.min(pcOldPos.y, pc.pos.y) - PlayerCharacter.radius) {
@@ -157,9 +160,10 @@ public class CollisionDetector {
                         break;
                     }
                 } else if (dir.x == 0 &&
-                        (pc.pos.y <= token.pos.y && pcOldPos.y >= token.pos.y // pc moved downward through the token 
-                                || pcOldPos.y <= token.pos.y && pc.pos.y >= token.pos.y) // pc moved upward through the token 
-                                ) {
+                        (pc.pos.y <= token.pos.y && pcOldPos.y >= token.pos.y // pc moved downward through the token
+                                || pcOldPos.y <= token.pos.y && pc.pos.y >= token.pos.y) // pc moved upward through the
+                                                                                         // token
+                ) {
                     // pc moved vertically through the token
                     // check if token horizontally overlaps with pc('s vertical path)
                     if (token.pos.x + Token.width / 2 >= pc.pos.x - PlayerCharacter.radius
@@ -184,7 +188,12 @@ public class CollisionDetector {
         PVector dir = (pc.pos.copy().sub(pcOldPos)).normalize(); // i.e. pc.vel from last frame + panning
         detectPlatformCollisions(pc, dir);
         detectTokenCollisions(pc, dir);
-        pcOldPos = pc.pos.copy(); 
+        pcOldPos = pc.pos.copy();
+        if (pc.surface != null && pc.surface.equals(sketch.level.highestPlatform)) {
+            sketch.endLevel(true);
+        } else if (pc.pos.y > sketch.risingWave.pos.y) {
+            sketch.endLevel(false);
+        }
     }
 
 }

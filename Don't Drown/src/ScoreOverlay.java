@@ -16,7 +16,7 @@ public class ScoreOverlay {
 
         protected StressBar(DontDrown sketch) {
             super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
-            pos = new PVector(0,0);
+            pos = new PVector(0, 0);
         }
 
         protected static PShape[][] generateTokens(DontDrown sketch) {
@@ -63,6 +63,10 @@ public class ScoreOverlay {
         protected boolean onScreen() {
             return true;
         }
+
+        public void render() {
+            renderAD();
+        }
     }
 
     private static class BigToken extends AbstractDrawable {
@@ -97,6 +101,10 @@ public class ScoreOverlay {
 
         protected boolean onScreen() {
             return true;
+        }
+
+        public void render() {
+            renderAD();
         }
     }
 

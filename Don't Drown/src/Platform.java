@@ -7,6 +7,7 @@ public class Platform extends AbstractDrawable {
     private static final float PF_WIDTH_DIV = 10f;
     private static final float PF_HEIGHT_DIV = 7f; // as a ratio of width
 
+    public PVector initPos;
     public final float height;
     public final float width;
 
@@ -21,6 +22,7 @@ public class Platform extends AbstractDrawable {
         this.width = sketch.width / PF_WIDTH_DIV;
         this.height = sketch.width / PF_WIDTH_DIV / PF_HEIGHT_DIV;
         this.pos = new PVector(x, y);
+        this.initPos = pos.copy();
     }
 
     public Platform(DontDrown sketch, float x, float y, float width) {
@@ -28,6 +30,7 @@ public class Platform extends AbstractDrawable {
         this.width = width;
         this.height = sketch.width / PF_WIDTH_DIV / PF_HEIGHT_DIV;
         this.pos = new PVector(x, y);
+        this.initPos = pos.copy();
     }
 
     protected static PShape[][] generateTokens(DontDrown sketch, float width) {
@@ -44,13 +47,13 @@ public class Platform extends AbstractDrawable {
             for (int j = 0; j < VARIANT_TOKENS; j++) {
                 PShape token = new PShape(PConstants.GROUP);
 
-                // add basic shape 
+                // add basic shape
                 sketch.roughStrokeWeight = sketch.RSW_DEF;
                 token.addChild(sketch.handDraw(PConstants.QUAD, strokeColour, fillColour,
                         2 * sketch.RSW_DEF, sketch.RSW_DEF, width - 2 * sketch.RSW_DEF, sketch.RSW_DEF,
                         width - (2 * sketch.RSW_DEF + width / 16), height, 2 * sketch.RSW_DEF + width / 16, height));
 
-                // add extra thick top line 
+                // add extra thick top line
                 sketch.roughStrokeWeight = thickStrokeWeight;
                 token.addChild(sketch.handDrawLine(strokeColour, new PVector(0, 0), new PVector(width, 0)));
 
@@ -69,5 +72,9 @@ public class Platform extends AbstractDrawable {
 
     protected boolean onScreen() {
         return pos.y <= sketch.height && pos.y >= height;
+    }
+
+    public void render() {
+        renderAD();
     }
 }

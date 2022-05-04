@@ -15,7 +15,7 @@ public class LevelState {
         NONE;
     }
 
-    public int tokensAvailable = 0; 
+    public int tokensAvailable = 0;
     public int tokensCollected = 0;
     public int oldStress = 0;
     public int stress = 0;
@@ -51,7 +51,7 @@ public class LevelState {
     }
 
     public void reset(Level level) {
-        tokensAvailable = level.tokens.size(); 
+        tokensAvailable = level.tokens.size();
         tokensCollected = 0;
         oldStress = 0;
         stress = 0;
@@ -59,7 +59,8 @@ public class LevelState {
         minStress = 0;
         stressEffectThreshold = 20;
         debuff = Debuff.NONE;
-        update(); 
+        level.reset();
+        update();
     }
 
     public void pcCalcs() {
@@ -120,7 +121,7 @@ public class LevelState {
     }
 
     public void collectToken(Token token) {
-        sketch.level.tokens.remove(token);
+        token.collected = true;
         tokensCollected++;
     }
 
@@ -135,7 +136,7 @@ public class LevelState {
         pcMinSpeed();
         recalcStressHSBColour();
         sketchiness();
-        sketch.risingWave.pos.sub(0, sketch.risingWave.waveRiseRate); 
+        sketch.risingWave.pos.sub(0, sketch.risingWave.waveRiseRate);
         oldStress = stress;
     }
 }
