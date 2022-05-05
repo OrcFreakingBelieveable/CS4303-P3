@@ -65,6 +65,9 @@ public class LevelState {
         update();
     }
 
+    /**
+     * Calculates the force multipliers for the PC. 
+     */
     public void pcCalcs() {
         this.pcThrustMultiplier = (sketch.pc.maxHorizontalThrust - sketch.pc.minHorizontalThrust) / stressRange;
         this.pcFrictionMultiplier = (sketch.pc.maxHorizontalFriction - sketch.pc.minHorizontalFriction) / stressRange;
