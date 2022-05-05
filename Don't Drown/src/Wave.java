@@ -15,7 +15,7 @@ public class Wave extends AbstractDrawable {
     private static PShape[][] staticTokens = null;
     public static float waveInitHeight;
 
-    public final float defaultWaveRiseRate; 
+    public final float defaultWaveRiseRate;
     public float waveRiseRate;
 
     protected Wave(DontDrown sketch) {
@@ -38,9 +38,15 @@ public class Wave extends AbstractDrawable {
             sketch.levelState.stress = i;
             sketch.levelState.sketchiness();
 
-            for (int j = 0; j < VARIANT_TOKENS; j++) {
-                staticTokens[i][j] = sketch.handDraw(Sketcher.WAVE, STROKE_COLOUR, FILL_COLOUR, sketch.width, waveDepth,
-                        WAVE_SECTIONS, waveSectionDepth, WAVE_VERTICES_PER_SECTION, j * 10);
+            for (int j = 0; j < VARIANT_TOKENS / 2; j++) {
+                staticTokens[i][j] = sketch.handDraw(Sketcher.WAVE, STROKE_COLOUR, FILL_COLOUR,
+                        sketch.width, waveDepth, WAVE_SECTIONS, waveSectionDepth, WAVE_VERTICES_PER_SECTION,
+                        j * 10);
+            }
+            for (int j = VARIANT_TOKENS / 2; j < VARIANT_TOKENS; j++) {
+                staticTokens[i][j] = sketch.handDraw(Sketcher.WAVE, STROKE_COLOUR, FILL_COLOUR,
+                        sketch.width, waveDepth, WAVE_SECTIONS, waveSectionDepth, WAVE_VERTICES_PER_SECTION,
+                        -(j + 1 - VARIANT_TOKENS) * 10);
             }
         }
 
@@ -52,6 +58,6 @@ public class Wave extends AbstractDrawable {
     }
 
     public void render() {
-        renderAD(); 
+        renderAD();
     }
 }
