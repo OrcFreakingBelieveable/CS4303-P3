@@ -21,13 +21,14 @@ public class ScoreOverlay {
         }
 
         protected static PShape[][] generateTokens(DontDrown sketch) {
-            staticTokens = new PShape[(LevelState.ABS_MAX_STRESS + 1) * STRESS_BAR_RESOLUTION][VARIANT_TOKENS];
+            final int maxStressIndex = (LevelState.ABS_MAX_STRESS + 1) * STRESS_BAR_RESOLUTION;
+            staticTokens = new PShape[maxStressIndex][VARIANT_TOKENS];
             width = sketch.width / STRESS_BAR_WIDTH_DIV;
             height = width / STRESS_BAR_HEIGHT_DIV;
             int outlineWeight = (int) (height / 10);
             PVector pos = new PVector(sketch.width / 2f - width / 2, height);
 
-            for (int i = 0; i <= LevelState.ABS_MAX_STRESS * STRESS_BAR_RESOLUTION; i++) {
+            for (int i = 0; i < maxStressIndex; i++) {
                 sketch.levelState.stress = i / (float) STRESS_BAR_RESOLUTION;
                 sketch.levelState.sketchiness();
                 sketch.levelState.recalcStressHSBColour();
