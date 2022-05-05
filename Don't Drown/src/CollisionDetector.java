@@ -8,10 +8,34 @@ public class CollisionDetector {
     private final DontDrown sketch;
 
     public PVector pcOldPos;
+    public ArrayList<Platform> sortedPlatforms;
+    public ArrayList<Token> sortedTokens;
 
     public CollisionDetector(DontDrown sketch) {
         this.sketch = sketch;
         pcOldPos = sketch.pc.pos.copy();
+    }
+
+    public void sortLists() {
+        sortedPlatforms = new ArrayList<>(sketch.level.platforms);
+        sortedPlatforms.sort(new Comparator<Platform>() {
+
+            @Override
+            public int compare(Platform o1, Platform o2) {
+                return Math.round(o2.pos.y - o1.pos.y);
+            }
+
+        });
+
+        sortedTokens = new ArrayList<>(sketch.level.tokens);
+        sortedTokens.sort(new Comparator<Token>() {
+
+            @Override
+            public int compare(Token o1, Token o2) {
+                return Math.round(o2.pos.y - o1.pos.y);
+            }
+
+        });
     }
 
     private float getXAtYOverlap(PlayerCharacter pc, PVector dir, float otherY) {
@@ -31,16 +55,6 @@ public class CollisionDetector {
 
     private void detectPlatformCollisions(PlayerCharacter pc, PVector dir) {
         if (pc.fallState.equals(PlayerCharacter.FallState.FALLING)) {
-            ArrayList<Platform> sortedPlatforms = new ArrayList<>(sketch.level.platforms);
-            sortedPlatforms.sort(new Comparator<Platform>() {
-
-                @Override
-                public int compare(Platform o1, Platform o2) {
-                    return Math.round(o2.pos.y - o1.pos.y);
-                }
-
-            });
-
             for (Platform platform : sortedPlatforms) {
                 if (platform.pos.y > sketch.height && platform.pos.y < platform.height) {
                     // platform not on screen
@@ -123,16 +137,6 @@ public class CollisionDetector {
     }
 
     private void detectTokenCollisions(PlayerCharacter pc, PVector dir) {
-        ArrayList<Token> sortedTokens = new ArrayList<>(sketch.level.tokens);
-        sortedTokens.sort(new Comparator<Token>() {
-
-            @Override
-            public int compare(Token o1, Token o2) {
-                return Math.round(o2.pos.y - o1.pos.y);
-            }
-
-        });
-
         for (Token token : sortedTokens) {
             if (token.collected) {
                 // token already collected
