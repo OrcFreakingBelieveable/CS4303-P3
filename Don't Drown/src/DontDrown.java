@@ -2,14 +2,13 @@ import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
 
-    // TODO sort tokens and platforms at start of level 
-    // TODO make stress relative to distance between PC and wave 
+    // TODO make stress relative to distance between PC and wave
+    // TODO redo level generation
 
     public enum GameState {
         STARTUP,
         MID_LEVEL,
-        IN_MENU,
-        ;
+        IN_MENU,;
     }
 
     GameState gameState = GameState.STARTUP;
@@ -35,25 +34,25 @@ public class DontDrown extends Sketcher {
 
     private void generateLevels() {
         levels = new Level[] {
-                new Level(this, "Tutorial", height * 2, true, 0.1f),
-                new Level(this, "Feeling Typical", height * 2, true, 0.1f),
-                new Level(this, "Panic Prone", height * 2, true, 0.1f),
-                new Level(this, "Overworked", height * 2, true, 0.1f),
-                new Level(this, "Can't Unwind", height * 2, true, 0.1f),
-                new Level(this, "Stress Motivated", height * 2, true, 0.1f),
-                new Level(this, "Tunnel Vision", height * 2, true, 0.1f),
-                new Level(this, "Lacking Self-awareness", height * 2, true, 0.1f)
+                new Level(this, "Feeling Typical (Tutorial)", height * 2, true, 0.1f, 0.7f),
+                new Level(this, "Panic Prone", height * 2, true, 0.1f, 0.6f),
+                new Level(this, "Overworked", height * 2, true, 0.1f, 0.1f),
+                new Level(this, "Can't Unwind", height * 2, true, 0.1f, 0.5f),
+                new Level(this, "Stress Motivated", height * 2, false, 0.1f, 0.4f),
+                new Level(this, "Tunnel Vision", height * 2, true, 0.1f, 0.3f),
+                new Level(this, "Lacking Self-awareness", height * 2, true, 0.1f, 0.2f)
         };
         gameMenu.updateLevelSelector();
     }
 
     public void startLevel(Level levelToStart) {
         if (levelToStart == null) {
-            level = new Level(this, "Generic", height * 2, true, 0.1f);
+            level = new Level(this, "Generic", height * 2, true, 0.1f, 1f);
         } else {
-            level = levelToStart; 
+            level = levelToStart;
         }
         levelState.reset(level);
+        collisionDetector.sortLists();
         risingWave.pos.y = Wave.waveInitHeight;
         Platform ground = level.platforms.get(0);
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - PlayerCharacter.diameter);
@@ -91,14 +90,20 @@ public class DontDrown extends Sketcher {
                 collisionDetector = new CollisionDetector(this);
                 gameMenu = new GameMenu(this);
                 generateLevels();
-                startLevel(null);
 
+                levelState.stress = 0;
+                levelState.sketchiness();
                 gameState = GameState.IN_MENU;
                 break;
             case IN_MENU:
+                cursor();
                 gameMenu.render();
+                if (debugging)
+                    debugOverlay.render();
                 break;
             case MID_LEVEL:
+                noCursor();
+
                 // update positions
                 levelState.update();
                 pc.integrate();
@@ -120,10 +125,9 @@ public class DontDrown extends Sketcher {
                 level.render();
                 pc.render();
                 risingWave.render();
+                scoreOverlay.render();
                 if (debugging)
                     debugOverlay.render();
-                scoreOverlay.render();
-
                 break;
 
         }
@@ -132,6 +136,10 @@ public class DontDrown extends Sketcher {
 
     @Override
     public void keyPressed() {
+        if (key == 'D') {
+            debugging = !debugging;
+        }
+
         switch (gameState) {
             case IN_MENU:
             case STARTUP:
@@ -152,8 +160,6 @@ public class DontDrown extends Sketcher {
                         default:
                             // do nothing
                     }
-                } else if (key == 'd' || key == 'D') {
-                    debugging = !debugging;
                 } else if (key == 'p' || key == 'P') {
                     gameMenu.midLevel = true;
                     gameMenu.menuState = GameMenu.MenuState.PAUSE_MENU;
