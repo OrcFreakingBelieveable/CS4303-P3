@@ -19,6 +19,7 @@ public abstract class AbstractDrawable {
     private final PShape[][] tokens;
     private PShape token;
     private int tokenIndex = 0;
+    private int lastStressIndex = 0; 
 
     protected abstract boolean onScreen();
 
@@ -32,9 +33,11 @@ public abstract class AbstractDrawable {
     protected void renderAD() {
         if (onScreen()) {
             if (token == null
-                    || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0) {
+                    || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0
+                    || Math.abs(state.stress - lastStressIndex) > 5) {
                 tokenIndex = (tokenIndex + 1) % VARIANT_TOKENS;
                 token = tokens[(int) state.stress][tokenIndex];
+                lastStressIndex = (int) state.stress; 
             }
 
             sketch.shape(token, pos.x, pos.y);
