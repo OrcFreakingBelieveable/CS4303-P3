@@ -32,12 +32,15 @@ public class DebugOverlay {
         content.append("framesPerResketch: " + sketch.levelState.framesPerResketch + "\n");
         content.append("roughStrokeVariability: " + sketch.roughStrokeVariabilityRate + "\n");
         content.append("roughStrokeShakiness: " + sketch.roughStrokeShakiness + "\n");
-        content.append("platforms: " + sketch.level.platforms.size() + "\n");
-        content.append("tokens: " + sketch.level.tokens.size() + "\n");
-        content.append("panningState: " + sketch.level.panningState + "\n");
-        content.append("top: " + sketch.level.top + "\n");
-        content.append("highestPlatform.y: " + sketch.level.highestPlatform.pos.y + "\n");
 
+        if (sketch.gameState.equals(DontDrown.GameState.MID_LEVEL)) {
+            content.append("platforms: " + sketch.level.platforms.size() + "\n");
+            content.append("tokens: " + sketch.level.tokens.size() + "\n");
+            content.append("panningState: " + sketch.level.panningState + "\n");
+            content.append("top: " + sketch.level.top + "\n");
+            content.append("highestPlatform.y: " + sketch.level.highestPlatform.pos.y + "\n");
+        }
+        
         sketch.text(content.toString(), textSize, textSize);
     }
 
