@@ -11,7 +11,7 @@ public abstract class AbstractDrawable {
     public static final int FRAMES_PER_STRESS_BAR_RESKETCH = 2;
 
     protected final DontDrown sketch;
-    protected final LevelState state;
+    protected final StressAndTokenState state;
     protected final int redrawOffset;
 
     public PVector pos; // position
@@ -26,7 +26,7 @@ public abstract class AbstractDrawable {
     protected AbstractDrawable(DontDrown sketch, PShape[][] tokens) {
         this.sketch = sketch;
         state = sketch.levelState;
-        redrawOffset = (int) Math.floor(sketch.random(LevelState.FRAMES_PER_RESKETCH_MIN));
+        redrawOffset = (int) Math.floor(sketch.random(StressAndTokenState.FRAMES_PER_RESKETCH_MIN));
         this.tokens = tokens;
     }
 

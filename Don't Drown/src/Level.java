@@ -8,7 +8,8 @@ public class Level {
 
     private final DontDrown sketch;
 
-    public final String name;
+    public final Debuff debuff;
+    public final Difficulty difficulty;
     public final Page page;
     public final float panRate;
     public final int height;
@@ -35,23 +36,23 @@ public class Level {
     public int highScore = 0;
     public Platform highestPlatform;
 
-    public Level(DontDrown sketch, String name, int height, boolean hasGround, float verticality,
-            int betweenRedHerrings) {
+    public Level(DontDrown sketch, Debuff debuff, Difficulty difficulty) {
         this.sketch = sketch;
-        this.name = name;
-        this.height = height;
-        page = new Page(sketch, height);
+        this.debuff = debuff;
+        this.difficulty = difficulty;
+        this.height = (int) (sketch.height * difficulty.heightMult);
+        page = new Page(sketch, height, false);
         lowestPlatformHeight = .75f * sketch.height;
         topLimit = (float) sketch.height - height;
         top = topLimit;
         highestPlatformHeight = page.topLineY + sketch.height / 10f;
         playableWidth = sketch.width - Page.marginX;
         panRate = height / PAN_RATE_DIV;
-        this.verticality = verticality;
-        this.betweenRedHerrings = betweenRedHerrings;
+        this.verticality = difficulty.verticality;
+        this.betweenRedHerrings = difficulty.betweenRedHerrings;
         tokenElevation = 0.75f * sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
 
-        generatePlatformsAndTokens(hasGround);
+        generatePlatformsAndTokens(difficulty.hasGround);
     }
 
     private void addToken(float x, float y) {
@@ -119,7 +120,7 @@ public class Level {
                 platforms.add(redHerringP);
                 sinceRedHerring = 0;
             } else {
-                sinceRedHerring++; 
+                sinceRedHerring++;
             }
 
             if (currentPlatform.width == playableWidth) {
@@ -132,7 +133,7 @@ public class Level {
                         || currentPlatform.pos.x > sketch.width - currentPlatform.width - nextPlatform.width;
 
                 if (edgeReached) {
-                    redHerring = false; 
+                    redHerring = false;
 
                     // turn around
                     goingLeft = !goingLeft;

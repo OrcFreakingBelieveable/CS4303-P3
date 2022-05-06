@@ -1,4 +1,4 @@
-public class LevelState {
+public class StressAndTokenState {
 
     private final DontDrown sketch;
 
@@ -11,14 +11,8 @@ public class LevelState {
     public static final float STRESS_INCR_RANGE_DIV = 2.5f;
     public static final float STRESS_DECR_RANGE_DIV = 2.5f;
 
-    public enum Debuff {
-        STRESS_MOTIVATED,
-        TUNNEL_VISION,
-        PANIC_PRONE,
-        LACK_CONTRAST,
-        NONE;
-    }
 
+    // level and stress values 
     public int tokensAvailable = 0;
     public int tokensCollected = 0;
     public float oldStress = 0;
@@ -30,14 +24,18 @@ public class LevelState {
     public float stressDecrRange;
     public Debuff debuff = Debuff.NONE;
 
+    // pc values 
     public float pcThrust;
     public float pcFriction;
     public float pcMinSpeed;
     public float[] stressHSBColour;
     public int framesPerResketch;
 
+    // calculation values 
     private float pcThrustMultiplier;
     private float pcFrictionMultiplier;
+
+    // debuffs 
 
     private final float stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
 
@@ -52,7 +50,7 @@ public class LevelState {
     private float strokeShakinessMultiplier = (Sketcher.RSS_MAX - Sketcher.RSS_MIN) / stressRange;
     private float framesPerResketchMultiplier = FRAMES_PER_RESKETCH_RANGE / stressRange;
 
-    public LevelState(DontDrown sketch) {
+    public StressAndTokenState(DontDrown sketch) {
         this.sketch = sketch;
     }
 

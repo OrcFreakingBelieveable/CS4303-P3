@@ -35,12 +35,12 @@ public class Platform extends AbstractDrawable {
 
     protected static PShape[][] generateTokens(DontDrown sketch, float width) {
         float height = sketch.width / PF_WIDTH_DIV / PF_HEIGHT_DIV;
-        PShape[][] tokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+        PShape[][] tokens = new PShape[StressAndTokenState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
 
         sketch.colorModeRGB();
         float thickStrokeWeight = 2 * sketch.RSW_DEF;
 
-        for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+        for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
             sketch.levelState.stress = i;
             sketch.levelState.sketchiness();
 

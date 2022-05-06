@@ -353,15 +353,15 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     protected static PShape[][] generateTokens(DontDrown sketch) {
-        staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+        staticTokens = new PShape[StressAndTokenState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
         diameter = sketch.width / PC_DIAMETER_DIV;
         radius = diameter / 2f;
 
         sketch.colorModeHSB();
         sketch.roughStrokeWeight = sketch.RSW_DEF;
-        LevelState state = sketch.levelState;
+        StressAndTokenState state = sketch.levelState;
 
-        for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+        for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
             state.stress = i;
             state.sketchiness();
             state.recalcStressHSBColour();

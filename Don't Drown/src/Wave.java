@@ -26,7 +26,7 @@ public class Wave extends AbstractDrawable {
     }
 
     protected static PShape[][] generateTokens(DontDrown sketch) {
-        staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+        staticTokens = new PShape[StressAndTokenState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
         waveInitHeight = sketch.height + sketch.width / WAVE_INIT_HEIGHT_MOD_DIV;
         float waveSectionDepth = sketch.width / WAVE_SECTION_DEPTH_DIV;
         float waveDepth = sketch.height;
@@ -35,7 +35,7 @@ public class Wave extends AbstractDrawable {
         sketch.roughStrokeWeight = sketch.RSW_DEF;
 
         for (int j = 0; j < VARIANT_TOKENS / 2; j++) {
-            for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+            for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
                 sketch.levelState.stress = i;
                 sketch.levelState.sketchiness();
 
@@ -45,7 +45,7 @@ public class Wave extends AbstractDrawable {
             }
         }
         for (int j = VARIANT_TOKENS / 2; j < VARIANT_TOKENS; j++) {
-            for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+            for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
                 sketch.levelState.stress = i;
                 sketch.levelState.sketchiness();
 

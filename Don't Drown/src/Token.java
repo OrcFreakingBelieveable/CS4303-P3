@@ -39,7 +39,7 @@ public class Token extends AbstractCollectable {
     }
 
     protected static PShape[][] generateTokens(DontDrown sketch) {
-        staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+        staticTokens = new PShape[StressAndTokenState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
 
         height = sketch.width / T_HEIGHT_DIV;
         width = height + sketch.random(-sketch.RSW_DEF, sketch.RSW_DEF);
@@ -49,7 +49,7 @@ public class Token extends AbstractCollectable {
         sketch.colorModeRGB();
         sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-        for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+        for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
             sketch.levelState.stress = i;
             sketch.levelState.sketchiness();
 

@@ -46,55 +46,82 @@ public class GameMenu {
 
     }
 
-    private static class Menu {
+    private static class LineOfText {
 
-        static ClickableText back = new ClickableText("Back", PConstants.RIGHT);
+        public final ClickableText clickable;
+        public final String nonClickable;
+
+        public LineOfText(ClickableText clickableText) {
+            this.clickable = clickableText;
+            this.nonClickable = null;
+        }
+
+        public LineOfText(String nonClickable) {
+            this.nonClickable = nonClickable;
+            this.clickable = null;
+        }
+
+    }
+
+    private static class MenuPage {
+
+        ClickableText back = new ClickableText("Back", PConstants.RIGHT);
 
         final String title;
         final boolean backable; // true if the page should have a "back" option
 
-        ArrayList<String> nonClickables = new ArrayList<>();
-        ArrayList<ClickableText> clickables = new ArrayList<>();
+        float yOrigin = 0;
+        ArrayList<LineOfText> linesOfText = new ArrayList<>();
+        Page page;
 
-        Menu(String title, boolean backable) {
+        MenuPage(String title, boolean backable) {
             this.title = title;
             this.backable = backable;
         }
 
-        static Menu getPauseMenu() {
-            Menu menu = new Menu("Paused", false);
-            menu.clickables.add(new ClickableText("• Resume", PConstants.LEFT));
-            menu.clickables.add(new ClickableText("• Instructions", PConstants.LEFT));
+        static MenuPage getPauseMenu() {
+            MenuPage menu = new MenuPage("Paused", false);
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Resume", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
             return menu;
         }
 
-        static Menu getInstructionsMenu() {
-            Menu menu = new Menu("Instructions", true);
-            menu.nonClickables.add("• Up to jump when on a platform");
-            menu.nonClickables.add("• Left and Right to accelerate");
-            menu.nonClickables.add("• P to pause");
-            menu.nonClickables.add("• Esc to quit");
-            menu.nonClickables.add("");
-            menu.nonClickables.add("• Reach the top platform to complete the level");
-            menu.nonClickables.add("• Keep the wave out of sight to de-stress");
-            menu.nonClickables.add("• Collect tokens along the way");
+        static MenuPage getInstructionsMenu() {
+            MenuPage menu = new MenuPage("Instructions", true);
+            String[] text = new String[] {
+                    "• Up to jump when on a platform",
+                    "• Down to fall through a platform",
+                    "• Left and Right to accelerate",
+                    "• Up to jump when on a platform",
+                    "• P to pause",
+                    "• Esc to quit",
+                    "",
+                    "• Reach the top platform to complete the level",
+                    "• Keep the wave out of sight to de-stress",
+                    "• Collect tokens along the way",
+            };
+            for (String string : text) {
+                menu.linesOfText.add(new LineOfText(string));
+            }
             return menu;
         }
 
-        static Menu getLevelSelectorMenu() {
-            Menu menu = new Menu("Level Selector", true);
+        static MenuPage getLevelSelectorMenu() {
+            MenuPage menu = new MenuPage("Level Selector", true);
             return menu;
         }
 
-        static Menu getMainMenu() {
-            Menu menu = new Menu("Don't Drown", false);
-            menu.clickables.add(new ClickableText("• Instructions", PConstants.LEFT));
-            menu.clickables.add(new ClickableText("• Level Selector", PConstants.LEFT));
+        static MenuPage getMainMenu() {
+            MenuPage menu = new MenuPage("Don't Drown", false);
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Level Selector", PConstants.LEFT)));
             return menu;
         }
 
-        void populateClickables(DontDrown sketch, Page page) {
-            float y = page.topLineY + page.lineGap;
+        void populateClickables(DontDrown sketch) {
+            page = new Page(sketch);
+
+            float y = sketch.scoreOverlay.endOfPadding + page.lineGap;
             float width = sketch.width - 2 * Page.marginX;
             back.pos = new PVector(Page.marginX, y);
             back.width = Page.marginX;
@@ -104,55 +131,64 @@ public class GameMenu {
             y += page.lineGap;
             y += page.lineGap;
 
-            // account for non-clickable text
-            y += page.lineGap * nonClickables.size();
-
-            // set clickable fields
-            for (ClickableText clickable : clickables) {
-                clickable.pos = new PVector(Page.marginX, y);
-                clickable.width = width;
-                clickable.height = page.lineGap;
-                y += page.lineGap;
+            for (LineOfText line : linesOfText) {
+                if (line.nonClickable != null) {
+                    // account for non-clickable text
+                    y += page.lineGap;
+                } else {
+                    // set clickable fields
+                    line.clickable.pos = new PVector(Page.marginX, y);
+                    line.clickable.width = width;
+                    line.clickable.height = page.lineGap;
+                    y += page.lineGap;
+                }
             }
 
         }
 
         public void resolveClick(DontDrown sketch, GameMenu gameMenu) {
             if (backable && back.hover(sketch)) {
-                sketch.gameMenu.menuState = sketch.gameMenu.midLevel ? MenuState.PAUSE_MENU : MenuState.MAIN_MENU;
+                sketch.gameMenu.setMenuState(sketch.gameMenu.midLevel ? MenuState.PAUSE_MENU : MenuState.MAIN_MENU);
             }
 
-            int i = 0;
-            for (ClickableText clickable : clickables) {
-                if (clickable.hover(sketch)) {
-                    switch (gameMenu.menuState) {
-                        case LEVEL_SELECTION:
-                            sketch.startLevel(sketch.levels[i]);
-                            break;
-                        case MAIN_MENU:
-                            if (i == 0) {
-                                gameMenu.menuState = MenuState.INSTRUCTIONS;
-                            } else if (i == 1) {
-                                gameMenu.menuState = MenuState.LEVEL_SELECTION;
-                            }
-                            break;
-                        case INSTRUCTIONS:
-                            break;
-                        case PAUSE_MENU:
-                            if (i == 0) {
-                                sketch.gameState = DontDrown.GameState.MID_LEVEL;
-                            } else {
-                                gameMenu.menuState = MenuState.INSTRUCTIONS;
-                            }
-                            break;
+            int i = 0; // clickable index (not the line index)
+            for (LineOfText line : linesOfText) {
+                ClickableText clickable = line.clickable;
+                if (clickable != null) {
+                    if (clickable.hover(sketch)) {
+                        switch (gameMenu.menuState) {
+                            case LEVEL_SELECTION:
+                                int debuffIndex = i / Difficulty.values().length;
+                                int difficultyIndex = i % Difficulty.values().length;
+                                sketch.startLevel(sketch.levels[debuffIndex][difficultyIndex]);
+                                break;
+                            case MAIN_MENU:
+                                if (i == 0) {
+                                    gameMenu.setMenuState( MenuState.INSTRUCTIONS);
+                                } else if (i == 1) {
+                                    gameMenu.setMenuState(MenuState.LEVEL_SELECTION);
+                                }
+                                break;
+                            case INSTRUCTIONS:
+                                break;
+                            case PAUSE_MENU:
+                                if (i == 0) {
+                                    sketch.gameState = DontDrown.GameState.MID_LEVEL;
+                                } else {
+                                    gameMenu.setMenuState(MenuState.INSTRUCTIONS);
+                                }
+                                break;
+                        }
                     }
+                    i++;
                 }
-                i++;
             }
         }
 
-        void render(DontDrown sketch, Page page) {
-            float y = page.topLineY + page.lineGap;
+        void render(DontDrown sketch) {
+            page.render();
+
+            float y = yOrigin + sketch.scoreOverlay.endOfPadding + page.lineGap;
 
             if (backable) {
                 sketch.textSize(page.lineGap);
@@ -161,7 +197,7 @@ public class GameMenu {
             }
 
             // render title
-            sketch.textSize(page.topLineY * 0.75f);
+            sketch.textSize(sketch.scoreOverlay.endOfPadding * 0.75f);
             sketch.fill(TEXT_COLOUR);
             float padding = sketch.textDescent();
             sketch.textAlign(PConstants.CENTER, PConstants.BOTTOM);
@@ -170,19 +206,19 @@ public class GameMenu {
             y += page.lineGap;
             y += page.lineGap;
 
-            // render non-clickable text
+            // render lines of text
             sketch.textAlign(PConstants.LEFT, PConstants.BOTTOM);
-            sketch.fill(TEXT_COLOUR);
             sketch.textSize(page.lineGap);
             padding = sketch.textDescent();
-            for (String line : nonClickables) {
-                sketch.text(line, Page.marginX, y + padding);
-                y += page.lineGap;
-            }
-
-            // render clickable text
-            for (ClickableText clickable : clickables) {
-                clickable.render(sketch);
+            for (LineOfText line : linesOfText) {
+                if (line.clickable == null) {
+                    // render non-clickable text
+                    sketch.fill(TEXT_COLOUR);
+                    sketch.text(line.nonClickable, Page.marginX, y + padding);
+                } else {
+                    // render clickable text
+                    line.clickable.render(sketch);
+                }
                 y += page.lineGap;
             }
 
@@ -195,59 +231,120 @@ public class GameMenu {
     }
 
     public enum MenuState {
-        PAUSE_MENU(Menu.getPauseMenu()),
-        MAIN_MENU(Menu.getMainMenu()),
-        LEVEL_SELECTION(Menu.getLevelSelectorMenu()),
-        INSTRUCTIONS(Menu.getInstructionsMenu()),;
+        PAUSE_MENU(MenuPage.getPauseMenu()),
+        MAIN_MENU(MenuPage.getMainMenu()),
+        LEVEL_SELECTION(MenuPage.getLevelSelectorMenu()),
+        INSTRUCTIONS(MenuPage.getInstructionsMenu()),;
 
-        public final Menu menu;
+        public final MenuPage menuPage;
 
-        MenuState(Menu menu) {
-            this.menu = menu;
+        MenuState(MenuPage menu) {
+            this.menuPage = menu;
         }
     }
 
     private final DontDrown sketch;
 
-    public final Page page;
-
     public boolean midLevel = false;
-    public MenuState menuState = MenuState.MAIN_MENU;
+    private MenuState menuState = MenuState.MAIN_MENU;
 
     public GameMenu(DontDrown sketch) {
         this.sketch = sketch;
-        page = new Page(sketch);
 
         for (MenuState state : MenuState.values()) {
-            state.menu.populateClickables(sketch, page);
+            state.menuPage.populateClickables(sketch);
         }
+    }
+
+    public MenuState getMenuState() {
+        return menuState; 
+    }
+
+    public void setMenuState(MenuState menuState) {
+        this.menuState = menuState;
+        resetPage();
     }
 
     public void resolveClick() {
-        menuState.menu.resolveClick(sketch, this);
+        menuState.menuPage.resolveClick(sketch, this);
     }
 
     public void updateLevelSelector() {
-        MenuState.LEVEL_SELECTION.menu.clickables.clear();
-        for (Level level : sketch.levels) {
-            MenuState.LEVEL_SELECTION.menu.clickables.add(new ClickableText(
-                    String.format("• %-25s %d/%d", level.name, level.highScore, level.tokens.size()), PConstants.LEFT));
+        ArrayList<LineOfText> linesOfText = MenuState.LEVEL_SELECTION.menuPage.linesOfText;
+        linesOfText.clear();
+        int debuffIndex = 0;
+        for (Level[] levelBatch : sketch.levels) { // gruoped by debuff
+            linesOfText.add(new LineOfText(Debuff.values()[debuffIndex++].label));
+            for (Level level : levelBatch) {
+                linesOfText.add(new LineOfText(new ClickableText(
+                        String.format("     • %-15s %d/%d",
+                                level.difficulty.name().replace("_", " "),
+                                level.highScore,
+                                level.tokens.size()),
+                        PConstants.LEFT)));
+            }
+            linesOfText.add(new LineOfText(""));
         }
-        MenuState.LEVEL_SELECTION.menu.populateClickables(sketch, page);
+        MenuState.LEVEL_SELECTION.menuPage.populateClickables(sketch);
+
+        float minimumHeight = sketch.scoreOverlay.endOfPadding + sketch.height / 3f +
+                MenuState.LEVEL_SELECTION.menuPage.page.lineGap * linesOfText.size();
+
+        if (sketch.height < minimumHeight) {
+            MenuState.LEVEL_SELECTION.menuPage.page = new Page(sketch, (int) minimumHeight, true);
+        }
+
+    }
+
+    private void resetPage() {
+        if (menuState.menuPage.page.startAtTop) {
+            // scroll back up to top 
+                scrollWrapper(menuState.menuPage.page.height); 
+        } else {
+            //scroll back down to bottom 
+            scrollWrapper(-menuState.menuPage.page.height); 
+        }
+    }
+
+    private void scroll(float count) {
+        menuState.menuPage.page.lines.translate(0, count);
+        menuState.menuPage.yOrigin += count;
+        menuState.menuPage.back.pos.y += count;
+        for (LineOfText line : menuState.menuPage.linesOfText) {
+            if (line.clickable != null) {
+                line.clickable.pos.y += count;
+            }
+        }
+    }
+
+    public void scrollWrapper(int count) {
+        try {
+            float topLimit = sketch.height - (float) menuState.menuPage.page.height;
+            float yOrigin = menuState.menuPage.yOrigin;
+
+            if (count < 0) {
+                // scrolling down
+                if (yOrigin + count <= topLimit) {
+                    scroll(topLimit - yOrigin);
+                } else {
+                    scroll(count);
+                }
+            } else {
+                // scrolling up
+                if (yOrigin + count >= 0f) {
+                    scroll(0f - yOrigin);
+                } else {
+                    scroll(count);
+                }
+            }
+
+        } catch (NullPointerException e) {
+            // do nothing; scrolled in loading screen
+        }
     }
 
     public void render() {
-        page.render();
-
-        sketch.colorModeRGB();
-        sketch.fill(TEXT_COLOUR);
-        sketch.textSize(page.topLineY * 0.25f);
-        float padding = sketch.textDescent();
-        sketch.textAlign(PConstants.RIGHT, PConstants.BOTTOM);
-        sketch.text("190021081", sketch.width, page.topLineY + page.lineGap + padding);
-
-        menuState.menu.render(sketch, page);
-
+        menuState.menuPage.render(sketch);
     }
 
 }

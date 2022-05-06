@@ -30,13 +30,13 @@ public class ScoreOverlay {
             }
 
             protected static PShape[][] generateTokens(DontDrown sketch) {
-                staticTokens = new PShape[(LevelState.ABS_MAX_STRESS + 1)][VARIANT_TOKENS];
+                staticTokens = new PShape[(StressAndTokenState.ABS_MAX_STRESS + 1)][VARIANT_TOKENS];
 
                 width = sketch.width / STRESS_BAR_WIDTH_DIV;
                 height = width / STRESS_BAR_HEIGHT_DIV;
                 PVector pos = new PVector(sketch.width / 2f - width / 2, height);
 
-                for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+                for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
                     sketch.levelState.stress = i / (float) STRESS_BAR_RESOLUTION;
                     sketch.levelState.sketchiness();
                     sketch.levelState.recalcStressHSBColour();
@@ -77,7 +77,7 @@ public class ScoreOverlay {
             }
 
             protected static PShape[][] generateTokens(DontDrown sketch) {
-                final int maxStressIndex = (LevelState.ABS_MAX_STRESS + 1) * STRESS_BAR_RESOLUTION;
+                final int maxStressIndex = (StressAndTokenState.ABS_MAX_STRESS + 1) * STRESS_BAR_RESOLUTION;
                 staticTokens = new PShape[maxStressIndex][VARIANT_TOKENS];
 
                 width = sketch.width / STRESS_BAR_WIDTH_DIV;
@@ -103,7 +103,7 @@ public class ScoreOverlay {
                                     sketch.handDraw(PConstants.RECT, fillColour, fillColour, pos.x + outlineWeight,
                                             pos.y + outlineWeight,
                                             (width - 2 * outlineWeight)
-                                                    * (sketch.levelState.stress / LevelState.ABS_MAX_STRESS),
+                                                    * (sketch.levelState.stress / StressAndTokenState.ABS_MAX_STRESS),
                                             height - 2 * outlineWeight));
                         }
 
@@ -141,11 +141,11 @@ public class ScoreOverlay {
         }
 
         protected static PShape[][] generateTokens(DontDrown sketch) {
-            staticTokens = new PShape[LevelState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
+            staticTokens = new PShape[StressAndTokenState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
             sketch.colorModeRGB();
             sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-            for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+            for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
                 sketch.levelState.stress = i;
                 sketch.levelState.sketchiness();
 

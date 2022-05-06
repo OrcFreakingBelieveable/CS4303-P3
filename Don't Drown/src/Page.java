@@ -16,22 +16,25 @@ public class Page {
     public final int height;
     public final float topLineY;
     public final float lineGap;
+    public final boolean startAtTop;
 
     public PShape lines = null;
 
     public Page(DontDrown sketch) {
         if (marginX == 0.0f)
             setMargin(sketch);
+        startAtTop = true; // doesn't matter because page matches viewport
         this.sketch = sketch;
         height = sketch.height;
         this.topLineY = sketch.height - height + sketch.scoreOverlay.endOfPadding;
         this.lineGap = sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
     }
 
-    public Page(DontDrown sketch, int height) {
+    public Page(DontDrown sketch, int height, boolean startAtTop) {
         if (marginX == 0.0f)
             setMargin(sketch);
         this.sketch = sketch;
+        this.startAtTop = startAtTop;
         this.height = height;
         this.topLineY = sketch.height - height + sketch.scoreOverlay.endOfPadding;
         this.lineGap = sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
@@ -49,7 +52,12 @@ public class Page {
                             new PVector(sketch.width, topLineY + i * lineGap),
                             1, LINE_COLOUR));
         }
-        lines.addChild(drawLine(new PVector(marginX, sketch.height), new PVector(marginX, (float) sketch.height - height), 1, MARGIN_COLOUR));
+        lines.addChild(drawLine(new PVector(marginX, sketch.height),
+                new PVector(marginX, (float) sketch.height - height), 1, MARGIN_COLOUR));
+
+        if (startAtTop) {
+            lines.translate(0, (float) height - sketch.height);
+        }
     }
 
     private PShape drawLine(PVector start, PVector end, float weight, int colour) {

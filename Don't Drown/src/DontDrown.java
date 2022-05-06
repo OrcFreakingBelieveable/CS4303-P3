@@ -1,8 +1,10 @@
 import processing.core.PApplet;
+import processing.event.MouseEvent;
 
 public class DontDrown extends Sketcher {
 
     private static final float LOADING_TEXT_DIV = 5f;
+    private static final int SCROLL_DIV = 20;
 
     public enum GameState {
         PRE_STARTUP,
@@ -14,13 +16,13 @@ public class DontDrown extends Sketcher {
 
     GameState gameState = GameState.PRE_STARTUP;
     GameMenu gameMenu;
-    LevelState levelState;
+    StressAndTokenState levelState;
     PlayerCharacter pc;
     Wave risingWave;
     Wave staticWave;
     DebugOverlay debugOverlay;
     ScoreOverlay scoreOverlay;
-    Level[] levels;
+    Level[][] levels;
     Level level;
     CollisionDetector collisionDetector;
     public boolean debugging = true;
@@ -34,21 +36,23 @@ public class DontDrown extends Sketcher {
     }
 
     private void generateLevels() {
-        levels = new Level[] {
-                new Level(this, "Feeling Typical (Tutorial)", height * 1, true, 0.1f, 1),
-                new Level(this, "Panic Prone", height * 2, false, 0.6f, 3),
-                new Level(this, "Overworked", height * 2, false, 0.1f, 3),
-                new Level(this, "Can't Unwind", height * 2, false, 0.5f, 3),
-                new Level(this, "Stress Motivated", height * 2, false, 0.4f, 3),
-                new Level(this, "Tunnel Vision", height * 2, true, 0.3f, 3),
-                new Level(this, "Lacking Self-awareness", height * 2, false, 0.2f, 3)
-        };
+        levels = new Level[Debuff.values().length][];
+        int deb = 0;
+        for (Debuff debuff : Debuff.values()) {
+            levels[deb] = new Level[Difficulty.values().length];
+
+            int dif = 0;
+            for (Difficulty difficulty : Difficulty.values()) {
+                levels[deb][dif++] = new Level(this, debuff, difficulty);
+            }
+            deb++;
+        }
         gameMenu.updateLevelSelector();
     }
 
     public void startLevel(Level levelToStart) {
         if (levelToStart == null) {
-            level = new Level(this, "Generic", height * 2, true, 1f, 3);
+            level = new Level(this, Debuff.NONE, Difficulty.MEDIUM);
         } else {
             level = levelToStart;
         }
@@ -62,12 +66,12 @@ public class DontDrown extends Sketcher {
     }
 
     public void endLevel(boolean completed) {
-        if (completed) {
+        if (completed && level.highScore < levelState.tokensCollected) {
             level.highScore = levelState.tokensCollected;
             gameMenu.updateLevelSelector();
         }
         gameState = GameState.IN_MENU;
-        gameMenu.menuState = GameMenu.MenuState.LEVEL_SELECTION;
+        gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
     }
 
     @Override
@@ -89,7 +93,7 @@ public class DontDrown extends Sketcher {
                 break;
             case STARTUP:
                 noStroke();
-                levelState = new LevelState(this);
+                levelState = new StressAndTokenState(this);
                 pc = new PlayerCharacter(this);
                 risingWave = new Wave(this);
                 staticWave = new Wave(this);
@@ -148,9 +152,15 @@ public class DontDrown extends Sketcher {
         }
 
         switch (gameState) {
-            case IN_MENU:
+            case PRE_STARTUP:
             case STARTUP:
                 // ignore inputs
+                break;
+            case IN_MENU:
+                // unpause
+                if (gameMenu.getMenuState().equals(GameMenu.MenuState.PAUSE_MENU)) {
+                    gameState = DontDrown.GameState.MID_LEVEL;
+                }
                 break;
             case MID_LEVEL:
                 if (key == CODED) {
@@ -172,7 +182,7 @@ public class DontDrown extends Sketcher {
                     }
                 } else if (key == 'p' || key == 'P') {
                     gameMenu.midLevel = true;
-                    gameMenu.menuState = GameMenu.MenuState.PAUSE_MENU;
+                    gameMenu.setMenuState(GameMenu.MenuState.PAUSE_MENU);
                     gameState = GameState.IN_MENU;
                 } else if (debugging) {
                     switch (key) {
@@ -250,6 +260,13 @@ public class DontDrown extends Sketcher {
     public void mouseClicked() {
         if (gameState.equals(GameState.IN_MENU)) {
             gameMenu.resolveClick();
+        }
+    }
+
+    @Override
+    public void mouseWheel(MouseEvent event) {
+        if (gameState.equals(GameState.IN_MENU)) {
+            gameMenu.scrollWrapper(-event.getCount() * height / SCROLL_DIV);
         }
     }
 
