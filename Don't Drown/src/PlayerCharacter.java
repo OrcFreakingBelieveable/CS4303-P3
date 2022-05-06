@@ -45,7 +45,7 @@ public class PlayerCharacter extends AbstractDrawable {
     public PVector vel; // current velocity
 
     // vertical movement
-    public Platform surface = null; // platform that the PC is on
+    public Platform surface = null; // platform that the PC is on/falling through
     public FallState fallState = FallState.FALLING;
     public final int riseFrames; // time taken to reach peak of jump
     public final int fallFrames; // time taken to return to ground after peak
@@ -77,7 +77,8 @@ public class PlayerCharacter extends AbstractDrawable {
         COYOTE_TIME(0f),
         RISING(PC_RISING_GRAVITY),
         HANG_TIME(0f),
-        FALLING(PC_FALLING_GRAVITY);
+        FALLING(PC_FALLING_GRAVITY),
+        DROPPING(PC_FALLING_GRAVITY); // through a platform
 
         final float gravity;
 
@@ -146,7 +147,7 @@ public class PlayerCharacter extends AbstractDrawable {
     private float jumpRange() {
         // s = ut
         // constant horizontal velocity
-        return maxSpeed * jumpFrames;
+        return maxSpeed * jumpFrames * 1.1f;
     }
 
     public PlayerCharacter(DontDrown sketch) {
@@ -315,12 +316,19 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     public void fall() {
-        if (steerState.equals(SteerState.NEITHER)
-                || vel.x < 0 && steerState.equals(SteerState.RIGHT)
+        if (/* steerState.equals(SteerState.NEITHER) || */
+        vel.x < 0 && steerState.equals(SteerState.RIGHT)
                 || vel.x > 0 && steerState.equals(SteerState.LEFT)) {
             fall(false);
         } else {
             fall(true);
+        }
+    }
+
+    /* Drop through the current platform */
+    public void drop() {
+        if (fallState.equals(FallState.ON_SURFACE)) {
+            fallState = FallState.DROPPING;
         }
     }
 

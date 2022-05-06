@@ -6,8 +6,10 @@ public class LevelState {
     public static final int FRAMES_PER_RESKETCH_MAX = 40;
     public static final int FRAMES_PER_RESKETCH_MIN = 10;
     public static final int FRAMES_PER_RESKETCH_RANGE = FRAMES_PER_RESKETCH_MAX - FRAMES_PER_RESKETCH_MIN;
-    public static final float STRESS_INCR_RATE = 0.1f;
-    public static final float STRESS_DECR_RATE = 0.1f;
+    public static final float STRESS_INCR_RATE = 0.75f;
+    public static final float STRESS_DECR_RATE = 0.75f;
+    public static final float STRESS_INCR_RANGE_DIV = 2.5f;
+    public static final float STRESS_DECR_RANGE_DIV = 2.5f;
 
     public enum Debuff {
         STRESS_MOTIVATED,
@@ -24,6 +26,8 @@ public class LevelState {
     public int maxStress = 100;
     public int minStress = 0;
     public int stressEffectThreshold = 20;
+    public float stressIncrRange;
+    public float stressDecrRange;
     public Debuff debuff = Debuff.NONE;
 
     public float pcThrust;
@@ -61,12 +65,14 @@ public class LevelState {
         minStress = 0;
         stressEffectThreshold = 20;
         debuff = Debuff.NONE;
+        stressIncrRange = sketch.height / STRESS_INCR_RANGE_DIV;
+        stressDecrRange = sketch.height / STRESS_DECR_RANGE_DIV;
         level.reset();
         update();
     }
 
     /**
-     * Calculates the force multipliers for the PC. 
+     * Calculates the force multipliers for the PC.
      */
     public void pcCalcs() {
         this.pcThrustMultiplier = (sketch.pc.maxHorizontalThrust - sketch.pc.minHorizontalThrust) / stressRange;
@@ -92,6 +98,7 @@ public class LevelState {
         }
     }
 
+    /** The speed at which the PC comes to rest. */
     private void pcMinSpeed() {
         pcMinSpeed = pcFriction * PlayerCharacter.I_MASS * sketch.pc.incr;
     }
@@ -130,12 +137,25 @@ public class LevelState {
         tokensCollected++;
     }
 
-    public void update() {
+    public void updateStress() {
+        float waveDistance = Math.abs(sketch.risingWave.pos.y - sketch.pc.pos.y);
+        if (waveDistance > stressIncrRange + stressDecrRange) {
+            stress = 0;
+        } else if (waveDistance > stressIncrRange) {
+            stress -= STRESS_DECR_RATE * (waveDistance - stressIncrRange) / stressDecrRange;
+        } else {
+            stress += STRESS_DECR_RATE * ((stressIncrRange - waveDistance) / stressIncrRange);
+        }
+
         if (stress > maxStress) {
             stress = maxStress;
         } else if (stress < minStress) {
             stress = minStress;
         }
+    }
+
+    public void update() {
+        updateStress();
         pcThrust();
         pcFriction();
         pcMinSpeed();

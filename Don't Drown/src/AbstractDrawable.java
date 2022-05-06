@@ -33,9 +33,11 @@ public abstract class AbstractDrawable {
     protected void renderAD() {
         if (onScreen()) {
             if (token == null
-                    || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0
-                    || Math.abs(state.stress - lastStressIndex) > 5) {
+                    || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0                    ) {
                 tokenIndex = (tokenIndex + 1) % VARIANT_TOKENS;
+                token = tokens[(int) state.stress][tokenIndex];
+                lastStressIndex = (int) state.stress; 
+            } else if (Math.abs(state.stress - lastStressIndex) > 5) {
                 token = tokens[(int) state.stress][tokenIndex];
                 lastStressIndex = (int) state.stress; 
             }

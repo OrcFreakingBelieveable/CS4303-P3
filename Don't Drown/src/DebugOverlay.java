@@ -21,6 +21,8 @@ public class DebugOverlay {
         content.append("pos: " + sketch.pc.pos + "\n");
         content.append("incr: " + sketch.pc.incr + "\n");
         content.append("maxSpeed: " + sketch.pc.maxSpeed + "\n");
+        content.append("jumpHeight: " + sketch.pc.jumpHeight + "\n");
+        content.append("jumpRange: " + sketch.pc.jumpRange + "\n");
         content.append("horizontal velocity: " + sketch.pc.vel.x + "\n");
         content.append("vertical velocity: " + sketch.pc.vel.y + "\n");
         content.append("pcThrust: " + sketch.levelState.pcThrust + "\n");
@@ -32,13 +34,22 @@ public class DebugOverlay {
         content.append("framesPerResketch: " + sketch.levelState.framesPerResketch + "\n");
         content.append("roughStrokeVariability: " + sketch.roughStrokeVariabilityRate + "\n");
         content.append("roughStrokeShakiness: " + sketch.roughStrokeShakiness + "\n");
+        content.append("waveDistance: " + Math.abs(sketch.risingWave.pos.y - sketch.pc.pos.y) + "\n");
+        content.append("stressIncrRange: " + sketch.levelState.stressIncrRange + "\n");
+        content.append("stressDecrRange: " + sketch.levelState.stressDecrRange + "\n");
 
         if (sketch.gameState.equals(DontDrown.GameState.MID_LEVEL)) {
             content.append("platforms: " + sketch.level.platforms.size() + "\n");
             content.append("tokens: " + sketch.level.tokens.size() + "\n");
             content.append("panningState: " + sketch.level.panningState + "\n");
+            content.append("page.height: " + sketch.level.page.height + "\n");
+            content.append("page.topLineY: " + sketch.level.page.topLineY + "\n");
+            content.append("height: " + sketch.level.height + "\n");
             content.append("top: " + sketch.level.top + "\n");
+            content.append("topLimit: " + sketch.level.topLimit + "\n");
+            content.append("highestPlatformHeight: " + sketch.level.highestPlatformHeight + "\n");
             content.append("highestPlatform.y: " + sketch.level.highestPlatform.pos.y + "\n");
+            
         }
         
         sketch.text(content.toString(), textSize, textSize);

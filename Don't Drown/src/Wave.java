@@ -7,7 +7,7 @@ public class Wave extends AbstractDrawable {
     public static final float WAVE_SECTION_DEPTH_DIV = 160f;
     public static final int WAVE_SECTIONS = 12;
     public static final int WAVE_VERTICES_PER_SECTION = 6;
-    public static final int WAVE_RISE_RATE_DIV = 8; // seconds to reach the top of the screen
+    public static final int WAVE_RISE_RATE_DIV = 12; // seconds to reach the top of the viewport
 
     private static final int FILL_COLOUR = 0xFF99BBFF;
     private static final int STROKE_COLOUR = 0xFF0050EF;
@@ -34,16 +34,21 @@ public class Wave extends AbstractDrawable {
         sketch.colorModeRGB();
         sketch.roughStrokeWeight = sketch.RSW_DEF;
 
-        for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
-            sketch.levelState.stress = i;
-            sketch.levelState.sketchiness();
+        for (int j = 0; j < VARIANT_TOKENS / 2; j++) {
+            for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+                sketch.levelState.stress = i;
+                sketch.levelState.sketchiness();
 
-            for (int j = 0; j < VARIANT_TOKENS / 2; j++) {
                 staticTokens[i][j] = sketch.handDraw(Sketcher.WAVE, STROKE_COLOUR, FILL_COLOUR,
                         sketch.width, waveDepth, WAVE_SECTIONS, waveSectionDepth, WAVE_VERTICES_PER_SECTION,
                         j * 10);
             }
-            for (int j = VARIANT_TOKENS / 2; j < VARIANT_TOKENS; j++) {
+        }
+        for (int j = VARIANT_TOKENS / 2; j < VARIANT_TOKENS; j++) {
+            for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+                sketch.levelState.stress = i;
+                sketch.levelState.sketchiness();
+
                 staticTokens[i][j] = sketch.handDraw(Sketcher.WAVE, STROKE_COLOUR, FILL_COLOUR,
                         sketch.width, waveDepth, WAVE_SECTIONS, waveSectionDepth, WAVE_VERTICES_PER_SECTION,
                         -(j + 1 - VARIANT_TOKENS) * 10);

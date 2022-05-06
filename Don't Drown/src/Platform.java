@@ -4,7 +4,7 @@ import processing.core.PVector;
 
 public class Platform extends AbstractDrawable {
 
-    private static final float PF_WIDTH_DIV = 10f;
+    public static final float PF_WIDTH_DIV = 10f;
     private static final float PF_HEIGHT_DIV = 7f; // as a ratio of width
 
     public PVector initPos;

@@ -4,70 +4,130 @@ import processing.core.PVector;
 
 public class ScoreOverlay {
 
-    public static class StressBar extends AbstractDrawable {
+    public static class StressBar {
 
         public static final int STRESS_BAR_RESOLUTION = 10;
         private static final float STRESS_BAR_WIDTH_DIV = 2f;
         private static final float STRESS_BAR_HEIGHT_DIV = 20f; // as a ratio of width
 
-        private static PShape[][] staticTokens = null;
-
         private static float width;
         private static float height;
 
-        protected StressBar(DontDrown sketch) {
-            super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
-            pos = new PVector(0, 0);
+        public final StressBarOuter outer;
+        public final StressBarFill fill;
+
+        public StressBar(DontDrown sketch) {
+            outer = new StressBarOuter(sketch);
+            fill = new StressBarFill(sketch);
         }
 
-        protected static PShape[][] generateTokens(DontDrown sketch) {
-            final int maxStressIndex = (LevelState.ABS_MAX_STRESS + 1) * STRESS_BAR_RESOLUTION;
-            staticTokens = new PShape[maxStressIndex][VARIANT_TOKENS];
-            width = sketch.width / STRESS_BAR_WIDTH_DIV;
-            height = width / STRESS_BAR_HEIGHT_DIV;
-            int outlineWeight = (int) (height / 10);
-            PVector pos = new PVector(sketch.width / 2f - width / 2, height);
+        public static class StressBarOuter extends AbstractDrawable {
+            private static PShape[][] staticTokens = null;
 
-            for (int i = 0; i < maxStressIndex; i++) {
-                sketch.levelState.stress = i / (float) STRESS_BAR_RESOLUTION;
-                sketch.levelState.sketchiness();
-                sketch.levelState.recalcStressHSBColour();
-
-                for (int j = 0; j < VARIANT_TOKENS; j++) {
-                    PShape token = new PShape(PConstants.GROUP);
-                    sketch.roughStrokeWeight = outlineWeight;
-
-                    /* outer box */
-                    sketch.colorModeRGB();
-                    token.addChild(sketch.handDraw(PConstants.RECT, 0xFF000000, 0xFFFFFFFF,
-                            pos.x, pos.y, width, height));
-
-                    /* bar fill */
-                    if (sketch.levelState.stress > 0) {
-                        sketch.colorModeHSB();
-                        float[] colour = sketch.levelState.stressHSBColour;
-                        int fillColour = sketch.color(colour[0], colour[1], colour[2]);
-                        token.addChild(
-                                sketch.handDraw(PConstants.RECT, fillColour, fillColour, pos.x + outlineWeight,
-                                        pos.y + outlineWeight,
-                                        (width - 2 * outlineWeight)
-                                                * (sketch.levelState.stress / LevelState.ABS_MAX_STRESS),
-                                        height - 2 * outlineWeight));
-                    }
-
-                    staticTokens[i][j] = token;
-                }
+            protected StressBarOuter(DontDrown sketch) {
+                super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
+                pos = new PVector(0, 0);
             }
 
-            return staticTokens;
+            protected static PShape[][] generateTokens(DontDrown sketch) {
+                staticTokens = new PShape[(LevelState.ABS_MAX_STRESS + 1)][VARIANT_TOKENS];
+
+                width = sketch.width / STRESS_BAR_WIDTH_DIV;
+                height = width / STRESS_BAR_HEIGHT_DIV;
+                PVector pos = new PVector(sketch.width / 2f - width / 2, height);
+
+                for (int i = 0; i <= LevelState.ABS_MAX_STRESS; i++) {
+                    sketch.levelState.stress = i / (float) STRESS_BAR_RESOLUTION;
+                    sketch.levelState.sketchiness();
+                    sketch.levelState.recalcStressHSBColour();
+
+                    for (int j = 0; j < VARIANT_TOKENS; j++) {
+                        PShape token = new PShape(PConstants.GROUP);
+
+                        /* outer box */
+                        sketch.colorModeRGB();
+                        token.addChild(sketch.handDraw(PConstants.RECT, 0xFF000000, 0xFFFFFFFF,
+                                pos.x, pos.y, width, height));
+
+                        staticTokens[i][j] = token;
+                    }
+                }
+
+                return staticTokens;
+            }
+
+            @Override
+            protected boolean onScreen() {
+                return true;
+            }
+
+            @Override
+            public void render() {
+                renderAD();
+            }
+
         }
 
-        protected boolean onScreen() {
-            return true;
+        public static class StressBarFill extends AbstractDrawable {
+            private static PShape[][] staticTokens = null;
+
+            protected StressBarFill(DontDrown sketch) {
+                super(sketch, (staticTokens == null ? generateTokens(sketch) : staticTokens));
+                pos = new PVector(0, 0);
+            }
+
+            protected static PShape[][] generateTokens(DontDrown sketch) {
+                final int maxStressIndex = (LevelState.ABS_MAX_STRESS + 1) * STRESS_BAR_RESOLUTION;
+                staticTokens = new PShape[maxStressIndex][VARIANT_TOKENS];
+
+                width = sketch.width / STRESS_BAR_WIDTH_DIV;
+                height = width / STRESS_BAR_HEIGHT_DIV;
+                int outlineWeight = (int) (height / 10);
+                PVector pos = new PVector(sketch.width / 2f - width / 2, height);
+
+                for (int i = 0; i < maxStressIndex; i++) {
+                    sketch.levelState.stress = i / (float) STRESS_BAR_RESOLUTION;
+                    sketch.levelState.sketchiness();
+                    sketch.levelState.recalcStressHSBColour();
+
+                    for (int j = 0; j < VARIANT_TOKENS; j++) {
+                        PShape token = new PShape(PConstants.GROUP);
+                        sketch.roughStrokeWeight = outlineWeight;
+
+                        /* bar fill */
+                        if (sketch.levelState.stress > 0) {
+                            sketch.colorModeHSB();
+                            float[] colour = sketch.levelState.stressHSBColour;
+                            int fillColour = sketch.color(colour[0], colour[1], colour[2]);
+                            token.addChild(
+                                    sketch.handDraw(PConstants.RECT, fillColour, fillColour, pos.x + outlineWeight,
+                                            pos.y + outlineWeight,
+                                            (width - 2 * outlineWeight)
+                                                    * (sketch.levelState.stress / LevelState.ABS_MAX_STRESS),
+                                            height - 2 * outlineWeight));
+                        }
+
+                        staticTokens[i][j] = token;
+                    }
+                }
+
+                return staticTokens;
+            }
+
+            @Override
+            protected boolean onScreen() {
+                return true;
+            }
+
+            @Override
+            public void render() {
+                renderADStress();
+            }
         }
 
         public void render() {
-            renderADStress();
+            outer.render();
+            fill.render();
         }
     }
 

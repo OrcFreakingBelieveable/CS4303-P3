@@ -2,16 +2,17 @@ import processing.core.PApplet;
 
 public class DontDrown extends Sketcher {
 
-    // TODO make stress relative to distance between PC and wave
-    // TODO redo level generation
+    private static final float LOADING_TEXT_DIV = 5f;
 
     public enum GameState {
+        PRE_STARTUP,
         STARTUP,
         MID_LEVEL,
-        IN_MENU,;
+        IN_MENU,
+        ;
     }
 
-    GameState gameState = GameState.STARTUP;
+    GameState gameState = GameState.PRE_STARTUP;
     GameMenu gameMenu;
     LevelState levelState;
     PlayerCharacter pc;
@@ -34,20 +35,20 @@ public class DontDrown extends Sketcher {
 
     private void generateLevels() {
         levels = new Level[] {
-                new Level(this, "Feeling Typical (Tutorial)", height * 2, true, 0.1f, 0.7f),
-                new Level(this, "Panic Prone", height * 2, true, 0.1f, 0.6f),
-                new Level(this, "Overworked", height * 2, true, 0.1f, 0.1f),
-                new Level(this, "Can't Unwind", height * 2, true, 0.1f, 0.5f),
-                new Level(this, "Stress Motivated", height * 2, false, 0.1f, 0.4f),
-                new Level(this, "Tunnel Vision", height * 2, true, 0.1f, 0.3f),
-                new Level(this, "Lacking Self-awareness", height * 2, true, 0.1f, 0.2f)
+                new Level(this, "Feeling Typical (Tutorial)", height * 1, true, 0.1f, 1),
+                new Level(this, "Panic Prone", height * 2, false, 0.6f, 3),
+                new Level(this, "Overworked", height * 2, false, 0.1f, 3),
+                new Level(this, "Can't Unwind", height * 2, false, 0.5f, 3),
+                new Level(this, "Stress Motivated", height * 2, false, 0.4f, 3),
+                new Level(this, "Tunnel Vision", height * 2, true, 0.3f, 3),
+                new Level(this, "Lacking Self-awareness", height * 2, false, 0.2f, 3)
         };
         gameMenu.updateLevelSelector();
     }
 
     public void startLevel(Level levelToStart) {
         if (levelToStart == null) {
-            level = new Level(this, "Generic", height * 2, true, 0.1f, 1f);
+            level = new Level(this, "Generic", height * 2, true, 1f, 3);
         } else {
             level = levelToStart;
         }
@@ -78,6 +79,14 @@ public class DontDrown extends Sketcher {
     @Override
     public void draw() {
         switch (gameState) {
+            case PRE_STARTUP:
+                textAlign(CENTER, CENTER);
+                textSize(height / LOADING_TEXT_DIV);
+                fill(0xFF000000);
+                text("Loading...", width / 2f, height / 2f);
+
+                gameState = GameState.STARTUP;
+                break;
             case STARTUP:
                 noStroke();
                 levelState = new LevelState(this);
@@ -129,9 +138,7 @@ public class DontDrown extends Sketcher {
                 if (debugging)
                     debugOverlay.render();
                 break;
-
         }
-
     }
 
     @Override
@@ -156,6 +163,9 @@ public class DontDrown extends Sketcher {
                             break;
                         case UP:
                             pc.jump();
+                            break;
+                        case DOWN:
+                            pc.drop();
                             break;
                         default:
                             // do nothing
@@ -207,7 +217,7 @@ public class DontDrown extends Sketcher {
                             break;
                         default:
                             if (Character.isDigit(key)) {
-                                levelState.stress = Integer.parseInt("" + key) * 10;
+                                levelState.stress = Integer.parseInt("" + key) * 10f;
                             }
                             // do nothing
                     }

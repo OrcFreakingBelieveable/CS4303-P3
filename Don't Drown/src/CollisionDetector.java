@@ -54,7 +54,7 @@ public class CollisionDetector {
     }
 
     private void detectPlatformCollisions(PlayerCharacter pc, PVector dir) {
-        if (pc.fallState.equals(PlayerCharacter.FallState.FALLING)) {
+        if (pc.fallState.equals(PlayerCharacter.FallState.FALLING) || pc.fallState.equals(PlayerCharacter.FallState.DROPPING)) {
             for (Platform platform : sortedPlatforms) {
                 if (platform.pos.y > sketch.height && platform.pos.y < platform.height) {
                     // platform not on screen
@@ -66,6 +66,9 @@ public class CollisionDetector {
                 } else if (platform.pos.y > (pc.pos.y + PlayerCharacter.radius)) {
                     // platform too low
                     // continue search
+                } else if (pc.fallState.equals(PlayerCharacter.FallState.DROPPING) && platform.equals(pc.surface)) {
+                    // ignore the platform that the PC is falling through 
+                    // continue search 
                 } else {
                     // platform vertically between oldPos and pos + PlayerCharacter.radius
                     // check horizontal overlap to confirm collision
@@ -187,20 +190,11 @@ public class CollisionDetector {
         }
     }
 
-    public void detectWaveProximity() {
-        if (sketch.risingWave.pos.y <= sketch.height) {
-            sketch.levelState.stress += LevelState.STRESS_INCR_RATE;
-        } else {
-            sketch.levelState.stress -= LevelState.STRESS_DECR_RATE;
-        }
-    }
-
     public void detectCollisions() {
         PlayerCharacter pc = sketch.pc;
         PVector dir = (pc.pos.copy().sub(pcOldPos)).normalize(); // i.e. bearing of (pc.vel from last frame + panning)
         detectPlatformCollisions(pc, dir);
         detectTokenCollisions(pc, dir);
-        detectWaveProximity();
         pcOldPos = pc.pos.copy();
 
         // check level end conditions
