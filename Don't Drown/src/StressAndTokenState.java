@@ -137,9 +137,7 @@ public class StressAndTokenState {
 
     public void updateStress() {
         float waveDistance = Math.abs(sketch.risingWave.pos.y - sketch.pc.pos.y);
-        if (waveDistance > stressIncrRange + stressDecrRange) {
-            stress = 0;
-        } else if (waveDistance > stressIncrRange) {
+        if (waveDistance > stressIncrRange) {
             stress -= STRESS_DECR_RATE * (waveDistance - stressIncrRange) / stressDecrRange;
         } else {
             stress += STRESS_DECR_RATE * ((stressIncrRange - waveDistance) / stressIncrRange);
@@ -159,7 +157,7 @@ public class StressAndTokenState {
         pcMinSpeed();
         recalcStressHSBColour();
         sketchiness();
-        sketch.risingWave.pos.sub(0, sketch.risingWave.waveRiseRate);
+        sketch.risingWave.pos.sub(0, sketch.level.waveRiseRate);
         oldStress = stress;
     }
 }

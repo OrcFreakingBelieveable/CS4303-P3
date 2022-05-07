@@ -1,11 +1,12 @@
 public enum Debuff {
-    STRESS_MOTIVATED("Stress Motivated"),
-    TUNNEL_VISION("Tunnel Vision"),
-    PANIC_PRONE("Panic Prone"),
-    LACK_CONTRAST("Lacking Self-awareness"),
+    NONE("Feeling Typical"),
     OVERWORKED("Overworked"),
+    PANIC_PRONE("Panic Prone"),
+    STRESS_MOTIVATED("Stress Motivated"),
     CANT_UNWIND("Can't Unwind"),
-    NONE("Feeling Typical");
+    TUNNEL_VISION("Tunnel Vision"),
+    LACK_CONTRAST("Lacking Self-awareness"),
+    ;
 
     public final String label;
 

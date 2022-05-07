@@ -66,12 +66,12 @@ public class DontDrown extends Sketcher {
     }
 
     public void endLevel(boolean completed) {
+        gameState = GameState.IN_MENU;
+        gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
         if (completed && level.highScore < levelState.tokensCollected) {
             level.highScore = levelState.tokensCollected;
             gameMenu.updateLevelSelector();
         }
-        gameState = GameState.IN_MENU;
-        gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
     }
 
     @Override
@@ -149,6 +149,7 @@ public class DontDrown extends Sketcher {
     public void keyPressed() {
         if (key == 'D') {
             debugging = !debugging;
+            return;
         }
 
         switch (gameState) {
@@ -219,10 +220,10 @@ public class DontDrown extends Sketcher {
                             break;
                         case 'w':
                         case 'W':
-                            if (risingWave.waveRiseRate == risingWave.defaultWaveRiseRate) {
-                                risingWave.waveRiseRate = 0;
+                            if (level.waveRiseRate == level.defaultWaveRiseRate) {
+                                level.waveRiseRate = 0;
                             } else {
-                                risingWave.waveRiseRate = risingWave.defaultWaveRiseRate;
+                                level.waveRiseRate = level.defaultWaveRiseRate;
                             }
                             break;
                         default:

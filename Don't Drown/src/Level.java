@@ -18,6 +18,8 @@ public class Level {
     public final float highestPlatformHeight;
     public final float playableWidth; // width - margin
     public final int betweenRedHerrings; // minimum layers between red herring platforms
+    public final float defaultWaveRiseRate;
+    public float waveRiseRate;
 
     private final float tokenElevation; // height above platforms
     private final float verticality; // a measure of the level's difficulty
@@ -51,6 +53,8 @@ public class Level {
         this.verticality = difficulty.verticality;
         this.betweenRedHerrings = difficulty.betweenRedHerrings;
         tokenElevation = 0.75f * sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
+        defaultWaveRiseRate = sketch.height / (60f * difficulty.waveRiseTime);
+        waveRiseRate = defaultWaveRiseRate;
 
         generatePlatformsAndTokens(difficulty.hasGround);
     }
@@ -184,6 +188,7 @@ public class Level {
     public void reset() {
         panningState = PanningState.NEITHER;
         top = topLimit;
+        waveRiseRate = defaultWaveRiseRate; 
 
         if (page.lines != null) {
             page.lines.resetMatrix();
