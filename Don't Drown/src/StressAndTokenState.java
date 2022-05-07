@@ -138,7 +138,7 @@ public class StressAndTokenState {
     public void updateStress() {
         float waveDistance = Math.abs(sketch.risingWave.pos.y - sketch.pc.pos.y);
         if (waveDistance > stressIncrRange) {
-            stress -= STRESS_DECR_RATE * (waveDistance - stressIncrRange) / stressDecrRange;
+            stress -= Math.max(STRESS_DECR_RATE, STRESS_DECR_RATE * (waveDistance - stressIncrRange) / stressDecrRange);
         } else {
             stress += STRESS_DECR_RATE * ((stressIncrRange - waveDistance) / stressIncrRange);
         }
