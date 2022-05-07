@@ -73,7 +73,8 @@ public class CollisionDetector {
                     // check horizontal overlap to confirm collision
                     float xAtYOverlap = getXAtYOverlap(pc, dir, platform.pos.y);
                     if (xAtYOverlap >= platform.pos.x && xAtYOverlap <= platform.pos.x + platform.width
-                            || pc.pos.x >= platform.pos.x && pc.pos.x <= platform.pos.x + platform.width) {
+                            || pc.pos.x >= platform.pos.x && pc.pos.x <= platform.pos.x + platform.width
+                            || pcOldPos.x >= platform.pos.x && pcOldPos.x <= platform.pos.x + platform.width) {
                         pc.land(platform);
                         break;
                     }
@@ -85,7 +86,7 @@ public class CollisionDetector {
                         || pc.pos.x > pc.surface.pos.x + pc.surface.width)) {
             pc.fall();
         }
-    } 
+    }
 
     private void detectTokenCollisions(PlayerCharacter pc, PVector dir) {
         float collisionRange = PlayerCharacter.radius + Token.height / 2;
@@ -109,12 +110,12 @@ public class CollisionDetector {
                     float theta = Math.abs(dir.heading() - PVector.angleBetween(pcOldPos, token.pos));
                     float hyp = PVector.dist(pcOldPos, token.pos);
                     float x = (float) (hyp * Math.sin(theta));
-                    float y = (float) (hyp * Math.cos(theta)); 
+                    float y = (float) (hyp * Math.cos(theta));
                     if (theta <= PConstants.HALF_PI && x <= collisionRange && y <= PVector.dist(pcOldPos, pc.pos)) {
                         sketch.levelState.collectToken(token);
                         break;
                     }
-                }                 
+                }
             }
         }
     }

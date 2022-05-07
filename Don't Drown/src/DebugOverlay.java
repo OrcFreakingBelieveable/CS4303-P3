@@ -25,8 +25,11 @@ public class DebugOverlay {
         content.append("jumpRange: " + sketch.pc.jumpRange + "\n");
         content.append("horizontal velocity: " + sketch.pc.vel.x + "\n");
         content.append("vertical velocity: " + sketch.pc.vel.y + "\n");
+        content.append("stressRating: " + (sketch.levelState.stress - sketch.levelState.stressEffectThreshold) + "\n");
+        content.append("pcThrustMultiplier: " + sketch.levelState.pcThrustMultiplier + "\n");
         content.append("pcThrust: " + sketch.levelState.pcThrust + "\n");
         content.append("pcFriction: " + sketch.levelState.pcFriction + "\n");
+        content.append("pcResultant: " + sketch.pc.resultant + "\n");
         content.append("fallState: " + sketch.pc.fallState + "\n");
         content.append("steerState: " + sketch.pc.getSteerState() + "\n");
         content.append("moveState: " + sketch.pc.getMoveState() + "\n");
@@ -36,9 +39,10 @@ public class DebugOverlay {
         content.append("roughStrokeShakiness: " + sketch.roughStrokeShakiness + "\n");
         content.append("waveDistance: " + Math.abs(sketch.risingWave.pos.y - sketch.pc.pos.y) + "\n");
         content.append("stressIncrRange: " + sketch.levelState.stressIncrRange + "\n");
-        content.append("stressDecrRange: " + sketch.levelState.stressDecrRange + "\n");
 
         if (sketch.gameState.equals(DontDrown.GameState.MID_LEVEL)) {
+            content.append("debuff: " + sketch.levelState.debuff + "\n");
+            content.append("difficulty: " + sketch.level.difficulty + "\n");
             content.append("platforms: " + sketch.level.platforms.size() + "\n");
             content.append("tokens: " + sketch.level.tokens.size() + "\n");
             content.append("panningState: " + sketch.level.panningState + "\n");

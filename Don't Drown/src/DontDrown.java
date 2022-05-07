@@ -26,6 +26,7 @@ public class DontDrown extends Sketcher {
     Level level;
     CollisionDetector collisionDetector;
     public boolean debugging = true;
+    public boolean staticStress = false;
 
     public void colorModeHSB() {
         colorMode(HSB, 360f, 1f, 1f, 1f);
@@ -138,6 +139,11 @@ public class DontDrown extends Sketcher {
                 level.render();
                 pc.render();
                 risingWave.render();
+                if (levelState.debuff.equals(Debuff.TUNNEL_VISION)) {
+                    fill(0xFF000000); 
+                    rect(0f, 0f, width, pc.pos.y - pc.jumpHeight * 1.2f);
+                    rect(0f, pc.pos.y + pc.jumpHeight, width, height); 
+                }
                 scoreOverlay.render();
                 if (debugging)
                     debugOverlay.render();
@@ -150,7 +156,7 @@ public class DontDrown extends Sketcher {
         if (key == 'D') {
             debugging = !debugging;
             return;
-        }
+        } 
 
         switch (gameState) {
             case PRE_STARTUP:
@@ -226,6 +232,10 @@ public class DontDrown extends Sketcher {
                                 level.waveRiseRate = level.defaultWaveRiseRate;
                             }
                             break;
+                        case 's':
+                        case 'S':
+                            staticStress = !staticStress; 
+                            break; 
                         default:
                             if (Character.isDigit(key)) {
                                 levelState.stress = Integer.parseInt("" + key) * 10f;

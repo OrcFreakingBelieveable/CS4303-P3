@@ -10,6 +10,8 @@ public abstract class AbstractDrawable {
     public static final int VARIANT_TOKENS = 15;
     public static final int FRAMES_PER_STRESS_BAR_RESKETCH = 2;
 
+    public static int stressIndex = 0; 
+
     protected final DontDrown sketch;
     protected final StressAndTokenState state;
     protected final int redrawOffset;
@@ -35,11 +37,11 @@ public abstract class AbstractDrawable {
             if (token == null
                     || (sketch.frameCount + redrawOffset) % state.framesPerResketch == 0                    ) {
                 tokenIndex = (tokenIndex + 1) % VARIANT_TOKENS;
-                token = tokens[(int) state.stress][tokenIndex];
-                lastStressIndex = (int) state.stress; 
+                token = tokens[stressIndex][tokenIndex];
+                lastStressIndex = stressIndex; 
             } else if (Math.abs(state.stress - lastStressIndex) > 5) {
-                token = tokens[(int) state.stress][tokenIndex];
-                lastStressIndex = (int) state.stress; 
+                token = tokens[stressIndex][tokenIndex];
+                lastStressIndex = stressIndex; 
             }
 
             sketch.shape(token, pos.x, pos.y);
@@ -47,12 +49,12 @@ public abstract class AbstractDrawable {
     }
 
     protected void renderADStress() {
-        if (onScreen()) {
+        if (onScreen() && !sketch.levelState.debuff.equals(Debuff.LACK_CONTRAST)) {
             if (token == null
                     || (sketch.frameCount + redrawOffset) % FRAMES_PER_STRESS_BAR_RESKETCH == 0) {
                 tokenIndex = (tokenIndex + 1) % VARIANT_TOKENS;
-                int stressIndex = (int) Math.max(0, (state.stress * ScoreOverlay.StressBar.STRESS_BAR_RESOLUTION));
-                token = tokens[stressIndex][tokenIndex];
+                int stressIndexAlt = (int) Math.max(0, (state.stress * ScoreOverlay.StressBar.STRESS_BAR_RESOLUTION));
+                token = tokens[stressIndexAlt][tokenIndex];
             }
 
             sketch.shape(token, pos.x, pos.y);

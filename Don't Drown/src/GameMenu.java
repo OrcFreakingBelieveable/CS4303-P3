@@ -93,12 +93,14 @@ public class GameMenu {
                     "• Down to fall through a platform",
                     "• Left and Right to accelerate",
                     "• Up to jump when on a platform",
-                    "• P to pause",
+                    "• P to (un)pause",
                     "• Esc to quit",
                     "",
-                    "• Reach the top platform to complete the level",
-                    "• Keep the wave out of sight to de-stress",
-                    "• Collect tokens along the way",
+                    "• Reach the top platform as fast you can to complete the level",
+                    "• If you get too close to the wave then you'll get stressed",
+                    "• As stress rises, steering becomes jerkier",
+                    "• Keep far ahead of the wave to de-stress",
+                    "• Collect tokens along the way for a sense of challenge",
             };
             for (String string : text) {
                 menu.linesOfText.add(new LineOfText(string));

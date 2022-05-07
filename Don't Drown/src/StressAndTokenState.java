@@ -9,10 +9,8 @@ public class StressAndTokenState {
     public static final float STRESS_INCR_RATE = 0.75f;
     public static final float STRESS_DECR_RATE = 0.75f;
     public static final float STRESS_INCR_RANGE_DIV = 2.5f;
-    public static final float STRESS_DECR_RANGE_DIV = 2.5f;
 
-
-    // level and stress values 
+    // level and stress values
     public int tokensAvailable = 0;
     public int tokensCollected = 0;
     public float oldStress = 0;
@@ -21,23 +19,20 @@ public class StressAndTokenState {
     public int minStress = 0;
     public int stressEffectThreshold = 20;
     public float stressIncrRange;
-    public float stressDecrRange;
     public Debuff debuff = Debuff.NONE;
 
-    // pc values 
+    // pc values
     public float pcThrust;
     public float pcFriction;
     public float pcMinSpeed;
     public float[] stressHSBColour;
     public int framesPerResketch;
 
-    // calculation values 
-    private float pcThrustMultiplier;
-    private float pcFrictionMultiplier;
+    // calculation values
+    public float pcThrustMultiplier;
+    public float pcFrictionMultiplier;
 
-    // debuffs 
-
-    private final float stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
+    private float stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
 
     private final float stressHueMultiplier = (PlayerCharacter.PC_MAX_HUE - PlayerCharacter.PC_MIN_HUE)
             / stressRange;
@@ -61,10 +56,11 @@ public class StressAndTokenState {
         stress = 0;
         maxStress = 100;
         minStress = 0;
-        stressEffectThreshold = 20;
-        debuff = Debuff.NONE;
+        debuff = level.debuff;
+        stressEffectThreshold = debuff.equals(Debuff.STRESS_MOTIVATED) ? 50 : 20;
+        AbstractDrawable.stressIndex = debuff.equals(Debuff.LACK_CONTRAST) ? (int) sketch.random(0, ABS_MAX_STRESS) : 0;
+        stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
         stressIncrRange = sketch.height / STRESS_INCR_RANGE_DIV;
-        stressDecrRange = sketch.height / STRESS_DECR_RANGE_DIV;
         level.reset();
         update();
     }
@@ -136,17 +132,36 @@ public class StressAndTokenState {
     }
 
     public void updateStress() {
+
+        if (sketch.staticStress) {
+            return;
+        }
+
         float waveDistance = Math.abs(sketch.risingWave.pos.y - sketch.pc.pos.y);
-        if (waveDistance > stressIncrRange) {
-            stress -= Math.max(STRESS_DECR_RATE, STRESS_DECR_RATE * (waveDistance - stressIncrRange) / stressDecrRange);
-        } else {
+
+        if (debuff.equals(Debuff.PANIC_PRONE) && sketch.frameCount % 300 < 100) {
+            waveDistance = Math.min(waveDistance, stressIncrRange / 2);
+        } else if (debuff.equals(Debuff.TUNNEL_VISION)
+                && sketch.risingWave.pos.y > sketch.pc.pos.y + sketch.pc.jumpHeight) {
+            waveDistance = Math.max(waveDistance, stressIncrRange);
+        }
+
+        if (waveDistance <= stressIncrRange) {
             stress += STRESS_DECR_RATE * ((stressIncrRange - waveDistance) / stressIncrRange);
+        } else if (!debuff.equals(Debuff.CANT_UNWIND)) {
+            stress -= Math.min(STRESS_DECR_RATE, STRESS_DECR_RATE * (waveDistance - stressIncrRange) / stressIncrRange);
         }
 
         if (stress > maxStress) {
             stress = maxStress;
         } else if (stress < minStress) {
             stress = minStress;
+        }
+
+        if (!debuff.equals(Debuff.LACK_CONTRAST)) {
+            AbstractDrawable.stressIndex = (int) stress;
+        } else {
+            AbstractDrawable.stressIndex += (int) sketch.random(-0.1f, 0.1f);
         }
     }
 

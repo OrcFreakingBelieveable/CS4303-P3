@@ -13,7 +13,7 @@ public class PlayerCharacter extends AbstractDrawable {
     private static final int PC_MIN_DEC_TIME = 5; // frames to stop from max speed
     private static final int PC_MAX_DEC_TIME = 20; // frames to stop from max speed
     private static final float PC_MAX_SPEED_MULT = 0.6f; // incr per frame
-    private static final float PC_AIR_THRUST_MULT = 0.15f; // horizontal thrust multiplier when mid-air
+    private static final float PC_AIR_THRUST_MULT = 0.4f; // horizontal thrust multiplier when mid-air
     private static final float PC_AIR_FRICTION_FACTOR = 0.05f; // horizontal friction multiplier when mid-air
 
     // vertical movement
@@ -64,7 +64,7 @@ public class PlayerCharacter extends AbstractDrawable {
     public boolean steerSinceLand = false;
 
     // force resolution
-    private PVector resultant = new PVector();
+    public PVector resultant = new PVector();
     public static final float I_MASS = 1 / 15f; // inverse mass
 
     // frame counters
@@ -158,10 +158,10 @@ public class PlayerCharacter extends AbstractDrawable {
 
         this.incr = sketch.width / PC_INCR_DIV;
         this.maxSpeed = incr * PC_MAX_SPEED_MULT;
-        this.minHorizontalFriction = (maxSpeed / PC_MAX_DEC_TIME);
-        this.maxHorizontalFriction = (maxSpeed / PC_MIN_DEC_TIME);
-        this.minHorizontalThrust = maxHorizontalFriction + (maxSpeed / PC_MAX_ACC_TIME);
-        this.maxHorizontalThrust = minHorizontalFriction + (maxSpeed / PC_MIN_ACC_TIME);
+        this.minHorizontalFriction = maxSpeed / PC_MAX_DEC_TIME;
+        this.maxHorizontalFriction = maxSpeed / PC_MIN_DEC_TIME;
+        this.minHorizontalThrust = maxSpeed / PC_MAX_ACC_TIME;
+        this.maxHorizontalThrust = maxSpeed / PC_MIN_ACC_TIME;
 
         this.riseFrames = riseFrames();
         this.jumpHeightIncr = jumpHeight();
@@ -173,10 +173,16 @@ public class PlayerCharacter extends AbstractDrawable {
 
     private void applyHorizontalDrag() {
         // horizontally deccelerate, dependent upon surface/air
-        if (fallState.equals(FallState.ON_SURFACE)) {
-            resultant.x += state.pcFriction * (vel.x < 0 ? 1 : -1);
+        int direction;
+        if (vel.x == 0) {
+            direction = steerState.directionMult;
         } else {
-            resultant.x += state.pcFriction * (vel.x < 0 ? 1 : -1) * PC_AIR_FRICTION_FACTOR;
+            direction = vel.x < 0 ? 1 : -1;
+        }
+        if (fallState.equals(FallState.ON_SURFACE)) {
+            resultant.x += state.pcFriction * direction;
+        } else {
+            resultant.x += state.pcFriction * direction * PC_AIR_FRICTION_FACTOR;
         }
     }
 
@@ -227,7 +233,8 @@ public class PlayerCharacter extends AbstractDrawable {
         }
 
         // if not at rest or max speed, apply friction force
-        if (moveState.equals(MoveState.ACCELERATING)) {
+        if (moveState.equals(MoveState.ACCELERATING) && (steerState.equals(SteerState.NEITHER)
+                || steerState.equals(vel.x < 0 ? SteerState.RIGHT : SteerState.LEFT))) {
             applyHorizontalDrag();
         }
 
