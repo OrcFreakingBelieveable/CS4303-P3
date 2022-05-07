@@ -5,24 +5,38 @@ import processing.core.PVector;
 public class Level {
 
     public static final float PAN_RATE_DIV = PlayerCharacter.PC_DIAMETER_DIV * 10f;
+    public static final float H_MIN_JUMP_RANGE_MULT = 0.5f;
+    public static final float H_MAX_JUMP_RANGE_MULT = 1f;
+    public static final float V_MIN_JUMP_RANGE_MULT = 0f;
+    public static final float V_MAX_JUMP_RANGE_MULT = 0.25f;
+    public static final float H_MIN_JUMP_HEIGHT_MULT = 0.25f;
+    public static final float H_MAX_JUMP_HEIGHT_MULT = 0.5f;
+    public static final float V_MIN_JUMP_HEIGHT_MULT = 0.75f;
+    public static final float V_MAX_JUMP_HEIGHT_MULT = 1f;
 
     private final DontDrown sketch;
 
+    // meta information
     public final Debuff debuff;
     public final Difficulty difficulty;
+    public final int height;
     public final Page page;
     public final float panRate;
-    public final int height;
     public final float topLimit; // used to stop over-panning
+    private final float tokenElevation; // height above platforms for tokens to hover
+
+    // level generation values
     public final float lowestPlatformHeight;
     public final float highestPlatformHeight;
     public final float playableWidth; // width - margin
     public final int betweenRedHerrings; // minimum layers between red herring platforms
+    private final float jumpRange;
+    private final float jumpHeight;
+    private final float verticality; // affects the ratio of vertical jumps to horizontal ones
+
+    // wave speed
     public final float defaultWaveRiseRate;
     public float waveRiseRate;
-
-    private final float tokenElevation; // height above platforms
-    private final float verticality; // a measure of the level's difficulty
 
     public enum PanningState {
         UP,
@@ -30,8 +44,8 @@ public class Level {
         NEITHER;
     }
 
+    // variable values
     public PanningState panningState = PanningState.NEITHER;
-
     public float top; // the top of the level relative to the viewport
     public ArrayList<Token> tokens = new ArrayList<>();
     public ArrayList<Platform> platforms = new ArrayList<>();
@@ -40,21 +54,30 @@ public class Level {
 
     public Level(DontDrown sketch, Debuff debuff, Difficulty difficulty) {
         this.sketch = sketch;
+
+        // meta information
         this.debuff = debuff;
         this.difficulty = difficulty;
         this.height = (int) (sketch.height * difficulty.heightMult);
         page = new Page(sketch, height, false);
-        lowestPlatformHeight = .75f * sketch.height;
+        panRate = height / PAN_RATE_DIV;
         topLimit = (float) sketch.height - height;
-        top = topLimit;
+        tokenElevation = 0.75f * sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
+
+        // level generation values
+        lowestPlatformHeight = .75f * sketch.height;
         highestPlatformHeight = page.topLineY + sketch.height / 10f;
         playableWidth = sketch.width - Page.marginX;
-        panRate = height / PAN_RATE_DIV;
         this.verticality = difficulty.verticality;
         this.betweenRedHerrings = difficulty.betweenRedHerrings;
-        tokenElevation = 0.75f * sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
+        jumpRange = sketch.pc.jumpRange;
+        jumpHeight = sketch.pc.jumpHeight;
+
+        // wave speed
         defaultWaveRiseRate = sketch.height / (60f * difficulty.waveRiseTime);
         waveRiseRate = defaultWaveRiseRate;
+
+        top = topLimit;
 
         generatePlatformsAndTokens(difficulty.hasGround);
     }
@@ -82,16 +105,6 @@ public class Level {
     private void generatePlatformsAndTokens(boolean hasGround) {
         Platform prevPlatform = null;
         Platform currentPlatform;
-        final float jumpRange = sketch.pc.jumpRange;
-        final float hMinJumpRangeMult = 0.5f;
-        final float hMaxJumpRangeMult = 1f;
-        final float vMinJumpRangeMult = 0f;
-        final float vMaxJumpRangeMult = 0.25f;
-        final float jumpHeight = sketch.pc.jumpHeight;
-        final float hMinJumpHeightMult = 0.25f;
-        final float hMaxJumpHeightMult = 0.5f;
-        final float vMinJumpHeightMult = 0.75f;
-        final float vMaxJumpHeightMult = 1f;
 
         if (hasGround) {
             currentPlatform = new Platform(sketch, Page.marginX, lowestPlatformHeight, playableWidth);
@@ -109,9 +122,14 @@ public class Level {
         boolean redHerring = false; // whether or not to add an extra platform with a token
         int sinceRedHerring = betweenRedHerrings;
 
-        while (currentPlatform.pos.y > highestPlatformHeight + (jumpHeight * vMinJumpHeightMult)) {
+        while (currentPlatform.pos.y > highestPlatformHeight + (jumpHeight * V_MIN_JUMP_HEIGHT_MULT)) {
 
             Platform nextPlatform = new Platform(sketch, 0, 0);
+
+            if (debuff.equals(Debuff.OVERWORKED)) {
+                // every platform has a token 
+                addToken(currentPlatform.pos.x + currentPlatform.width / 2, currentPlatform.pos.y - tokenElevation);
+            }
 
             if (redHerring && prevPlatform != null) {
                 // place a token on a platform off the beaten path
@@ -129,10 +147,10 @@ public class Level {
 
             if (currentPlatform.width == playableWidth) {
                 // first platform after the ground is a special case
-                diffY = jumpHeight * sketch.random(vMinJumpHeightMult, vMaxJumpHeightMult);
+                diffY = jumpHeight * sketch.random(V_MIN_JUMP_HEIGHT_MULT, V_MAX_JUMP_HEIGHT_MULT);
                 diffX = sketch.random(0, playableWidth - nextPlatform.width);
             } else {
-                boolean wentUp = diffY >= jumpHeight * vMinJumpHeightMult;
+                boolean wentUp = diffY >= jumpHeight * V_MIN_JUMP_HEIGHT_MULT;
                 boolean edgeReached = currentPlatform.pos.x < Page.marginX + nextPlatform.width
                         || currentPlatform.pos.x > sketch.width - currentPlatform.width - nextPlatform.width;
 
@@ -143,9 +161,9 @@ public class Level {
                     goingLeft = !goingLeft;
 
                     // reflection jump
-                    diffY = jumpHeight * sketch.random(vMinJumpHeightMult, vMaxJumpHeightMult);
+                    diffY = jumpHeight * sketch.random(V_MIN_JUMP_HEIGHT_MULT, V_MAX_JUMP_HEIGHT_MULT);
                     diffX = Math.max(currentPlatform.width,
-                            jumpRange * sketch.random(hMinJumpRangeMult, hMaxJumpRangeMult));
+                            jumpRange * sketch.random(H_MIN_JUMP_RANGE_MULT, H_MAX_JUMP_RANGE_MULT));
                 } else {
                     // random chance to change horizontal direction
                     if (!redHerring && sketch.random(0f, 1f) < 0.1) {
@@ -157,13 +175,13 @@ public class Level {
 
                     if (!wentUp && sketch.random(0f, 1f) < verticality) {
                         // vertical jump (can't have two in a row)
-                        diffY = jumpHeight * sketch.random(vMinJumpHeightMult, vMaxJumpHeightMult);
-                        diffX = jumpRange * sketch.random(vMinJumpRangeMult, vMaxJumpRangeMult);
+                        diffY = jumpHeight * sketch.random(V_MIN_JUMP_HEIGHT_MULT, V_MAX_JUMP_HEIGHT_MULT);
+                        diffX = jumpRange * sketch.random(V_MIN_JUMP_RANGE_MULT, V_MAX_JUMP_RANGE_MULT);
                     } else {
                         // horizontal jump
-                        diffY = jumpHeight * sketch.random(hMinJumpHeightMult, hMaxJumpHeightMult);
+                        diffY = jumpHeight * sketch.random(H_MIN_JUMP_HEIGHT_MULT, H_MAX_JUMP_HEIGHT_MULT);
                         diffX = Math.max(currentPlatform.width,
-                                jumpRange * sketch.random(hMinJumpRangeMult, hMaxJumpRangeMult));
+                                jumpRange * sketch.random(H_MIN_JUMP_RANGE_MULT, H_MAX_JUMP_RANGE_MULT));
                     }
 
                 }
@@ -179,16 +197,16 @@ public class Level {
             currentPlatform = nextPlatform;
             platforms.add(currentPlatform);
 
-            if (currentPlatform.pos.y < highestPlatform.pos.y)
+            if (currentPlatform.pos.y < highestPlatform.pos.y) {
                 highestPlatform = currentPlatform;
-
+            }
         }
     }
 
     public void reset() {
         panningState = PanningState.NEITHER;
         top = topLimit;
-        waveRiseRate = defaultWaveRiseRate; 
+        waveRiseRate = defaultWaveRiseRate;
 
         if (page.lines != null) {
             page.lines.resetMatrix();

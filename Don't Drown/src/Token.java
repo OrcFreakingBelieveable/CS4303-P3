@@ -27,6 +27,9 @@ public class Token extends AbstractCollectable {
     }
 
     public void integrate() {
+        if (collected) {
+            return; 
+        }
         if (sketch.frameCount % T_BOUNCE_FRAMES == 0) {
             movingDown = !movingDown;
         }
