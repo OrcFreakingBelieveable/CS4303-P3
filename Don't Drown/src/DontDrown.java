@@ -5,6 +5,9 @@ public class DontDrown extends Sketcher {
 
     private static final float LOADING_TEXT_DIV = 5f;
     private static final int SCROLL_DIV = 20;
+    private static final int EXTENSION_TIME_MULT = 3; // the number of jumps for which the extension lasts
+    private static final int REPERCUSSION_TIME_MULT = 3; // the number of jumps for which the repercussion lasts
+
     public static final String FONT_PATH = "sf-grunge-sans.bold.ttf";
 
     public enum GameState {
@@ -27,6 +30,12 @@ public class DontDrown extends Sketcher {
     public Level level;
     public CollisionDetector collisionDetector;
     public long levelStartTimeMillis;
+    public int extensionFrames;
+    public int repercussionFrames;
+    public float repercussionMult;
+    public int endOfExtension = -1;
+    public int endOfRepercussion = -1;
+    public boolean extensionUsed = false;
 
     public boolean debugging = false;
     public boolean staticStress = false; // stress does not change
@@ -69,6 +78,10 @@ public class DontDrown extends Sketcher {
         } else {
             level = levelToStart;
         }
+
+        extensionUsed = false;
+        endOfExtension = -1;
+        endOfRepercussion = -1;
         levelState.reset(level);
         collisionDetector.sortLists();
         risingWave.pos.y = Wave.waveInitHeight;
@@ -112,6 +125,9 @@ public class DontDrown extends Sketcher {
                 noStroke();
                 levelState = new StressAndTokenState(this);
                 pc = new PlayerCharacter(this);
+                extensionFrames = pc.jumpFrames * EXTENSION_TIME_MULT;
+                repercussionFrames = pc.jumpFrames * REPERCUSSION_TIME_MULT;
+                repercussionMult = 1 + (extensionFrames / (float) repercussionFrames);
                 risingWave = new Wave(this);
                 staticWave = new Wave(this);
                 levelState.pcCalcs();
@@ -138,6 +154,7 @@ public class DontDrown extends Sketcher {
                 levelState.update();
                 pc.integrate();
                 level.integrate();
+                integrateWave();
 
                 // check if panning needed
                 if (pc.pos.y < scoreOverlay.endOfPadding + 2 * pc.jumpHeight) {
@@ -155,15 +172,27 @@ public class DontDrown extends Sketcher {
                 level.render();
                 pc.render();
                 risingWave.render();
+
                 if (levelState.debuff.equals(Debuff.TUNNEL_VISION)) {
                     fill(0xFF000000);
                     rect(0f, 0f, width, pc.pos.y - pc.jumpHeight * 1.2f);
                     rect(0f, pc.pos.y + pc.jumpHeight, width, height);
                 }
+
                 scoreOverlay.render();
                 if (debugging)
                     debugOverlay.render();
                 break;
+        }
+    }
+
+    private void integrateWave() {
+        if (frameCount <= endOfExtension) {
+            // don't change the wave
+        } else if (frameCount <= endOfRepercussion) {
+            risingWave.pos.y -= level.waveRiseRate * repercussionMult;
+        } else {
+            risingWave.pos.y -= level.waveRiseRate;
         }
     }
 
@@ -207,13 +236,14 @@ public class DontDrown extends Sketcher {
                     gameMenu.midLevel = true;
                     gameMenu.setMenuState(GameMenu.MenuState.PAUSE_MENU);
                     gameState = GameState.IN_MENU;
+                } else if (key == ' ' && !extensionUsed) {
+                    endOfExtension = frameCount + extensionFrames;
+                    endOfRepercussion = endOfExtension + repercussionFrames;
+                    extensionUsed = false;
                 } else if (debugging) {
                     switch (key) {
                         case '`':
                             levelState.stress = 100;
-                            break;
-                        case ' ':
-                            startLevel(null);
                             break;
                         case 'f':
                         case 'F':
@@ -255,8 +285,9 @@ public class DontDrown extends Sketcher {
                         default:
                             if (Character.isDigit(key)) {
                                 levelState.stress = Integer.parseInt("" + key) * 10f;
+                            } else {
+                                // do nothing
                             }
-                            // do nothing
                     }
                 }
                 break;

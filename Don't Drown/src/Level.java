@@ -24,7 +24,7 @@ public class Level {
     public final float panRate;
     public final float topLimit; // used to stop over-panning
     private final float tokenElevation; // height above platforms for tokens to hover
-    public final float waveTime; // time taken for the wave to reach the top platform 
+    public final float waveTime; // time taken for the wave to reach the top platform
 
     // level generation values
     public final float lowestPlatformHeight;
@@ -52,9 +52,9 @@ public class Level {
     public ArrayList<Platform> platforms = new ArrayList<>();
     public Platform highestPlatform;
 
-    // high score  
+    // high score
     public int highScore = 0;
-    public float timeLeft = -123; 
+    public float timeLeft = -123;
 
     public Level(DontDrown sketch, Debuff debuff, Difficulty difficulty) {
         this.sketch = sketch;
@@ -85,8 +85,8 @@ public class Level {
 
         generatePlatformsAndTokens(difficulty.hasGround);
 
-        float heightRatio = (Wave.waveInitHeight -  highestPlatform.pos.y) / sketch.height;
-        waveTime = difficulty.waveRiseTime * heightRatio; 
+        float heightRatio = (Wave.waveInitHeight - highestPlatform.pos.y) / sketch.height;
+        waveTime = difficulty.waveRiseTime * heightRatio;
     }
 
     private void addToken(float x, float y) {
@@ -134,7 +134,7 @@ public class Level {
             Platform nextPlatform = new Platform(sketch, 0, 0);
 
             if (debuff.equals(Debuff.OVERWORKED) && platforms.size() > 1) {
-                // every platform has a token 
+                // every platform has a token
                 addToken(currentPlatform.pos.x + currentPlatform.width / 2, currentPlatform.pos.y - tokenElevation);
             }
 
@@ -208,6 +208,10 @@ public class Level {
                 highestPlatform = currentPlatform;
             }
         }
+
+        highestPlatform = new Platform(highestPlatform);
+        platforms.remove(platforms.size() - 1);
+        platforms.add(highestPlatform);
     }
 
     public void reset() {

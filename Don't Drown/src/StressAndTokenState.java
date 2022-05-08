@@ -172,7 +172,6 @@ public class StressAndTokenState {
         pcMinSpeed();
         recalcStressHSBColour();
         sketchiness();
-        sketch.risingWave.pos.sub(0, sketch.level.waveRiseRate);
         oldStress = stress;
     }
 }

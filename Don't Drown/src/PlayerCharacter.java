@@ -188,7 +188,7 @@ public class PlayerCharacter extends AbstractDrawable {
 
     private void applyHorizontalThrust() {
         if (Math.abs(vel.x) < maxSpeed || steerState.equals(vel.x < 0 ? SteerState.RIGHT : SteerState.LEFT)) {
-            if (fallState.equals(FallState.ON_SURFACE)) {
+            if (fallState.equals(FallState.ON_SURFACE) || fallState.equals(FallState.COYOTE_TIME)) {
                 resultant.x += state.pcThrust * steerState.directionMult;
             } else {
                 resultant.x += state.pcThrust * steerState.directionMult * PC_AIR_THRUST_MULT;

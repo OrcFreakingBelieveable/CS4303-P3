@@ -190,7 +190,9 @@ public class ScoreOverlay {
 
     public void render() {
         // stress bar
-        stressBar.render();
+        if (!sketch.level.debuff.equals(Debuff.LACK_CONTRAST)) {
+            stressBar.render();
+        }
 
         // token count
         sketch.colorModeRGB();

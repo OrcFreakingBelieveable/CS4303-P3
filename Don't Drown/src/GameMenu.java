@@ -84,23 +84,27 @@ public class GameMenu {
             MenuPage menu = new MenuPage("Paused", false);
             menu.linesOfText.add(new LineOfText(new ClickableText("• Resume", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(""));
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Quit level", PConstants.LEFT)));
             return menu;
         }
 
         static MenuPage getInstructionsMenu() {
             MenuPage menu = new MenuPage("Instructions", true);
             String[] text = new String[] {
-                    "• Up to jump when on a platform",
-                    "• Down to fall through a platform",
-                    "• Left and Right to accelerate",
+                    "• UP to jump when on a platform",
+                    "• DOWN to fall through a platform",
+                    "• LEFT and RIGHT to accelerate",
                     "• P to (un)pause",
                     "• Esc to quit",
                     "",
                     "• Reach the top platform as fast as you can to complete the level",
                     "• If you get too close to the wave then you'll get stressed",
-                    "• As stress rises, steering becomes jerkier",
+                    "• As stress rises, you horizontally speed up faster and slow down slower",
                     "• Keep far ahead of the wave to de-stress",
                     "• Collect tokens along the way for a sense of challenge",
+                    "• Once per level, you can briefly pause the wave with SPACEBAR",
+                    "  ... but the wave will then briefly speed up to make up for it"
             };
             for (String string : text) {
                 menu.linesOfText.add(new LineOfText(string));
@@ -176,8 +180,11 @@ public class GameMenu {
                             case PAUSE_MENU:
                                 if (i == 0) {
                                     sketch.gameState = DontDrown.GameState.MID_LEVEL;
-                                } else {
+                                } else if (i == 1) {
                                     gameMenu.setMenuState(MenuState.INSTRUCTIONS);
+                                } else if (i == 2) {
+                                    sketch.gameMenu.midLevel = false;
+                                    gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
                                 }
                                 break;
                         }

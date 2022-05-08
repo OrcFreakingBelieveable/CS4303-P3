@@ -12,8 +12,12 @@ public class Platform extends AbstractDrawable {
     public final float width;
 
     private static PShape[][] staticTokensDefaultWidth;
-    private static int strokeColour = 0xDDD79B00;
-    private static int fillColour = 0xAAFFE6CC;
+    private static PShape[][] staticTokensTop;
+    private static final int STROKE_COLOUR = 0xDDD79B00;
+    private static final int FILL_COLOUR = 0xAAFFE6CC;
+
+    private static final int TOP_STROKE_COLOUR = 0xDDD7C800;
+    private static final int TOP_FILL_COLOUR = 0xAAFFE678;
 
     public boolean supportingPC = false;
 
@@ -26,14 +30,28 @@ public class Platform extends AbstractDrawable {
     }
 
     public Platform(DontDrown sketch, float x, float y, float width) {
-        super(sketch, generateTokens(sketch, width));
+        super(sketch, generateTokens(sketch, width, STROKE_COLOUR, FILL_COLOUR));
         this.width = width;
         this.height = sketch.width / PF_WIDTH_DIV / PF_HEIGHT_DIV;
         this.pos = new PVector(x, y);
         this.initPos = pos.copy();
     }
 
-    protected static PShape[][] generateTokens(DontDrown sketch, float width) {
+    /**
+     * Generates a copy of a platform that is coloured to mark it as a the top
+     * platform. Should replace that platform.
+     * 
+     * @param source the platform to copy
+     */
+    public Platform(Platform source) {
+        super(source.sketch, (staticTokensTop == null ? generateTopTokens(source.sketch) : staticTokensTop));
+        this.width = source.width;
+        this.height = source.height;
+        this.pos = source.pos.copy();
+        this.initPos = pos.copy();
+    }
+
+    protected static PShape[][] generateTokens(DontDrown sketch, float width, int strokeColour, int fillColour) {
         float height = sketch.width / PF_WIDTH_DIV / PF_HEIGHT_DIV;
         PShape[][] tokens = new PShape[StressAndTokenState.ABS_MAX_STRESS + 1][VARIANT_TOKENS];
 
@@ -66,8 +84,15 @@ public class Platform extends AbstractDrawable {
     protected static PShape[][] generateTokens(DontDrown sketch) {
         float width = sketch.width / PF_WIDTH_DIV;
 
-        staticTokensDefaultWidth = generateTokens(sketch, width);
+        staticTokensDefaultWidth = generateTokens(sketch, width, STROKE_COLOUR, FILL_COLOUR);
         return staticTokensDefaultWidth;
+    }
+
+    protected static PShape[][] generateTopTokens(DontDrown sketch) {
+        float width = sketch.width / PF_WIDTH_DIV;
+
+        staticTokensTop = generateTokens(sketch, width, TOP_STROKE_COLOUR, TOP_FILL_COLOUR);
+        return staticTokensTop;
     }
 
     protected boolean onScreen() {
