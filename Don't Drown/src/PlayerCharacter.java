@@ -323,8 +323,8 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     public void fall() {
-        if (/* steerState.equals(SteerState.NEITHER) || */
-        vel.x < 0 && steerState.equals(SteerState.RIGHT)
+        if (steerState.equals(SteerState.NEITHER) ||
+                vel.x < 0 && steerState.equals(SteerState.RIGHT)
                 || vel.x > 0 && steerState.equals(SteerState.LEFT)) {
             fall(false);
         } else {

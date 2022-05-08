@@ -5,7 +5,7 @@ public class DebugOverlay {
     private final DontDrown sketch;
     private final float textSize;
 
-    private static final float DEBUG_TEXT_DIV = 100f;
+    private static final float DEBUG_TEXT_DIV = 80f;
 
     public DebugOverlay(DontDrown sketch) {
         this.sketch = sketch;

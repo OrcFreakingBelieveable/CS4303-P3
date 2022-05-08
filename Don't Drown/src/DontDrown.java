@@ -5,6 +5,7 @@ public class DontDrown extends Sketcher {
 
     private static final float LOADING_TEXT_DIV = 5f;
     private static final int SCROLL_DIV = 20;
+    public static final String FONT_PATH = "sf-grunge-sans.bold.ttf";
 
     public enum GameState {
         PRE_STARTUP,
@@ -14,19 +15,23 @@ public class DontDrown extends Sketcher {
         ;
     }
 
-    GameState gameState = GameState.PRE_STARTUP;
-    GameMenu gameMenu;
-    StressAndTokenState levelState;
-    PlayerCharacter pc;
-    Wave risingWave;
-    Wave staticWave;
-    DebugOverlay debugOverlay;
-    ScoreOverlay scoreOverlay;
-    Level[][] levels;
-    Level level;
-    CollisionDetector collisionDetector;
-    public boolean debugging = true;
-    public boolean staticStress = false;
+    public GameState gameState = GameState.PRE_STARTUP;
+    public GameMenu gameMenu;
+    public StressAndTokenState levelState;
+    public PlayerCharacter pc;
+    public Wave risingWave;
+    public Wave staticWave;
+    public DebugOverlay debugOverlay;
+    public ScoreOverlay scoreOverlay;
+    public Level[][] levels;
+    public Level level;
+    public CollisionDetector collisionDetector;
+    public long levelStartTimeMillis;
+
+    public boolean debugging = false;
+    public boolean staticStress = false; // stress does not change
+
+    private int scrollIncr;
 
     public void colorModeHSB() {
         colorMode(HSB, 360f, 1f, 1f, 1f);
@@ -34,6 +39,13 @@ public class DontDrown extends Sketcher {
 
     public void colorModeRGB() {
         colorMode(ARGB, 255, 255, 255, 255);
+    }
+
+    @Override
+    public void settings() {
+        size((int) (displayWidth * 0.9), (int) (displayWidth * 0.9 * 0.5625));
+        this.RSW_DEF = width / RSW_DEF_DIV;
+        this.scrollIncr = height / SCROLL_DIV;
     }
 
     private void generateLevels() {
@@ -64,21 +76,25 @@ public class DontDrown extends Sketcher {
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - PlayerCharacter.diameter);
         collisionDetector.pcOldPos = pc.pos.copy();
         gameState = DontDrown.GameState.MID_LEVEL;
+        levelStartTimeMillis = System.currentTimeMillis();
     }
 
     public void endLevel(boolean completed) {
-        gameState = GameState.IN_MENU;
-        gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
-        if (completed && level.highScore < levelState.tokensCollected) {
-            level.highScore = levelState.tokensCollected;
-            gameMenu.updateLevelSelector();
-        }
-    }
+        if (completed) {
+            gameState = GameState.IN_MENU;
+            gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
+            float secondsLeft = level.waveTime - (System.currentTimeMillis() - levelStartTimeMillis) / 1000f;
 
-    @Override
-    public void settings() {
-        size((int) (displayWidth * 0.9), (int) (displayHeight * 0.9));
-        this.RSW_DEF = width / RSW_DEF_DIV;
+            if (level.highScore < levelState.tokensCollected
+                    || level.highScore == levelState.tokensCollected && secondsLeft > level.timeLeft) {
+                level.highScore = levelState.tokensCollected;
+                level.timeLeft = secondsLeft;
+                gameMenu.updateLevelSelector();
+            }
+
+        } else {
+            startLevel(level);
+        }
     }
 
     @Override
@@ -140,9 +156,9 @@ public class DontDrown extends Sketcher {
                 pc.render();
                 risingWave.render();
                 if (levelState.debuff.equals(Debuff.TUNNEL_VISION)) {
-                    fill(0xFF000000); 
+                    fill(0xFF000000);
                     rect(0f, 0f, width, pc.pos.y - pc.jumpHeight * 1.2f);
-                    rect(0f, pc.pos.y + pc.jumpHeight, width, height); 
+                    rect(0f, pc.pos.y + pc.jumpHeight, width, height);
                 }
                 scoreOverlay.render();
                 if (debugging)
@@ -156,7 +172,7 @@ public class DontDrown extends Sketcher {
         if (key == 'D') {
             debugging = !debugging;
             return;
-        } 
+        }
 
         switch (gameState) {
             case PRE_STARTUP:
@@ -234,8 +250,8 @@ public class DontDrown extends Sketcher {
                             break;
                         case 's':
                         case 'S':
-                            staticStress = !staticStress; 
-                            break; 
+                            staticStress = !staticStress;
+                            break;
                         default:
                             if (Character.isDigit(key)) {
                                 levelState.stress = Integer.parseInt("" + key) * 10f;
@@ -277,7 +293,7 @@ public class DontDrown extends Sketcher {
     @Override
     public void mouseWheel(MouseEvent event) {
         if (gameState.equals(GameState.IN_MENU)) {
-            gameMenu.scrollWrapper(-event.getCount() * height / SCROLL_DIV);
+            gameMenu.scrollWrapper(-event.getCount() * scrollIncr);
         }
     }
 

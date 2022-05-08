@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 import processing.core.PConstants;
+import processing.core.PFont;
 import processing.core.PVector;
 
 public class GameMenu {
@@ -165,7 +166,7 @@ public class GameMenu {
                                 break;
                             case MAIN_MENU:
                                 if (i == 0) {
-                                    gameMenu.setMenuState( MenuState.INSTRUCTIONS);
+                                    gameMenu.setMenuState(MenuState.INSTRUCTIONS);
                                 } else if (i == 1) {
                                     gameMenu.setMenuState(MenuState.LEVEL_SELECTION);
                                 }
@@ -192,13 +193,13 @@ public class GameMenu {
             float y = yOrigin + sketch.scoreOverlay.endOfPadding + page.lineGap;
 
             if (backable) {
-                sketch.textSize(page.lineGap);
+                sketch.textFont(sketch.gameMenu.smallFont);
                 sketch.textAlign(PConstants.RIGHT, PConstants.BOTTOM);
                 back.render(sketch);
             }
 
             // render title
-            sketch.textSize(sketch.scoreOverlay.endOfPadding * 0.75f);
+            sketch.textFont(sketch.gameMenu.largeFont);
             sketch.fill(TEXT_COLOUR);
             float padding = sketch.textDescent();
             sketch.textAlign(PConstants.CENTER, PConstants.BOTTOM);
@@ -209,7 +210,7 @@ public class GameMenu {
 
             // render lines of text
             sketch.textAlign(PConstants.LEFT, PConstants.BOTTOM);
-            sketch.textSize(page.lineGap);
+            sketch.textFont(sketch.gameMenu.smallFont);
             padding = sketch.textDescent();
             for (LineOfText line : linesOfText) {
                 if (line.clickable == null) {
@@ -248,9 +249,14 @@ public class GameMenu {
 
     public boolean midLevel = false;
     private MenuState menuState = MenuState.MAIN_MENU;
+    private final PFont largeFont;
+    private final PFont smallFont;
 
     public GameMenu(DontDrown sketch) {
         this.sketch = sketch;
+
+        largeFont = sketch.createFont(DontDrown.FONT_PATH, sketch.scoreOverlay.endOfPadding * 0.75f);
+        smallFont = sketch.createFont(DontDrown.FONT_PATH, new Page(sketch).lineGap);
 
         for (MenuState state : MenuState.values()) {
             state.menuPage.populateClickables(sketch);
@@ -258,7 +264,7 @@ public class GameMenu {
     }
 
     public MenuState getMenuState() {
-        return menuState; 
+        return menuState;
     }
 
     public void setMenuState(MenuState menuState) {
@@ -274,14 +280,16 @@ public class GameMenu {
         ArrayList<LineOfText> linesOfText = MenuState.LEVEL_SELECTION.menuPage.linesOfText;
         linesOfText.clear();
         int debuffIndex = 0;
-        for (Level[] levelBatch : sketch.levels) { // gruoped by debuff
+        for (Level[] levelBatch : sketch.levels) { // grouped by debuff
             linesOfText.add(new LineOfText(Debuff.values()[debuffIndex++].label));
             for (Level level : levelBatch) {
                 linesOfText.add(new LineOfText(new ClickableText(
-                        String.format("     • %-15s %d/%d",
-                                level.difficulty.name().replace("_", " "),
+                        String.format("     • %-15s %d/%d %s",
+                                level.difficulty.name().replace("_", " ").toLowerCase(),
                                 level.highScore,
-                                level.tokens.size()),
+                                level.tokens.size(),
+                                level.timeLeft == -123 ? ""
+                                        : String.format("    %.2f seconds to spare", level.timeLeft)),
                         PConstants.LEFT)));
             }
             linesOfText.add(new LineOfText(""));
@@ -299,11 +307,11 @@ public class GameMenu {
 
     private void resetPage() {
         if (menuState.menuPage.page.startAtTop) {
-            // scroll back up to top 
-                scrollWrapper(menuState.menuPage.page.height); 
+            // scroll back up to top
+            scrollWrapper(menuState.menuPage.page.height);
         } else {
-            //scroll back down to bottom 
-            scrollWrapper(-menuState.menuPage.page.height); 
+            // scroll back down to bottom
+            scrollWrapper(-menuState.menuPage.page.height);
         }
     }
 

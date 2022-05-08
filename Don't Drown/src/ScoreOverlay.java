@@ -1,4 +1,5 @@
 import processing.core.PConstants;
+import processing.core.PFont;
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -177,11 +178,11 @@ public class ScoreOverlay {
     private final StressBar stressBar;
     private final BigToken bigToken;
     private final DontDrown sketch;
-    private final float textSize;
+    private final PFont scoreFont;
 
     public ScoreOverlay(DontDrown sketch) {
         this.sketch = sketch;
-        this.textSize = sketch.width / SCORE_TEXT_DIV;
+        scoreFont = sketch.createFont(DontDrown.FONT_PATH, sketch.width / SCORE_TEXT_DIV);
         stressBar = new StressBar(sketch);
         bigToken = new BigToken(sketch);
         this.endOfPadding = StressBar.height * 3;
@@ -196,12 +197,12 @@ public class ScoreOverlay {
         bigToken.render();
         sketch.fill(0xFF000000);
         sketch.textAlign(PConstants.CENTER, PConstants.CENTER);
-        sketch.textSize(textSize);
+        sketch.textFont(scoreFont);
         StringBuilder content = new StringBuilder();
         content.append(sketch.levelState.tokensCollected);
         content.append("/");
         content.append(sketch.levelState.tokensAvailable);
-        sketch.text(content.toString(), bigToken.pos.x, bigToken.pos.y - textSize / 6);
+        sketch.text(content.toString(), bigToken.pos.x, bigToken.pos.y);
     }
 
 }
