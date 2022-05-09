@@ -9,6 +9,7 @@ public class DontDrown extends Sketcher {
     private static final int REPERCUSSION_TIME_MULT = 3; // the number of jumps for which the repercussion lasts
 
     public static final String FONT_PATH = "sf-grunge-sans.bold.ttf";
+    public static final char BULLET_POINT = 149;
 
     public enum GameState {
         PRE_STARTUP,
@@ -93,7 +94,7 @@ public class DontDrown extends Sketcher {
         pc.reset(ground.pos.x + ground.width / 2, ground.pos.y - PlayerCharacter.diameter);
         collisionDetector.pcOldPos = pc.pos.copy();
         gameState = DontDrown.GameState.MID_LEVEL;
-        gameMenu.midLevel = true; 
+        gameMenu.midLevel = true;
         levelStartTimeMillis = System.currentTimeMillis();
     }
 
@@ -108,10 +109,9 @@ public class DontDrown extends Sketcher {
             if (completed) {
                 gameState = GameState.IN_MENU;
                 gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
-                gameMenu.midLevel = false; 
+                gameMenu.midLevel = false;
                 float secondsLeft = (level.waveTime * (60 / frameRate))
                         - (System.currentTimeMillis() - levelStartTimeMillis) / 1000f;
-                levelState.stress = 0;
 
                 if (level.highScore < levelState.tokensCollected
                         || level.highScore == levelState.tokensCollected && secondsLeft > level.timeLeft) {
@@ -120,10 +120,12 @@ public class DontDrown extends Sketcher {
                     gameMenu.updateLevelSelector();
                 }
 
+                levelState.reset();
             } else {
                 startLevel(level);
             }
         }
+
     }
 
     @Override

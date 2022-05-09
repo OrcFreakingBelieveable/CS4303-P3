@@ -52,19 +52,25 @@ public class StressAndTokenState {
     }
 
     public void reset(Level level) {
+        reset();
         tokensAvailable = level.tokens.size();
+        debuff = level.debuff;
+        level.reset();
+        update();
+    }
+
+    public void reset() {
         tokensCollected = 0;
         oldStress = 0;
         stress = 0;
         maxStress = ABS_MAX_STRESS;
         minStress = 0;
         waveLastSeen = -1;
-        debuff = level.debuff;
+        debuff = Debuff.NONE;
         stressEffectThreshold = debuff.equals(Debuff.STRESS_MOTIVATED) ? 35 : DEFAULT_STRESS_EFFECT_THRESHOLD;
         AbstractDrawable.stressIndex = minStress;
         stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
         stressIncrRange = sketch.height / STRESS_INCR_RANGE_DIV;
-        level.reset();
         update();
     }
 

@@ -82,29 +82,29 @@ public class GameMenu {
 
         static MenuPage getPauseMenu() {
             MenuPage menu = new MenuPage("Paused", false);
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Resume", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Settings", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Resume", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Defer level", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Drop out of game", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Defer level", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
             return menu;
         }
 
         static MenuPage getInstructionsMenu() {
             MenuPage menu = new MenuPage("Instructions", true);
             String[] text = new String[] {
-                    "• UP to jump when on a platform",
-                    "• DOWN to fall through a platform",
-                    "• LEFT and RIGHT to accelerate",
-                    "• Esc or P to (un)pause",
+                    "" + DontDrown.BULLET_POINT + " UP to jump when on a platform",
+                    "" + DontDrown.BULLET_POINT + " DOWN to fall through a platform",
+                    "" + DontDrown.BULLET_POINT + " LEFT and RIGHT to accelerate",
+                    "" + DontDrown.BULLET_POINT + " Esc or P to (un)pause",
                     "",
-                    "• Reach the top platform as fast as you can to complete the level",
-                    "• If you get too close to the wave then you'll get stressed",
-                    "• As stress rises, you horizontally speed up faster and slow down slower",
-                    "• Keep far ahead of the wave to de-stress",
-                    "• Collect tokens along the way for a sense of challenge",
-                    "• Once per level, you can briefly pause the wave with SPACEBAR",
+                    "" + DontDrown.BULLET_POINT + " Reach the top platform as fast as you can to complete the level",
+                    "" + DontDrown.BULLET_POINT + " If you get too close to the wave then you'll get stressed",
+                    "" + DontDrown.BULLET_POINT + " As stress rises, you horizontally speed up faster and slow down slower",
+                    "" + DontDrown.BULLET_POINT + " Keep far ahead of the wave to de-stress",
+                    "" + DontDrown.BULLET_POINT + " Collect tokens along the way for a sense of challenge",
+                    "" + DontDrown.BULLET_POINT + " Once per level, you can briefly pause the wave with SPACEBAR",
                     "  ... but the wave will then briefly speed up to make up for it"
             };
             for (String string : text) {
@@ -120,29 +120,29 @@ public class GameMenu {
 
         static MenuPage getMainMenu() {
             MenuPage menu = new MenuPage("Don't Drown", false);
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Level Selector", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Settings", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Level Selector", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(
-                    new LineOfText(new ClickableText("• Arcade mode (randomly generated levels)", PConstants.LEFT)));
+                    new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Arcade mode (randomly generated levels)", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Drop out of game", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
             return menu;
         }
 
         static MenuPage getSettingsMenu() {
             MenuPage menu = new MenuPage("Settings", true);
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Toggle music", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Toggle music", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(new LineOfText(
                     "The speed of the game is tied to the frame rate, so lowering the FPS can make the game easier if you are struggling."));
             menu.linesOfText
                     .add(new LineOfText("N.B. Changing FPS mid-level will break the calculation of seconds to spare!"));
-            menu.linesOfText.add(new LineOfText(new ClickableText("    • Set FPS to 60", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("    • Set FPS to 45", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("    • Set FPS to 30", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("    • Set FPS to 15", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 60", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 45", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 30", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 15", PConstants.LEFT)));
             return menu;
         }
 
@@ -218,6 +218,7 @@ public class GameMenu {
                                     gameMenu.setMenuState(sketch.arcadeMode ? GameMenu.MenuState.MAIN_MENU
                                             : GameMenu.MenuState.LEVEL_SELECTION);
                                     sketch.arcadeMode = false;
+                                    sketch.levelState.reset(); 
                                 } else if (i == 4) {
                                     sketch.exit();
                                 }
@@ -342,7 +343,7 @@ public class GameMenu {
             linesOfText.add(new LineOfText(debuff.label + ": " + debuff.description));
             for (Level level : levelBatch) {
                 linesOfText.add(new LineOfText(new ClickableText(
-                        String.format("     • %-15s %-10s %s",
+                        String.format("     " + DontDrown.BULLET_POINT + " %-15s %-10s %s",
                                 level.difficulty.name().replace("_", " ").toLowerCase(),
                                 String.format("%d/%d", level.highScore, level.tokens.size()),
                                 level.timeLeft == -123 ? "" : String.format("%.2f seconds to spare", level.timeLeft)),
