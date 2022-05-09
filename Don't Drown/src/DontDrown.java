@@ -19,6 +19,7 @@ public class DontDrown extends Sketcher {
     }
 
     public GameState gameState = GameState.PRE_STARTUP;
+    public boolean arcadeMode = false;
     public GameMenu gameMenu;
     public StressAndTokenState levelState;
     public PlayerCharacter pc;
@@ -57,7 +58,7 @@ public class DontDrown extends Sketcher {
         this.scrollIncr = height / SCROLL_DIV;
     }
 
-    private void generateLevels() {
+    public void generateLevels() {
         levels = new Level[Debuff.values().length][];
         int deb = 0;
         for (Debuff debuff : Debuff.values()) {
@@ -74,7 +75,7 @@ public class DontDrown extends Sketcher {
 
     public void startLevel(Level levelToStart) {
         if (levelToStart == null) {
-            level = new Level(this, Debuff.NONE, Difficulty.MEDIUM);
+            level = new Level(this, Debuff.random(), Difficulty.random());
         } else {
             level = levelToStart;
         }
@@ -93,20 +94,28 @@ public class DontDrown extends Sketcher {
     }
 
     public void endLevel(boolean completed) {
-        if (completed) {
-            gameState = GameState.IN_MENU;
-            gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
-            float secondsLeft = level.waveTime - (System.currentTimeMillis() - levelStartTimeMillis) / 1000f;
-
-            if (level.highScore < levelState.tokensCollected
-                    || level.highScore == levelState.tokensCollected && secondsLeft > level.timeLeft) {
-                level.highScore = levelState.tokensCollected;
-                level.timeLeft = secondsLeft;
-                gameMenu.updateLevelSelector();
+        if (arcadeMode) {
+            if (completed) {
+                startLevel(null); 
+            } else {
+                startLevel(level);
             }
-
         } else {
-            startLevel(level);
+            if (completed) {
+                gameState = GameState.IN_MENU;
+                gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
+                float secondsLeft = level.waveTime - (System.currentTimeMillis() - levelStartTimeMillis) / 1000f;
+
+                if (level.highScore < levelState.tokensCollected
+                        || level.highScore == levelState.tokensCollected && secondsLeft > level.timeLeft) {
+                    level.highScore = levelState.tokensCollected;
+                    level.timeLeft = secondsLeft;
+                    gameMenu.updateLevelSelector();
+                }
+
+            } else {
+                startLevel(level);
+            }
         }
     }
 
@@ -201,6 +210,8 @@ public class DontDrown extends Sketcher {
         if (key == 'D') {
             debugging = !debugging;
             return;
+        } else if (key == ESC) {
+            key = 'p';
         }
 
         switch (gameState) {

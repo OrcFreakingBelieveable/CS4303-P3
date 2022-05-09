@@ -85,7 +85,8 @@ public class GameMenu {
             menu.linesOfText.add(new LineOfText(new ClickableText("• Resume", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
-            menu.linesOfText.add(new LineOfText(new ClickableText("• Quit level", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Defer level", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Drop out of game", PConstants.LEFT)));
             return menu;
         }
 
@@ -95,8 +96,7 @@ public class GameMenu {
                     "• UP to jump when on a platform",
                     "• DOWN to fall through a platform",
                     "• LEFT and RIGHT to accelerate",
-                    "• P to (un)pause",
-                    "• Esc to quit",
+                    "• Esc or P to (un)pause",
                     "",
                     "• Reach the top platform as fast as you can to complete the level",
                     "• If you get too close to the wave then you'll get stressed",
@@ -121,6 +121,11 @@ public class GameMenu {
             MenuPage menu = new MenuPage("Don't Drown", false);
             menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(new ClickableText("• Level Selector", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(""));
+            menu.linesOfText.add(
+                    new LineOfText(new ClickableText("• Arcade mode (randomly generated levels)", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(""));
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Drop out of game", PConstants.LEFT)));
             return menu;
         }
 
@@ -173,6 +178,11 @@ public class GameMenu {
                                     gameMenu.setMenuState(MenuState.INSTRUCTIONS);
                                 } else if (i == 1) {
                                     gameMenu.setMenuState(MenuState.LEVEL_SELECTION);
+                                } else if (i == 2) {
+                                    sketch.arcadeMode = true;
+                                    sketch.startLevel(null);
+                                } else if (i == 3) {
+                                    sketch.exit();
                                 }
                                 break;
                             case INSTRUCTIONS:
@@ -184,7 +194,11 @@ public class GameMenu {
                                     gameMenu.setMenuState(MenuState.INSTRUCTIONS);
                                 } else if (i == 2) {
                                     sketch.gameMenu.midLevel = false;
-                                    gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
+                                    gameMenu.setMenuState(sketch.arcadeMode ? GameMenu.MenuState.MAIN_MENU
+                                            : GameMenu.MenuState.LEVEL_SELECTION);
+                                    sketch.arcadeMode = false;
+                                } else if (i == 3) {
+                                    sketch.exit();
                                 }
                                 break;
                         }
@@ -288,15 +302,14 @@ public class GameMenu {
         linesOfText.clear();
         int debuffIndex = 0;
         for (Level[] levelBatch : sketch.levels) { // grouped by debuff
-            linesOfText.add(new LineOfText(Debuff.values()[debuffIndex++].label));
+            Debuff debuff = Debuff.values()[debuffIndex++];
+            linesOfText.add(new LineOfText(debuff.label + ": " + debuff.description));
             for (Level level : levelBatch) {
                 linesOfText.add(new LineOfText(new ClickableText(
-                        String.format("     • %-15s %d/%d %s",
+                        String.format("     • %-15s %-10s %s",
                                 level.difficulty.name().replace("_", " ").toLowerCase(),
-                                level.highScore,
-                                level.tokens.size(),
-                                level.timeLeft == -123 ? ""
-                                        : String.format("    %.2f seconds to spare", level.timeLeft)),
+                                String.format("%d/%d", level.highScore, level.tokens.size()),
+                                level.timeLeft == -123 ? "" : String.format("%.2f seconds to spare", level.timeLeft)),
                         PConstants.LEFT)));
             }
             linesOfText.add(new LineOfText(""));

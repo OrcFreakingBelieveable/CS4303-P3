@@ -14,12 +14,15 @@ public class ScoreOverlay {
         private static float width;
         private static float height;
 
+        public final PVector pos;
+
         public final StressBarOuter outer;
         public final StressBarFill fill;
 
         public StressBar(DontDrown sketch) {
             outer = new StressBarOuter(sketch);
             fill = new StressBarFill(sketch);
+            pos = new PVector(sketch.width / 2f - width / 2, height);
         }
 
         public static class StressBarOuter extends AbstractDrawable {
@@ -81,8 +84,6 @@ public class ScoreOverlay {
                 final int maxStressIndex = (StressAndTokenState.ABS_MAX_STRESS + 1) * STRESS_BAR_RESOLUTION;
                 staticTokens = new PShape[maxStressIndex][VARIANT_TOKENS];
 
-                width = sketch.width / STRESS_BAR_WIDTH_DIV;
-                height = width / STRESS_BAR_HEIGHT_DIV;
                 int outlineWeight = (int) (height / 10);
                 PVector pos = new PVector(sketch.width / 2f - width / 2, height);
 
@@ -172,6 +173,7 @@ public class ScoreOverlay {
     }
 
     private static final float SCORE_TEXT_DIV = 65f;
+    private static final float LEVEL_INFO_TEXT_DIV = 45f;
 
     public final float endOfPadding;
 
@@ -179,10 +181,12 @@ public class ScoreOverlay {
     private final BigToken bigToken;
     private final DontDrown sketch;
     private final PFont scoreFont;
+    private final PFont levelInfoFont;
 
     public ScoreOverlay(DontDrown sketch) {
         this.sketch = sketch;
         scoreFont = sketch.createFont(DontDrown.FONT_PATH, sketch.width / SCORE_TEXT_DIV);
+        levelInfoFont = sketch.createFont(DontDrown.FONT_PATH, sketch.width / LEVEL_INFO_TEXT_DIV);
         stressBar = new StressBar(sketch);
         bigToken = new BigToken(sketch);
         this.endOfPadding = StressBar.height * 3;
@@ -192,6 +196,16 @@ public class ScoreOverlay {
         // stress bar
         if (!sketch.level.debuff.equals(Debuff.LACK_CONTRAST)) {
             stressBar.render();
+        }
+
+        // level info
+        if (sketch.arcadeMode) {
+            sketch.colorModeRGB();
+            sketch.fill(sketch.level.debuff.equals(Debuff.TUNNEL_VISION) ? 0xFFFFFFFF : 0xFF000000);
+            sketch.textAlign(PConstants.CENTER, PConstants.TOP);
+            sketch.textFont(levelInfoFont);
+            sketch.text(sketch.level.debuff.label + ": " + sketch.level.difficulty.name().replace("_", " "),
+                    stressBar.pos.x + StressBar.width / 2, stressBar.pos.y + StressBar.height);
         }
 
         // token count

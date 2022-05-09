@@ -3,6 +3,7 @@ public class StressAndTokenState {
     private final DontDrown sketch;
 
     public static final int ABS_MAX_STRESS = 100;
+    public static final int DEFAULT_STRESS_EFFECT_THRESHOLD = ABS_MAX_STRESS / 5;
     public static final int FRAMES_PER_RESKETCH_MAX = 40;
     public static final int FRAMES_PER_RESKETCH_MIN = 10;
     public static final int FRAMES_PER_RESKETCH_RANGE = FRAMES_PER_RESKETCH_MAX - FRAMES_PER_RESKETCH_MIN;
@@ -17,7 +18,7 @@ public class StressAndTokenState {
     public float stress = 0f;
     public int maxStress = 100;
     public int minStress = 0;
-    public int stressEffectThreshold = 20;
+    public int stressEffectThreshold = DEFAULT_STRESS_EFFECT_THRESHOLD;
     public float stressIncrRange;
     public Debuff debuff = Debuff.NONE;
 
@@ -57,8 +58,8 @@ public class StressAndTokenState {
         maxStress = 100;
         minStress = 0;
         debuff = level.debuff;
-        stressEffectThreshold = debuff.equals(Debuff.STRESS_MOTIVATED) ? 50 : 20;
-        AbstractDrawable.stressIndex = debuff.equals(Debuff.LACK_CONTRAST) ? (int) sketch.random(0, ABS_MAX_STRESS) : 0;
+        stressEffectThreshold = debuff.equals(Debuff.STRESS_MOTIVATED) ? 30 : DEFAULT_STRESS_EFFECT_THRESHOLD;
+        AbstractDrawable.stressIndex = minStress;
         stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
         stressIncrRange = sketch.height / STRESS_INCR_RANGE_DIV;
         level.reset();
@@ -98,7 +99,7 @@ public class StressAndTokenState {
     }
 
     public void recalcStressHSBColour() {
-        if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
+        if (stress >= stressEffectThreshold) {
             float[] hsb = new float[3];
             float stressRating = stress - stressEffectThreshold;
             hsb[0] = PlayerCharacter.PC_MIN_HUE + stressRating * stressHueMultiplier;
@@ -141,9 +142,12 @@ public class StressAndTokenState {
 
         if (debuff.equals(Debuff.PANIC_PRONE) && sketch.frameCount % 300 < 100) {
             waveDistance = Math.min(waveDistance, stressIncrRange / 2);
-        } else if (debuff.equals(Debuff.TUNNEL_VISION)
-                && sketch.risingWave.pos.y > sketch.pc.pos.y + sketch.pc.jumpHeight) {
-            waveDistance = Math.max(waveDistance, stressIncrRange);
+        } else if (debuff.equals(Debuff.TUNNEL_VISION)) {
+            if (sketch.risingWave.pos.y > sketch.pc.pos.y + sketch.pc.jumpHeight) {
+                waveDistance = Math.max(waveDistance, stressIncrRange * 1.5f);
+            } else {
+                waveDistance = waveDistance / 2f;
+            }
         }
 
         if (waveDistance <= stressIncrRange) {
@@ -161,7 +165,7 @@ public class StressAndTokenState {
         if (!debuff.equals(Debuff.LACK_CONTRAST)) {
             AbstractDrawable.stressIndex = (int) stress;
         } else {
-            AbstractDrawable.stressIndex += (int) sketch.random(-0.1f, 0.1f);
+            // don't update stress index for drawables
         }
     }
 
