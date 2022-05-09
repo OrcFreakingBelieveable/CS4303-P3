@@ -21,6 +21,8 @@ public class DontDrown extends Sketcher {
     public GameState gameState = GameState.PRE_STARTUP;
     public boolean arcadeMode = false;
     public GameMenu gameMenu;
+    public MusicPlayer musicPlayer;
+    public boolean playingMusic = true;
     public StressAndTokenState levelState;
     public PlayerCharacter pc;
     public Wave risingWave;
@@ -53,7 +55,7 @@ public class DontDrown extends Sketcher {
 
     @Override
     public void settings() {
-        float displayRatio = 0.9f; 
+        float displayRatio = 0.9f;
         size((int) (displayWidth * displayRatio), (int) (displayWidth * displayRatio * 0.5625));
         this.RSW_DEF = width / RSW_DEF_DIV;
         this.scrollIncr = height / SCROLL_DIV;
@@ -97,7 +99,7 @@ public class DontDrown extends Sketcher {
     public void endLevel(boolean completed) {
         if (arcadeMode) {
             if (completed) {
-                startLevel(null); 
+                startLevel(null);
             } else {
                 startLevel(level);
             }
@@ -105,7 +107,8 @@ public class DontDrown extends Sketcher {
             if (completed) {
                 gameState = GameState.IN_MENU;
                 gameMenu.setMenuState(GameMenu.MenuState.LEVEL_SELECTION);
-                float secondsLeft = level.waveTime - (System.currentTimeMillis() - levelStartTimeMillis) / 1000f;
+                float secondsLeft = (level.waveTime * (60 / frameRate)) - (System.currentTimeMillis() - levelStartTimeMillis) / 1000f;
+                levelState.stress = 0;
 
                 if (level.highScore < levelState.tokensCollected
                         || level.highScore == levelState.tokensCollected && secondsLeft > level.timeLeft) {
@@ -133,6 +136,7 @@ public class DontDrown extends Sketcher {
                 break;
             case STARTUP:
                 noStroke();
+                musicPlayer = new MusicPlayer(this);
                 levelState = new StressAndTokenState(this);
                 pc = new PlayerCharacter(this);
                 extensionFrames = pc.jumpFrames * EXTENSION_TIME_MULT;
@@ -153,12 +157,18 @@ public class DontDrown extends Sketcher {
                 break;
             case IN_MENU:
                 cursor();
+                if (playingMusic)
+                    musicPlayer.playMusic();
+
                 gameMenu.render();
+
                 if (debugging)
                     debugOverlay.render();
                 break;
             case MID_LEVEL:
                 noCursor();
+                if (playingMusic)
+                    musicPlayer.playMusic();
 
                 // update positions
                 levelState.update();

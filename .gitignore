@@ -1,2 +1,4 @@
 *.class
 .vscode
+*/lib/Minim-2.2.2/
+*/lib/Minim-2.2.2.zip

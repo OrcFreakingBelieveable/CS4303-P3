@@ -19,9 +19,11 @@ public class StressAndTokenState {
     public int maxStress = 100;
     public int minStress = 0;
     public int stressEffectThreshold = DEFAULT_STRESS_EFFECT_THRESHOLD;
+    public float stressRating = stress - stressEffectThreshold;
     public float stressIncrRange;
     public Debuff debuff = Debuff.NONE;
     public int waveLastSeen = -1; // a frame count
+    private float stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
 
     // pc values
     public float pcThrust;
@@ -34,18 +36,16 @@ public class StressAndTokenState {
     public float pcThrustMultiplier;
     public float pcFrictionMultiplier;
 
-    private float stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
-
+    // hand-drawing values
     private final float stressHueMultiplier = (PlayerCharacter.PC_MAX_HUE - PlayerCharacter.PC_MIN_HUE)
             / stressRange;
     private final float stressSatMultiplier = (PlayerCharacter.PC_MAX_SAT - PlayerCharacter.PC_MIN_SAT)
             / stressRange;
     private final float stressLightMultiplier = (PlayerCharacter.PC_MAX_LIGHT - PlayerCharacter.PC_MIN_LIGHT)
             / stressRange;
-
-    private float strokeVariabilityMultiplier = (Sketcher.RSV_MAX - Sketcher.RSV_MIN) / stressRange;
-    private float strokeShakinessMultiplier = (Sketcher.RSS_MAX - Sketcher.RSS_MIN) / stressRange;
-    private float framesPerResketchMultiplier = FRAMES_PER_RESKETCH_RANGE / stressRange;
+    private final float strokeVariabilityMultiplier = (Sketcher.RSV_MAX - Sketcher.RSV_MIN) / stressRange;
+    private final float strokeShakinessMultiplier = (Sketcher.RSS_MAX - Sketcher.RSS_MIN) / stressRange;
+    private final float framesPerResketchMultiplier = FRAMES_PER_RESKETCH_RANGE / stressRange;
 
     public StressAndTokenState(DontDrown sketch) {
         this.sketch = sketch;
@@ -77,7 +77,6 @@ public class StressAndTokenState {
     }
 
     private void pcThrust() {
-        float stressRating = stress - stressEffectThreshold;
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             pcThrust = sketch.pc.minHorizontalThrust + stressRating * pcThrustMultiplier;
         } else {
@@ -86,7 +85,6 @@ public class StressAndTokenState {
     }
 
     private void pcFriction() {
-        float stressRating = stress - stressEffectThreshold;
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             pcFriction = sketch.pc.maxHorizontalFriction - stressRating * pcFrictionMultiplier;
 
@@ -102,8 +100,8 @@ public class StressAndTokenState {
 
     public void recalcStressHSBColour() {
         if (stress >= stressEffectThreshold) {
+            stressRating = stress - stressEffectThreshold;
             float[] hsb = new float[3];
-            float stressRating = stress - stressEffectThreshold;
             hsb[0] = PlayerCharacter.PC_MIN_HUE + stressRating * stressHueMultiplier;
             hsb[1] = PlayerCharacter.PC_MIN_SAT + stressRating * stressSatMultiplier;
             hsb[2] = PlayerCharacter.PC_MIN_LIGHT + stressRating * stressLightMultiplier;
@@ -116,8 +114,8 @@ public class StressAndTokenState {
     }
 
     public void sketchiness() {
-        if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
-            float stressRating = stress - stressEffectThreshold;
+        if (stress >= stressEffectThreshold) {
+            stressRating = stress - stressEffectThreshold;
             framesPerResketch = (int) (FRAMES_PER_RESKETCH_MAX - stressRating * framesPerResketchMultiplier);
             sketch.roughStrokeVariabilityRate = Sketcher.RSV_MIN + stressRating * strokeVariabilityMultiplier;
             sketch.roughStrokeShakiness = (int) (Sketcher.RSS_MIN + stressRating * strokeShakinessMultiplier);
@@ -178,6 +176,17 @@ public class StressAndTokenState {
             // don't update stress index for drawables
         } else {
             AbstractDrawable.stressIndex = (int) stress;
+        }
+
+        stressRating = stress - stressEffectThreshold;
+    }
+
+    public float getNoteDuration() {
+        if (!debuff.equals(Debuff.LACK_CONTRAST)
+                && (stress >= stressEffectThreshold || debuff.equals(Debuff.STRESS_MOTIVATED))) {
+            return 1 - 0.65f * (stressRating / stressRange);
+        } else {
+            return 1;
         }
     }
 

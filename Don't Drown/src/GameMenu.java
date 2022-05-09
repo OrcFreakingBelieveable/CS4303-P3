@@ -84,6 +84,7 @@ public class GameMenu {
             MenuPage menu = new MenuPage("Paused", false);
             menu.linesOfText.add(new LineOfText(new ClickableText("• Resume", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Settings", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(new LineOfText(new ClickableText("• Defer level", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(new ClickableText("• Drop out of game", PConstants.LEFT)));
@@ -121,11 +122,27 @@ public class GameMenu {
             MenuPage menu = new MenuPage("Don't Drown", false);
             menu.linesOfText.add(new LineOfText(new ClickableText("• Instructions", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(new ClickableText("• Level Selector", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Settings", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(
                     new LineOfText(new ClickableText("• Arcade mode (randomly generated levels)", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(new LineOfText(new ClickableText("• Drop out of game", PConstants.LEFT)));
+            return menu;
+        }
+
+        static MenuPage getSettingsMenu() {
+            MenuPage menu = new MenuPage("Settings", true);
+            menu.linesOfText.add(new LineOfText(new ClickableText("• Toggle music", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(""));
+            menu.linesOfText.add(new LineOfText(
+                    "The speed of the game is tied to the frame rate, so lowering the FPS can make the game easier if you are struggling."));
+            menu.linesOfText
+                    .add(new LineOfText("N.B. Changing FPS mid-level will break the calculation of seconds to spare!"));
+            menu.linesOfText.add(new LineOfText(new ClickableText("    • Set FPS to 60", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("    • Set FPS to 45", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("    • Set FPS to 30", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText("    • Set FPS to 15", PConstants.LEFT)));
             return menu;
         }
 
@@ -179,9 +196,11 @@ public class GameMenu {
                                 } else if (i == 1) {
                                     gameMenu.setMenuState(MenuState.LEVEL_SELECTION);
                                 } else if (i == 2) {
+                                    gameMenu.setMenuState(MenuState.SETTINGS);
+                                } else if (i == 3) {
                                     sketch.arcadeMode = true;
                                     sketch.startLevel(null);
-                                } else if (i == 3) {
+                                } else if (i == 4) {
                                     sketch.exit();
                                 }
                                 break;
@@ -193,12 +212,27 @@ public class GameMenu {
                                 } else if (i == 1) {
                                     gameMenu.setMenuState(MenuState.INSTRUCTIONS);
                                 } else if (i == 2) {
+                                    gameMenu.setMenuState(MenuState.SETTINGS);
+                                } else if (i == 3) {
                                     sketch.gameMenu.midLevel = false;
                                     gameMenu.setMenuState(sketch.arcadeMode ? GameMenu.MenuState.MAIN_MENU
                                             : GameMenu.MenuState.LEVEL_SELECTION);
                                     sketch.arcadeMode = false;
-                                } else if (i == 3) {
+                                } else if (i == 4) {
                                     sketch.exit();
+                                }
+                                break;
+                            case SETTINGS:
+                                if (i == 0) {
+                                    sketch.playingMusic = !sketch.playingMusic;
+                                } else if (i == 1) {
+                                    sketch.frameRate(60);
+                                } else if (i == 2) {
+                                    sketch.frameRate(45);
+                                } else if (i == 3) {
+                                    sketch.frameRate(30);
+                                } else if (i == 4) {
+                                    sketch.frameRate(15);
                                 }
                                 break;
                         }
@@ -257,7 +291,9 @@ public class GameMenu {
         PAUSE_MENU(MenuPage.getPauseMenu()),
         MAIN_MENU(MenuPage.getMainMenu()),
         LEVEL_SELECTION(MenuPage.getLevelSelectorMenu()),
-        INSTRUCTIONS(MenuPage.getInstructionsMenu()),;
+        INSTRUCTIONS(MenuPage.getInstructionsMenu()),
+        SETTINGS(MenuPage.getSettingsMenu()),
+        ;
 
         public final MenuPage menuPage;
 
