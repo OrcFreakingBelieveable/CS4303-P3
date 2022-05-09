@@ -53,7 +53,8 @@ public class DontDrown extends Sketcher {
 
     @Override
     public void settings() {
-        size((int) (displayWidth * 0.9), (int) (displayWidth * 0.9 * 0.5625));
+        float displayRatio = 0.9f; 
+        size((int) (displayWidth * displayRatio), (int) (displayWidth * displayRatio * 0.5625));
         this.RSW_DEF = width / RSW_DEF_DIV;
         this.scrollIncr = height / SCROLL_DIV;
     }

@@ -21,6 +21,7 @@ public class StressAndTokenState {
     public int stressEffectThreshold = DEFAULT_STRESS_EFFECT_THRESHOLD;
     public float stressIncrRange;
     public Debuff debuff = Debuff.NONE;
+    public int waveLastSeen = -1; // a frame count
 
     // pc values
     public float pcThrust;
@@ -55,10 +56,11 @@ public class StressAndTokenState {
         tokensCollected = 0;
         oldStress = 0;
         stress = 0;
-        maxStress = 100;
+        maxStress = ABS_MAX_STRESS;
         minStress = 0;
+        waveLastSeen = -1;
         debuff = level.debuff;
-        stressEffectThreshold = debuff.equals(Debuff.STRESS_MOTIVATED) ? 30 : DEFAULT_STRESS_EFFECT_THRESHOLD;
+        stressEffectThreshold = debuff.equals(Debuff.STRESS_MOTIVATED) ? 35 : DEFAULT_STRESS_EFFECT_THRESHOLD;
         AbstractDrawable.stressIndex = minStress;
         stressRange = (ABS_MAX_STRESS - stressEffectThreshold);
         stressIncrRange = sketch.height / STRESS_INCR_RANGE_DIV;
@@ -142,11 +144,21 @@ public class StressAndTokenState {
 
         if (debuff.equals(Debuff.PANIC_PRONE) && sketch.frameCount % 300 < 100) {
             waveDistance = Math.min(waveDistance, stressIncrRange / 2);
-        } else if (debuff.equals(Debuff.TUNNEL_VISION)) {
+        }
+
+        else if (debuff.equals(Debuff.TUNNEL_VISION)) {
             if (sketch.risingWave.pos.y > sketch.pc.pos.y + sketch.pc.jumpHeight) {
-                waveDistance = Math.max(waveDistance, stressIncrRange * 1.5f);
+                if (sketch.frameCount < waveLastSeen + stress * 2) {
+                    // don't destress as soon as the wave is out of sight
+                    waveDistance = stressIncrRange;
+                } else {
+                    // destress if the wave has been out of sight long enough
+                    waveDistance = Math.max(waveDistance, stressIncrRange * 1.5f);
+                }
             } else {
+                // when the wave is visible, the rate of stress increase is extra high
                 waveDistance = waveDistance / 2f;
+                waveLastSeen = sketch.frameCount;
             }
         }
 
@@ -162,10 +174,10 @@ public class StressAndTokenState {
             stress = minStress;
         }
 
-        if (!debuff.equals(Debuff.LACK_CONTRAST)) {
-            AbstractDrawable.stressIndex = (int) stress;
-        } else {
+        if (debuff.equals(Debuff.LACK_CONTRAST)) {
             // don't update stress index for drawables
+        } else {
+            AbstractDrawable.stressIndex = (int) stress;
         }
     }
 
