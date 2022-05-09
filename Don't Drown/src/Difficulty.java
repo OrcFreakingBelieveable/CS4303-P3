@@ -13,7 +13,7 @@ public enum Difficulty {
     public final boolean hasGround;
     public final float verticality;
     public final int betweenRedHerrings;
-    public final int waveRiseTime; // seconds to reach the top of the viewport
+    public final int waveRiseTime; // seconds to reach the top of the viewport at 60fps
 
     Difficulty(float heightMult, boolean hasGround, float verticality, int betweenRedHerrings, int waveRiseTime) {
         this.heightMult = heightMult;

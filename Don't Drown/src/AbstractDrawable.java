@@ -3,7 +3,7 @@ import processing.core.PVector;
 
 /**
  * N.B. Implementing subclasses must have a method of token generation.
- * Recommended to be static, hence not being an abstract to inherit.
+ * Token generation should use a static method, hence not being an abstract to inherit.
  */
 public abstract class AbstractDrawable {
 
