@@ -1,6 +1,10 @@
 import processing.core.PConstants;
 import processing.core.PShape;
 
+/**
+ * The collectable token objects. Not to be confused with the sprites/shapes of
+ * drawable objects.
+ */
 public class Token extends AbstractCollectable {
 
     public static final int T_STROKE_COLOUR = 0xDDB09500;
@@ -26,9 +30,10 @@ public class Token extends AbstractCollectable {
         pos.y -= bounceIncr * (sketch.frameCount % T_BOUNCE_FRAMES);
     }
 
+    /* Bobs up and down */
     public void integrate() {
         if (collected) {
-            return; 
+            return;
         }
         if (sketch.frameCount % T_BOUNCE_FRAMES == 0) {
             movingDown = !movingDown;

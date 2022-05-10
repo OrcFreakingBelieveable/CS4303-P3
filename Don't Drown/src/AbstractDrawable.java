@@ -2,6 +2,8 @@ import processing.core.PShape;
 import processing.core.PVector;
 
 /**
+ * Handles the rendering of objects based on current stress. 
+ * 
  * N.B. Implementing subclasses must have a method of token generation.
  * Token generation should use a static method, hence not being an abstract to inherit.
  */
@@ -19,7 +21,7 @@ public abstract class AbstractDrawable {
     public PVector pos; // position
 
     private final PShape[][] tokens;
-    private PShape token;
+    private PShape token; // i.e. sprite or drawing (not to be confused with collectable Tokens)
     private int tokenIndex = 0;
     private int lastStressIndex = 0;
 
@@ -32,6 +34,9 @@ public abstract class AbstractDrawable {
         this.tokens = tokens;
     }
 
+    /**
+     * (Redraws and) renders an object as dictated by stress.  
+     */
     protected void renderAD() {
         if (onScreen()) {
             if (token == null
@@ -48,6 +53,9 @@ public abstract class AbstractDrawable {
         }
     }
 
+    /**
+     * Intended for the stress bar's fill, which redraws itself more frequently so that the bar fills smoothly. 
+     */
     protected void renderADStress() {
         if (onScreen()) {
             if (token == null
@@ -61,5 +69,8 @@ public abstract class AbstractDrawable {
         }
     }
 
+    /**
+     * Usually a wrapper for either renderAD() or renderADStress(). 
+     */
     public abstract void render();
 }

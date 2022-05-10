@@ -1,3 +1,4 @@
+/* Handles stress-based calculations, and how many tokens the player has collected so far through a level. */
 public class StressAndTokenState {
 
     private final DontDrown sketch;
@@ -59,6 +60,7 @@ public class StressAndTokenState {
         update();
     }
 
+    /* Reset stress calculation values */
     public void reset() {
         tokensCollected = 0;
         oldStress = 0;
@@ -75,13 +77,14 @@ public class StressAndTokenState {
     }
 
     /**
-     * Calculates the force multipliers for the PC.
+     * Calculates the multipliers used for friction and thrust incrementation.
      */
     public void pcCalcs() {
         this.pcThrustMultiplier = (sketch.pc.maxHorizontalThrust - sketch.pc.minHorizontalThrust) / stressRange;
         this.pcFrictionMultiplier = (sketch.pc.maxHorizontalFriction - sketch.pc.minHorizontalFriction) / stressRange;
     }
 
+    /* Sets the current stress-based thrust magnitude */
     private void pcThrust() {
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             pcThrust = sketch.pc.minHorizontalThrust + stressRating * pcThrustMultiplier;
@@ -90,6 +93,7 @@ public class StressAndTokenState {
         }
     }
 
+    /* Sets the current stress-based friction magnitude */
     private void pcFriction() {
         if (debuff.equals(Debuff.STRESS_MOTIVATED) || stress >= stressEffectThreshold) {
             pcFriction = sketch.pc.maxHorizontalFriction - stressRating * pcFrictionMultiplier;
@@ -99,12 +103,13 @@ public class StressAndTokenState {
         }
     }
 
-    /** The speed at which the PC comes to rest. */
+    /* The speed at which the PC comes to rest. */
     private void pcMinSpeed() {
         pcMinSpeed = pcFriction * PlayerCharacter.I_MASS * sketch.pc.incr;
     }
 
-    public void recalcStressHSBColour() {
+    /** Converts a stress value into a colour for the PC's and stress bar's token generation. */
+    public void calcStressHSBColour() {
         if (stress >= stressEffectThreshold) {
             stressRating = stress - stressEffectThreshold;
             float[] hsb = new float[3];
@@ -119,6 +124,7 @@ public class StressAndTokenState {
 
     }
 
+    /** Calculates a stress-based value of sketchiness for token generation */
     public void sketchiness() {
         if (stress >= stressEffectThreshold) {
             stressRating = stress - stressEffectThreshold;
@@ -133,11 +139,13 @@ public class StressAndTokenState {
         }
     }
 
+    /** Increments the collected token count, and updates the token accordingly. */
     public void collectToken(Token token) {
         token.collected = true;
         tokensCollected++;
     }
 
+    /** Updates the stress based on debuff and distance between wave and player */
     public void updateStress() {
 
         if (sketch.staticStress) {
@@ -184,6 +192,7 @@ public class StressAndTokenState {
             AbstractDrawable.stressIndex = (int) stress;
         }
 
+        // used for other calculations 
         stressRating = stress - stressEffectThreshold;
     }
 
@@ -201,7 +210,7 @@ public class StressAndTokenState {
         pcThrust();
         pcFriction();
         pcMinSpeed();
-        recalcStressHSBColour();
+        calcStressHSBColour();
         sketchiness();
         oldStress = stress;
     }

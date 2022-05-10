@@ -1,3 +1,4 @@
+/* N.B. This class' code is from my submission for Ballista Command. */
 public class Utils {
 
     /**

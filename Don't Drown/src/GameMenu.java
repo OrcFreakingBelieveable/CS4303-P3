@@ -12,7 +12,7 @@ public class GameMenu {
     private static class ClickableText {
 
         final String text;
-        final int alignment;
+        final int alignment; // uses PConstants directions
 
         PVector pos; // bottom left/right
         float width, height;
@@ -22,6 +22,7 @@ public class GameMenu {
             this.alignment = alignment;
         }
 
+        /** Returns true if the cursor is over the clickable text */
         boolean hover(DontDrown sketch) {
             switch (alignment) {
                 case PConstants.RIGHT:
@@ -47,6 +48,10 @@ public class GameMenu {
 
     }
 
+    /**
+     * Wrapper class for either a clickable line of text OR a non-clickable line of
+     * text (i.e. a String). 
+     */
     private static class LineOfText {
 
         public final ClickableText clickable;
@@ -64,6 +69,9 @@ public class GameMenu {
 
     }
 
+    /**
+     * Individual menu pages, e.g. Settings and Pause. 
+     */
     private static class MenuPage {
 
         ClickableText back = new ClickableText("Back", PConstants.RIGHT);
@@ -82,12 +90,17 @@ public class GameMenu {
 
         static MenuPage getPauseMenu() {
             MenuPage menu = new MenuPage("Paused", false);
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Resume", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
+            menu.linesOfText
+                    .add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Resume", PConstants.LEFT)));
+            menu.linesOfText
+                    .add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
+            menu.linesOfText
+                    .add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Defer level", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
+            menu.linesOfText
+                    .add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Defer level", PConstants.LEFT)));
+            menu.linesOfText.add(
+                    new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
             return menu;
         }
 
@@ -120,32 +133,45 @@ public class GameMenu {
 
         static MenuPage getMainMenu() {
             MenuPage menu = new MenuPage("Don't Drown", false);
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Level Selector", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
+            menu.linesOfText
+                    .add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
+            menu.linesOfText.add(
+                    new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Level Selector", PConstants.LEFT)));
+            menu.linesOfText
+                    .add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(
-                    new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Arcade mode (randomly generated levels)", PConstants.LEFT)));
+                    new LineOfText(new ClickableText(
+                            DontDrown.BULLET_POINT + " Arcade mode (randomly generated levels)", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
+            menu.linesOfText.add(
+                    new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
             return menu;
         }
 
         static MenuPage getSettingsMenu() {
             MenuPage menu = new MenuPage("Settings", true);
-            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Toggle music", PConstants.LEFT)));
+            menu.linesOfText
+                    .add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Toggle music", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(new LineOfText(
                     "The speed of the game is tied to the frame rate, so lowering the FPS can make the game easier if you are struggling."));
             menu.linesOfText
                     .add(new LineOfText("N.B. Changing FPS mid-level will break the calculation of seconds to spare!"));
-            menu.linesOfText.add(new LineOfText(new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 60", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 45", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 30", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 15", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(
+                    new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 60", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(
+                    new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 45", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(
+                    new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 30", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(
+                    new ClickableText("    " + DontDrown.BULLET_POINT + " Set FPS to 15", PConstants.LEFT)));
             return menu;
         }
 
+        /**
+         * Sets the hitboxes for clickable text objects. 
+         */
         void populateClickables(DontDrown sketch) {
             page = new Page(sketch);
 
@@ -176,6 +202,7 @@ public class GameMenu {
 
         public void resolveClick(DontDrown sketch, GameMenu gameMenu) {
             if (backable && back.hover(sketch)) {
+                // return to previous menu 
                 sketch.gameMenu.setMenuState(sketch.gameMenu.midLevel ? MenuState.PAUSE_MENU : MenuState.MAIN_MENU);
             }
 
@@ -218,7 +245,7 @@ public class GameMenu {
                                     gameMenu.setMenuState(sketch.arcadeMode ? GameMenu.MenuState.MAIN_MENU
                                             : GameMenu.MenuState.LEVEL_SELECTION);
                                     sketch.arcadeMode = false;
-                                    sketch.levelState.reset(); 
+                                    sketch.levelState.reset();
                                 } else if (i == 4) {
                                     sketch.exit();
                                 }
@@ -249,6 +276,7 @@ public class GameMenu {
             float y = yOrigin + sketch.scoreOverlay.endOfPadding + page.lineGap;
 
             if (backable) {
+                // add Back button for sub-menus (Settings, Instructions etc.)
                 sketch.textFont(sketch.gameMenu.smallFont);
                 sketch.textAlign(PConstants.RIGHT, PConstants.BOTTOM);
                 back.render(sketch);

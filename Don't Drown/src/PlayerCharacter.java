@@ -8,10 +8,10 @@ public class PlayerCharacter extends AbstractDrawable {
     private static final float PC_INCR_DIV = 100f;
 
     // horizontal movement
-    private static final int PC_MIN_ACC_TIME = 10; // frames to max speed from stop
-    private static final int PC_MAX_ACC_TIME = 25; // frames to max speed from stop
-    private static final int PC_MIN_DEC_TIME = 5; // frames to stop from max speed
-    private static final int PC_MAX_DEC_TIME = 20; // frames to stop from max speed
+    private static final int PC_MIN_ACC_TIME = 10; // min frames to max speed from stop
+    private static final int PC_MAX_ACC_TIME = 25; // max frames to max speed from stop
+    private static final int PC_MIN_DEC_TIME = 5; // min frames to stop from max speed
+    private static final int PC_MAX_DEC_TIME = 20; // max frames to stop from max speed
     private static final float PC_MAX_SPEED_MULT = 0.6f; // incr per frame
     private static final float PC_AIR_THRUST_MULT = 0.4f; // horizontal thrust multiplier when mid-air
     private static final float PC_AIR_FRICTION_FACTOR = 0.05f; // horizontal friction multiplier when mid-air
@@ -55,10 +55,10 @@ public class PlayerCharacter extends AbstractDrawable {
     public final float jumpHeight; // vertical jump height at peak, in pixels
 
     // horizontal movement
-    public final float minHorizontalThrust; // default thrust
-    public final float maxHorizontalThrust; // default thrust
-    public final float minHorizontalFriction; // default friction force
-    public final float maxHorizontalFriction; // default friction force
+    public final float minHorizontalThrust; // thrust at 0 stress
+    public final float maxHorizontalThrust; // thrust at max stress
+    public final float minHorizontalFriction; // friction force at max stress
+    public final float maxHorizontalFriction; // friction force at 0 stress
     private SteerState steerState = SteerState.NEITHER;
     private MoveState moveState = MoveState.AT_REST;
     public boolean steerSinceLand = false;
@@ -141,6 +141,7 @@ public class PlayerCharacter extends AbstractDrawable {
         // t = ? (frames)
         // a = falling.gravity * iWeight (underestimating / ignoring drag) (incr per
         // ... frame^2)
+        // 0 = 1/2at^2 + ut - s
         return (int) Math.floor(Utils.solveQuadratic(-FallState.FALLING.gravity * I_MASS / 2, 0, jumpHeightIncr));
     }
 
@@ -173,13 +174,14 @@ public class PlayerCharacter extends AbstractDrawable {
     }
 
     private void applyHorizontalDrag() {
-        // horizontally deccelerate, dependent upon surface/air
         int direction;
+
         if (vel.x == 0) {
-            direction = steerState.directionMult;
+            direction = -1 * steerState.directionMult;
         } else {
             direction = vel.x < 0 ? 1 : -1;
         }
+
         if (fallState.equals(FallState.ON_SURFACE)) {
             resultant.x += state.pcFriction * direction;
         } else {
@@ -195,6 +197,7 @@ public class PlayerCharacter extends AbstractDrawable {
                 resultant.x += state.pcThrust * steerState.directionMult * PC_AIR_THRUST_MULT;
             }
         } else if (Math.abs(vel.x) >= maxSpeed && !steerState.equals(SteerState.NEITHER)) {
+            // transitition to max speed
             vel.x = maxSpeed * steerState.directionMult;
             moveState = MoveState.MAX_SPEED;
         }
@@ -233,7 +236,8 @@ public class PlayerCharacter extends AbstractDrawable {
             applyHorizontalThrust();
         }
 
-        // if not at rest or max speed, apply friction force
+        // if not at rest, max speed, nor steering in the same direction as velocity,
+        // apply friction force
         if (moveState.equals(MoveState.ACCELERATING) && (steerState.equals(SteerState.NEITHER)
                 || steerState.equals(vel.x < 0 ? SteerState.RIGHT : SteerState.LEFT))) {
             applyHorizontalDrag();
@@ -243,18 +247,19 @@ public class PlayerCharacter extends AbstractDrawable {
         PVector acc = resultant.mult(I_MASS).mult(incr);
         vel.add(acc);
 
-        // check if peak of jump (i.e. start of hang time) reached, or finished
         if (fallState.equals(FallState.RISING) && vel.y >= 0) {
+            // if at peak of jump (i.e. start of hang time)
             fallState = FallState.HANG_TIME;
             hangCounter = 0;
             vel.y = 0;
         } else if (fallState.equals(FallState.HANG_TIME) && hangCounter++ >= PC_HANG_TIME_DEF) {
-            // check if end of hang time reached
+            // if end of hang time reached
             fallState = FallState.FALLING;
         } else if (fallState.equals(FallState.FALLING)) {
             // apply drag if falling
             vel.y -= vel.y * PC_FALLING_DRAG_FACTOR;
         } else if (fallState.equals(FallState.COYOTE_TIME) && coyoteCounter-- == 0) {
+            // if end of coyote time
             fallState = FallState.FALLING;
         }
 
@@ -262,6 +267,7 @@ public class PlayerCharacter extends AbstractDrawable {
         resultant = new PVector();
     }
 
+    /** Move the PC, bouncing them off the edge of the playable area if needed. */
     public void integrate() {
         updateVelocity();
         pos.add(vel);
@@ -282,8 +288,6 @@ public class PlayerCharacter extends AbstractDrawable {
             fallState = FallState.RISING;
             resultant.y = -PC_JUMP_IMPULSE;
             jumpMemoryCounter = 0;
-            if (surface != null)
-                surface.supportingPC = false;
             surface = null;
         } else {
             jumpMemoryCounter = PC_BOUNCE_REMEMBER;
@@ -294,7 +298,6 @@ public class PlayerCharacter extends AbstractDrawable {
         if (upon != null) {
             fallState = FallState.ON_SURFACE;
             surface = upon;
-            surface.supportingPC = true;
             vel.y = 0f;
             pos.y = upon.pos.y - diameter / 2f;
             if (steerState.equals(SteerState.NEITHER)) {
@@ -315,8 +318,6 @@ public class PlayerCharacter extends AbstractDrawable {
                 vel.x = -vel.x * PC_BOUNCE_MULT;
             }
         } else {
-            if (surface != null)
-                surface.supportingPC = false;
             surface = null;
             fallState = FallState.COYOTE_TIME;
             coyoteCounter = PC_COYOTE_TIME;
@@ -372,7 +373,7 @@ public class PlayerCharacter extends AbstractDrawable {
         for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
             state.stress = i;
             state.sketchiness();
-            state.recalcStressHSBColour();
+            state.calcStressHSBColour();
 
             int fillColour = sketch.color(state.stressHSBColour[0], state.stressHSBColour[1], state.stressHSBColour[2],
                     PC_FILL_ALPHA);

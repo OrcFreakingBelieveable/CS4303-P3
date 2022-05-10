@@ -28,11 +28,11 @@ public class Level {
 
     // level generation values
     public final float lowestPlatformHeight;
-    public final float highestPlatformHeight;
+    public final float highestPlatformHeight; // upper limit; may not actually be reached
     public final float playableWidth; // width - margin
     public final int betweenRedHerrings; // minimum layers between red herring platforms
-    private final float jumpRange;
-    private final float jumpHeight;
+    private final float jumpRange; // cached value from PC
+    private final float jumpHeight; // cached value from PC
     private final float verticality; // affects the ratio of vertical jumps to horizontal ones
 
     // wave speed
@@ -54,7 +54,7 @@ public class Level {
 
     // high score
     public int highScore = 0;
-    public float timeLeft = -123;
+    public float timeLeft = -123; // value for which the level selector menu does not show seconds to spare
 
     public Level(DontDrown sketch, Debuff debuff, Difficulty difficulty) {
         this.sketch = sketch;
@@ -89,10 +89,16 @@ public class Level {
         waveTime = difficulty.waveRiseTime * heightRatio;
     }
 
+    /* Wrapper function */
     private void addToken(float x, float y) {
         tokens.add(new Token(sketch, x, y));
     }
 
+    /*
+     * Calculates the position vector of the next platform based on the current
+     * platform and the generated X and Y distances, ensuring that the new platform
+     * will be within the bounds of the level.
+     */
     private PVector placePlatform(Platform currentPlatform, Platform nextPlatform, float diffX, float diffY) {
         float x = Math.max(Page.marginX, currentPlatform.pos.x + diffX);
         x = Math.min(x, sketch.width - nextPlatform.width);
@@ -101,6 +107,10 @@ public class Level {
         return new PVector(x, y);
     }
 
+    /*
+     * Corrects the proposed position of a new platform to be within the bounds of
+     * the level.
+     */
     private PVector placePlatform(Platform toPlace, float proposedX, float proposedY) {
         float x = Math.max(Page.marginX, proposedX);
         x = Math.min(x, sketch.width - toPlace.width);
@@ -109,6 +119,12 @@ public class Level {
         return new PVector(x, y);
     }
 
+    /**
+     * Randomly generates the platforms and tokens of the level.
+     * 
+     * @param hasGround determines if the first platform should span the playable
+     *                  area
+     */
     private void generatePlatformsAndTokens(boolean hasGround) {
         Platform prevPlatform = null;
         Platform currentPlatform;
@@ -124,10 +140,10 @@ public class Level {
         }
         highestPlatform = currentPlatform;
 
-        float diffX = 0, diffY = 0;
+        float diffX = 0, diffY = 0; // displacements between current and next platform
         boolean goingLeft = false;
         boolean redHerring = false; // whether or not to add an extra platform with a token
-        int sinceRedHerring = betweenRedHerrings;
+        int sinceRedHerring = betweenRedHerrings; // the minimum number of platforms between tokens
 
         while (currentPlatform.pos.y > highestPlatformHeight + (jumpHeight * V_MIN_JUMP_HEIGHT_MULT)) {
 
@@ -139,7 +155,7 @@ public class Level {
             }
 
             if (redHerring && prevPlatform != null) {
-                // place a token on a platform off the beaten path
+                // place a token on a new platform off the optimal path
                 Platform redHerringP = new Platform(sketch, 0, 0);
                 redHerringP.initPos = placePlatform(redHerringP,
                         prevPlatform.pos.x - diffX,
@@ -209,11 +225,15 @@ public class Level {
             }
         }
 
+        // replace the highest platform with a specially coloured one
         highestPlatform = new Platform(highestPlatform);
         platforms.remove(platforms.size() - 1);
         platforms.add(highestPlatform);
     }
 
+    /**
+     * Undo panning and the collection of tokens
+     */
     public void reset() {
         panningState = PanningState.NEITHER;
         top = topLimit;
@@ -230,6 +250,9 @@ public class Level {
         }
     }
 
+    /**
+     * Make tokens bob up and down. Pan level if needed. 
+     */
     public void integrate() {
         for (Token token : tokens) {
             token.integrate();
@@ -252,6 +275,7 @@ public class Level {
         }
     }
 
+    /* Move all level elements up or down (incl. PC and wave) */
     private void pan(float y) {
         top += y;
         page.lines.translate(0, y);
@@ -264,6 +288,7 @@ public class Level {
         sketch.pc.pos.y += y;
         sketch.risingWave.pos.y += y;
     }
+
 
     public void render() {
         page.render();

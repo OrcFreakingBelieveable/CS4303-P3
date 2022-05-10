@@ -86,6 +86,7 @@ public class MusicPlayer {
         output.setTempo(BPM);
     }
 
+    /** Plays notes one at a time, with stress-based tempo. */
     public void playMusic() {
         long now = System.currentTimeMillis();
         if (now >= nextPlayMillis) {

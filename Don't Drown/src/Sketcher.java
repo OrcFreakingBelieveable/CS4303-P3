@@ -3,6 +3,9 @@ import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
 
+/**
+ * Handles "hand-drawing" lines and some simple shapes.  
+ */
 public abstract class Sketcher extends PApplet {
 
     public static final float RSW_DEF_DIV = 500f;
@@ -12,11 +15,12 @@ public abstract class Sketcher extends PApplet {
     public static final int RSS_MAX = 5;
     public static final int WAVE = 69;
 
-    public float RSW_DEF;
+    public float RSW_DEF; // default rough stroke weight 
     public float roughStrokeWeight; // the average weight of hand drawn lines
     public float roughStrokeVariabilityRate = RSV_MIN; // the max deviation from a smooth line
     public int roughStrokeShakiness = RSS_MIN; // the rate at which the rough line deviates
 
+    /* Generates a sin wave as a set of points, for use in Wave token generation */
     private PVector[] sinWave(float waveWidth, int nSections, float sectionDepth, int verticesPerSection,
             int startOffset) {
         PVector[] vertices = new PVector[nSections * verticesPerSection];
@@ -29,6 +33,7 @@ public abstract class Sketcher extends PApplet {
         return vertices;
     }
 
+    /* Draws a line that evenly thickens/thins from one end to the other  */
     private PShape drawDualWeightedLine(PVector start, PVector end, float startWeight, float endWeight) {
         float heading = (start.copy().sub(end)).heading();
         heading += HALF_PI;
@@ -47,6 +52,7 @@ public abstract class Sketcher extends PApplet {
                 bottomLeft.x, bottomLeft.y);
     }
 
+    /* Wrapper function that sets the line colour */
     public PShape handDrawLine(int strokeColour, PVector start, PVector end) {
         PShape line = handDrawLine(start, end);
         line.setFill(strokeColour);
@@ -106,6 +112,17 @@ public abstract class Sketcher extends PApplet {
         return handDraw(type, 0xFF000000, 0xFFFFFFFF, params);
     }
 
+    /**
+     * Hand draws a primitive shape. 
+     * @param type PConstants.QUAD, PConstants.RECT, PConstants.ELLIPSE, or Sketcher.WAVE 
+     * @param strokeColour 
+     * @param fillColour
+     * @param params for a QUAD: x1, y1, x2, y2, x3, y3, x4, y4;
+     *               for a RECT: x, y, width, height;
+     *               for an ELLIPSE: vertices, x, y, width, height;
+     *               for a WAVE: width, height, nSections, sectionDepth, verticesPerSection, startOffset;
+     * @return
+     */
     public PShape handDraw(int type, int strokeColour, int fillColour, float... params) {
         switch (type) {
             case PConstants.QUAD:

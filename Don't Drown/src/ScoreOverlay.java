@@ -43,7 +43,7 @@ public class ScoreOverlay {
                 for (int i = 0; i <= StressAndTokenState.ABS_MAX_STRESS; i++) {
                     sketch.levelState.stress = i / (float) STRESS_BAR_RESOLUTION;
                     sketch.levelState.sketchiness();
-                    sketch.levelState.recalcStressHSBColour();
+                    sketch.levelState.calcStressHSBColour();
 
                     for (int j = 0; j < VARIANT_TOKENS; j++) {
                         PShape token = new PShape(PConstants.GROUP);
@@ -90,7 +90,7 @@ public class ScoreOverlay {
                 for (int i = 0; i < maxStressIndex; i++) {
                     sketch.levelState.stress = i / (float) STRESS_BAR_RESOLUTION;
                     sketch.levelState.sketchiness();
-                    sketch.levelState.recalcStressHSBColour();
+                    sketch.levelState.calcStressHSBColour();
 
                     for (int j = 0; j < VARIANT_TOKENS; j++) {
                         PShape token = new PShape(PConstants.GROUP);
@@ -133,6 +133,7 @@ public class ScoreOverlay {
         }
     }
 
+    /* To frame the current score during a level */
     private static class BigToken extends AbstractDrawable {
 
         private static PShape[][] staticTokens = null;

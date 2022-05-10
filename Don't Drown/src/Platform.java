@@ -12,14 +12,12 @@ public class Platform extends AbstractDrawable {
     public final float width;
 
     private static PShape[][] staticTokensDefaultWidth;
-    private static PShape[][] staticTokensTop;
+    private static PShape[][] staticTokensTop; // coloured differently to other tokens 
+
     private static final int STROKE_COLOUR = 0xDDD79B00;
     private static final int FILL_COLOUR = 0xAAFFE6CC;
-
     private static final int TOP_STROKE_COLOUR = 0xDDD7C800;
     private static final int TOP_FILL_COLOUR = 0xAAFFE678;
-
-    public boolean supportingPC = false;
 
     public Platform(DontDrown sketch, float x, float y) {
         super(sketch, (staticTokensDefaultWidth == null ? generateTokens(sketch) : staticTokensDefaultWidth));
@@ -39,7 +37,7 @@ public class Platform extends AbstractDrawable {
 
     /**
      * Generates a copy of a platform that is coloured to mark it as a the top
-     * platform. Should replace that platform.
+     * platform. Should be used to replace that platform.
      * 
      * @param source the platform to copy
      */

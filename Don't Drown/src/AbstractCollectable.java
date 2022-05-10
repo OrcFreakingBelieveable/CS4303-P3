@@ -1,6 +1,11 @@
 import processing.core.PShape;
 import processing.core.PVector;
 
+/**
+ * An extension of AbstractDrawable for objects that can be collected during a level. 
+ * 
+ * Would have been used for powerups if they were implemented. 
+ */
 public abstract class AbstractCollectable extends AbstractDrawable {
 
     public final PVector initPos;

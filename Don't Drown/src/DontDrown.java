@@ -23,7 +23,7 @@ public class DontDrown extends Sketcher {
     public boolean arcadeMode = false;
     public GameMenu gameMenu;
     public MusicPlayer musicPlayer;
-    public boolean playingMusic = true;
+    public boolean playingMusic = true;    
     public StressAndTokenState levelState;
     public PlayerCharacter pc;
     public Wave risingWave;
@@ -34,17 +34,17 @@ public class DontDrown extends Sketcher {
     public Level level;
     public CollisionDetector collisionDetector;
     public long levelStartTimeMillis;
-    public int extensionFrames;
-    public int repercussionFrames;
-    public float repercussionMult;
-    public int endOfExtension = -1;
-    public int endOfRepercussion = -1;
+    public int extensionFrames; // the number of frames per extensions
+    public int repercussionFrames; // the number of frames per repercussion
+    public float repercussionMult; // the wave speed multiplier for repercussions 
+    public int endOfExtension = -1; // a value of frameCount
+    public int endOfRepercussion = -1; // a value of frameCount 
     public boolean extensionUsed = false;
 
-    public boolean debugging = false;
-    public boolean staticStress = false; // stress does not change
+    public boolean debugging = false; // toggles debug overlay and cheat commands 
+    public boolean staticStress = false; // prevents stress-based calculations; used for debugging 
 
-    private int scrollIncr;
+    private int scrollIncr;  // the rate at which menus scroll 
 
     public void colorModeHSB() {
         colorMode(HSB, 360f, 1f, 1f, 1f);
@@ -72,6 +72,7 @@ public class DontDrown extends Sketcher {
             for (Difficulty difficulty : Difficulty.values()) {
                 levels[deb][dif++] = new Level(this, debuff, difficulty);
             }
+
             deb++;
         }
         gameMenu.updateLevelSelector();
@@ -79,11 +80,12 @@ public class DontDrown extends Sketcher {
 
     public void startLevel(Level levelToStart) {
         if (levelToStart == null) {
-            level = new Level(this, Debuff.random(), Difficulty.random());
+            level = new Level(this, Debuff.random(), Difficulty.random()); // arcade mode/debugging levels 
         } else {
             level = levelToStart;
         }
 
+        // reset values 
         extensionUsed = false;
         endOfExtension = -1;
         endOfRepercussion = -1;
@@ -122,6 +124,7 @@ public class DontDrown extends Sketcher {
 
                 levelState.reset();
             } else {
+                // restart level upon death 
                 startLevel(level);
             }
         }

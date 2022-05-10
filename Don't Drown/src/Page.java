@@ -2,6 +2,9 @@ import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
 
+/**
+ * The lined paper that serves as the background of the game.
+ */
 public class Page {
 
     private static final int PAGE_COLOUR = 0xFFFFFFEE;
@@ -15,15 +18,15 @@ public class Page {
 
     public final int height;
     public final float topLineY;
-    public final float lineGap;
-    public final boolean startAtTop;
+    public final float lineGap; // space between lines; used to line up menu text
+    public final boolean startAtTop; // whether or not the page should default to the top or bottom when displaying
 
     public PShape lines = null;
 
     public Page(DontDrown sketch) {
         if (marginX == 0.0f)
             setMargin(sketch);
-        startAtTop = true; // doesn't matter because page matches viewport
+        startAtTop = true; // doesn't matter because page matches viewport height
         this.sketch = sketch;
         height = sketch.height;
         this.topLineY = sketch.height - height + sketch.scoreOverlay.endOfPadding;
@@ -40,10 +43,14 @@ public class Page {
         this.lineGap = sketch.width / PlayerCharacter.PC_DIAMETER_DIV;
     }
 
-    public static void setMargin(DontDrown sketch) {
+    /*
+     * Sets the position of the left-hand margin, which is consistent between pages
+     */
+    private static void setMargin(DontDrown sketch) {
         marginX = (float) sketch.width / MARGIN_DIV;
     }
 
+    /* Places the margin and uniformly spaced horizontal lines on the page */
     private void generateLines() {
         lines = sketch.createShape(PConstants.GROUP);
         for (int i = 1; i <= height / lineGap; i++) {
@@ -60,6 +67,10 @@ public class Page {
         }
     }
 
+    /*
+     * Draws lines as rectangles so that their weight is more easily customised, and
+     * they can be moved to pan/scroll the page.
+     */
     private PShape drawLine(PVector start, PVector end, float weight, int colour) {
         PVector smoothLine = start.copy().sub(end);
         float angle = smoothLine.heading();

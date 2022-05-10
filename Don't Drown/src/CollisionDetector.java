@@ -17,6 +17,7 @@ public class CollisionDetector {
         pcOldPos = sketch.pc.pos.copy();
     }
 
+    /** To be called at the start of a level */
     public void sortLists() {
         sortedPlatforms = new ArrayList<>(sketch.level.platforms);
         sortedPlatforms.sort(new Comparator<Platform>() {
@@ -39,6 +40,7 @@ public class CollisionDetector {
         });
     }
 
+    /* Finds the horizontal position of the PC when it was at a given height */
     private float getXAtYOverlap(PlayerCharacter pc, PVector dir, float otherY) {
         if (dir.y != 0) {
             if (dir.x < 0) {
@@ -107,10 +109,17 @@ public class CollisionDetector {
                     sketch.levelState.collectToken(token);
                     break;
                 } else {
+                    // the angle between the pc's path and the token's centre, from the pc's old position
                     float theta = Math.abs(dir.heading() - PVector.angleBetween(pcOldPos, token.pos));
-                    float hyp = PVector.dist(pcOldPos, token.pos);
-                    float x = (float) (hyp * Math.sin(theta));
-                    float y = (float) (hyp * Math.cos(theta));
+
+                    float hyp = PVector.dist(pcOldPos, token.pos); 
+
+                    // the shortest distance from the pc's path to the centre of the token
+                    float x = (float) (hyp * Math.sin(theta)); 
+
+                    // the distance along the pc's path to the closest point to the token
+                    float y = (float) (hyp * Math.cos(theta)); 
+                    
                     if (theta <= PConstants.HALF_PI && x <= collisionRange && y <= PVector.dist(pcOldPos, pc.pos)) {
                         sketch.levelState.collectToken(token);
                         break;
