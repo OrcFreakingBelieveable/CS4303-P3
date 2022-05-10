@@ -82,29 +82,29 @@ public class GameMenu {
 
         static MenuPage getPauseMenu() {
             MenuPage menu = new MenuPage("Paused", false);
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Resume", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Resume", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Defer level", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Defer level", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
             return menu;
         }
 
         static MenuPage getInstructionsMenu() {
             MenuPage menu = new MenuPage("Instructions", true);
             String[] text = new String[] {
-                    "" + DontDrown.BULLET_POINT + " UP to jump when on a platform",
-                    "" + DontDrown.BULLET_POINT + " DOWN to fall through a platform",
-                    "" + DontDrown.BULLET_POINT + " LEFT and RIGHT to accelerate",
-                    "" + DontDrown.BULLET_POINT + " Esc or P to (un)pause",
+                    DontDrown.BULLET_POINT + " UP to jump when on a platform",
+                    DontDrown.BULLET_POINT + " DOWN to fall through a platform",
+                    DontDrown.BULLET_POINT + " LEFT and RIGHT to accelerate",
+                    DontDrown.BULLET_POINT + " Esc or P to (un)pause",
                     "",
-                    "" + DontDrown.BULLET_POINT + " Reach the top platform as fast as you can to complete the level",
-                    "" + DontDrown.BULLET_POINT + " If you get too close to the wave then you'll get stressed",
-                    "" + DontDrown.BULLET_POINT + " As stress rises, you horizontally speed up faster and slow down slower",
-                    "" + DontDrown.BULLET_POINT + " Keep far ahead of the wave to de-stress",
-                    "" + DontDrown.BULLET_POINT + " Collect tokens along the way for a sense of challenge",
-                    "" + DontDrown.BULLET_POINT + " Once per level, you can briefly pause the wave with SPACEBAR",
+                    DontDrown.BULLET_POINT + " Reach the top platform as fast as you can to complete the level",
+                    DontDrown.BULLET_POINT + " If you get too close to the wave then you'll get stressed",
+                    DontDrown.BULLET_POINT + " As stress rises, you horizontally speed up faster and slow down slower",
+                    DontDrown.BULLET_POINT + " Keep far ahead of the wave to de-stress",
+                    DontDrown.BULLET_POINT + " Collect tokens along the way for a sense of challenge",
+                    DontDrown.BULLET_POINT + " Once per level, you can briefly pause the wave with SPACEBAR",
                     "  ... but the wave will then briefly speed up to make up for it"
             };
             for (String string : text) {
@@ -120,20 +120,20 @@ public class GameMenu {
 
         static MenuPage getMainMenu() {
             MenuPage menu = new MenuPage("Don't Drown", false);
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Level Selector", PConstants.LEFT)));
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Instructions", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Level Selector", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Settings", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(
-                    new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Arcade mode (randomly generated levels)", PConstants.LEFT)));
+                    new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Arcade mode (randomly generated levels)", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Drop out of game", PConstants.LEFT)));
             return menu;
         }
 
         static MenuPage getSettingsMenu() {
             MenuPage menu = new MenuPage("Settings", true);
-            menu.linesOfText.add(new LineOfText(new ClickableText("" + DontDrown.BULLET_POINT + " Toggle music", PConstants.LEFT)));
+            menu.linesOfText.add(new LineOfText(new ClickableText(DontDrown.BULLET_POINT + " Toggle music", PConstants.LEFT)));
             menu.linesOfText.add(new LineOfText(""));
             menu.linesOfText.add(new LineOfText(
                     "The speed of the game is tied to the frame rate, so lowering the FPS can make the game easier if you are struggling."));
