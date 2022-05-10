@@ -177,7 +177,7 @@ public class PlayerCharacter extends AbstractDrawable {
         int direction;
 
         if (vel.x == 0) {
-            direction = -1 * steerState.directionMult;
+            direction = 0;
         } else {
             direction = vel.x < 0 ? 1 : -1;
         }
