@@ -147,6 +147,7 @@ public class PlayerCharacter extends AbstractDrawable {
     private float jumpRange() {
         // s = ut
         // constant horizontal velocity
+        // 1.1f accounts for rounding/approximation errors (based on experimentation)
         return maxSpeed * jumpFrames * 1.1f;
     }
 
@@ -158,10 +159,10 @@ public class PlayerCharacter extends AbstractDrawable {
 
         this.incr = sketch.width / PC_INCR_DIV;
         this.maxSpeed = incr * PC_MAX_SPEED_MULT;
-        this.minHorizontalFriction = maxSpeed / PC_MAX_DEC_TIME;
-        this.maxHorizontalFriction = maxSpeed / PC_MIN_DEC_TIME;
-        this.minHorizontalThrust = maxSpeed / PC_MAX_ACC_TIME;
-        this.maxHorizontalThrust = maxSpeed / PC_MIN_ACC_TIME;
+        this.minHorizontalFriction = (PC_MAX_SPEED_MULT / PC_MAX_DEC_TIME)/ I_MASS;
+        this.maxHorizontalFriction = (PC_MAX_SPEED_MULT / PC_MIN_DEC_TIME)/ I_MASS;
+        this.minHorizontalThrust = (PC_MAX_SPEED_MULT / PC_MAX_ACC_TIME)/ I_MASS;
+        this.maxHorizontalThrust = (PC_MAX_SPEED_MULT / PC_MIN_ACC_TIME) / I_MASS;
 
         this.riseFrames = riseFrames();
         this.jumpHeightIncr = jumpHeight();
