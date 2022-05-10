@@ -159,9 +159,9 @@ public class PlayerCharacter extends AbstractDrawable {
 
         this.incr = sketch.width / PC_INCR_DIV;
         this.maxSpeed = incr * PC_MAX_SPEED_MULT;
-        this.minHorizontalFriction = (PC_MAX_SPEED_MULT / PC_MAX_DEC_TIME)/ I_MASS;
-        this.maxHorizontalFriction = (PC_MAX_SPEED_MULT / PC_MIN_DEC_TIME)/ I_MASS;
-        this.minHorizontalThrust = (PC_MAX_SPEED_MULT / PC_MAX_ACC_TIME)/ I_MASS;
+        this.minHorizontalFriction = (PC_MAX_SPEED_MULT / PC_MAX_DEC_TIME) / I_MASS;
+        this.maxHorizontalFriction = (PC_MAX_SPEED_MULT / PC_MIN_DEC_TIME) / I_MASS;
+        this.minHorizontalThrust = (PC_MAX_SPEED_MULT / PC_MAX_ACC_TIME) / I_MASS;
         this.maxHorizontalThrust = (PC_MAX_SPEED_MULT / PC_MIN_ACC_TIME) / I_MASS;
 
         this.riseFrames = riseFrames();
