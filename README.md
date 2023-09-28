@@ -38,9 +38,13 @@ The speed of the game is tied to the FPS, so in the Settings menu there are opti
 ## Compilation Instructions 
 Don’t Drown was made using the Processing library for Java, as well as the Minim library [1]. Required .jar files, as well as the licenses for Minim and the font used in the game, are included in the lib/ folder of the submission. 
 Commands to be run from the DontDrown/ folder: 
-
+    # Unix
     $ javac -cp lib/minim/*:lib/core.jar:src/ src/*.java
     $ java -cp lib/minim/*:lib/core.jar:src/ DontDrown
+
+    # Windows
+    $ javac -cp "lib/minim/*;lib/core.jar;src/" src/*.java
+    $ java -cp "lib/minim/*;lib/core.jar;src/" DontDrown
 
 The class diagrams for my codebase (excluding my defined Enums) are included as a separate PDF. They were generated from the .class files, and as such may vary slightly from the .java files. 
 
